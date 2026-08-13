@@ -27,7 +27,23 @@ DB_NAME = os.getenv("POSTGRES_DB", "webmap")
 
 DATABASE_URL = f"postgresql+asyncpg://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
-engine = create_async_engine(DATABASE_URL, echo=False)
+engine = create_async_engine(
+    DATABASE_URL, 
+    pool_pre_ping=True, # Verify connection health before checkout
+    pool_recycle=300,   # Recycles connections every 5 minutes
+    pool_size=10,
+    max_overflow=20,
+    connect_args={
+        "command_timeout":60, # Adjust timeout for heavy spatial queries
+        "server_settings":{
+            "keepalives":"1",
+            "keepalives_idle":"30",
+            "keepalives_interval":"30",
+            "keepalives_interval":"10",
+            "keepalives_count":"5",
+            }
+        },
+    echo=False)
 async_session_maker = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
 
@@ -87,7 +103,9 @@ async def get_layer_data(table_name: str, db: AsyncSession = Depends(get_db)):
             SELECT jsonb_build_object(
                 'type',       'Feature',
                 'id',         id,
-                'geometry',   ST_AsGeoJSON(geom)::jsonb,
+                # 'geometry',   ST_AsGeoJSON(geom)::jsonb,
+                # 'properties', to_jsonb(inputs) - 'geom' - 'id'
+                'geometry', ST_AsGeoJSON(ST_SimplifyPreserveTopology(geom,0.001))::jsonb,
                 'properties', to_jsonb(inputs) - 'geom' - 'id'
             ) AS feature
             FROM (SELECT * FROM "{table_name}") inputs
