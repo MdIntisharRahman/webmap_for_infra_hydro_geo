@@ -1,14 +1,43 @@
-from fastapi import FastAPI, Depends, HTTPException
-from fastapi.staticfiles import StaticFiles
-from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
-from sqlalchemy import text
-from typing import AsyncGenerator
+import asyncio
 import json
 import os
 import re
+from contextlib import asynccontextmanager
+from typing import AsyncGenerator
 
-app = FastAPI(title="Bangladesh Webmap API")
+from fastapi import Depends, FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+
+# Import your GIS loading function here
+# Example: from load_gis_data import load_all_gis_layers
+
+
+async def run_data_ingestion():
+    """Background task to load spatial data into PostGIS without delaying port startup."""
+    print("Starting background GIS data ingestion...")
+    try:
+        # If your loading function is asynchronous:
+        # await load_all_gis_layers()
+
+        # If your loading function is synchronous (blocking):
+        # await asyncio.to_thread(load_all_gis_layers)
+        pass
+    except Exception as e:
+        print(f"Error during background data ingestion: {e}")
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup: spawn data ingestion as a background task
+    asyncio.create_task(run_data_ingestion())
+    yield
+    # Shutdown logic (if any)
+
+
+app = FastAPI(title="Bangladesh Webmap API", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -29,15 +58,15 @@ DATABASE_URL = f"postgresql+asyncpg://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{D
 engine = create_async_engine(
     DATABASE_URL, 
     pool_pre_ping=True,  # Verify connection health before checkout
-    pool_recycle=300,    # Recycles connections every 5 minutes
+    pool_recycle=300,    # Recycle connections every 5 minutes
     pool_size=10,
     max_overflow=20,
     connect_args={
-        "command_timeout": 60,  # Adjust timeout for heavy spatial queries
+        "command_timeout": 60,  # Timeout for heavy spatial queries
         "server_settings": {
             "keepalives": "1",
             "keepalives_idle": "30",
-            "keepalives_interval": "10",  # Fixed duplicate key issue
+            "keepalives_interval": "10",
             "keepalives_count": "5",
         }
     },
@@ -95,7 +124,6 @@ async def get_layer_data(table_name: str, db: AsyncSession = Depends(get_db)):
     if not re.match(r"^[a-z0-9_]+$", table_name):
         raise HTTPException(status_code=400, detail="Invalid table name")
 
-    # Corrected SQL comments from '#' to '--'
     query = text(f"""
         SELECT jsonb_build_object(
             'type',     'FeatureCollection',
