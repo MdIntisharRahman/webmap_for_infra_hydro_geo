@@ -3,6 +3,9 @@ import argparse
 import geopandas as gpd
 from sqlalchemy import create_engine
 import re
+from rich.console import Console
+
+console = Console()
 
 def slugify(text):
     text = text.strip().lower()
@@ -40,7 +43,7 @@ def load_data(db_url, maps_dir, md_filepath):
     engine = create_engine(db_url)
     
     maps = parse_markdown_table(md_filepath)
-    print(f"Found {len(maps)} maps to process in {md_filepath}")
+    print(f"Found {len(maps)} maps to process in {md_filepath}\n")
     
     for map_info in maps:
         filename = map_info['filename']
@@ -49,36 +52,36 @@ def load_data(db_url, maps_dir, md_filepath):
         
         filepath = os.path.join(maps_dir, filename)
         if not os.path.exists(filepath):
-            print(f"Warning: File not found: {filepath}. Skipping.")
+            console.print(f"[bold yellow]Warning:[/bold yellow] File not found: [cyan]{filepath}[/cyan]. Skipping.")
             continue
             
-        print(f"Loading {filename} (Layer: {layer_name}) into table '{table_name}'...")
-        
-        try:
-            # Read GeoJSON using Geopandas
-            gdf = gpd.read_file(filepath)
-            
-            # Ensure the geometry column is named 'geom' to stay consistent with other tables
-            if 'geometry' in gdf.columns and gdf.geometry.name != 'geom':
-                gdf = gdf.rename_geometry('geom')
+        msg = f"Loading [cyan]{filename}[/cyan] (Layer: [bold]{layer_name}[/bold]) into table '[green]{table_name}[/green]'..."
+        with console.status(msg, spinner="dots"):
+            try:
+                # Read GeoJSON using Geopandas
+                gdf = gpd.read_file(filepath)
                 
-            # If the GeoJSON already has an 'id' property, rename it to avoid conflicting
-            # with the 'id' index column we want to generate for PostGIS
-            if 'id' in gdf.columns:
-                gdf = gdf.rename(columns={'id': 'original_id'})
+                # Ensure the geometry column is named 'geom' to stay consistent with other tables
+                if 'geometry' in gdf.columns and gdf.geometry.name != 'geom':
+                    gdf = gdf.rename_geometry('geom')
+                    
+                # If the GeoJSON already has an 'id' property, rename it to avoid conflicting
+                # with the 'id' index column we want to generate for PostGIS
+                if 'id' in gdf.columns:
+                    gdf = gdf.rename(columns={'id': 'original_id'})
+                    
+                # Write to PostGIS
+                gdf.to_postgis(
+                    name=table_name,
+                    con=engine,
+                    if_exists='replace',
+                    index=True,
+                    index_label='id'
+                )
+                console.print(f"[bold green]✓[/bold green] Successfully loaded [bold]{len(gdf)}[/bold] features into '[cyan]{table_name}[/cyan]'.")
                 
-            # Write to PostGIS
-            gdf.to_postgis(
-                name=table_name,
-                con=engine,
-                if_exists='replace',
-                index=True,
-                index_label='id'
-            )
-            print(f"Successfully loaded {len(gdf)} features into '{table_name}'.")
-            
-        except Exception as e:
-            print(f"Error loading {filename}: {e}")
+            except Exception as e:
+                console.print(f"[bold red]✗ Error loading {filename}:[/bold red] {e}")
 
 if __name__ == "__main__":
     db_user = os.getenv("POSTGRES_USER", "postgres")
