@@ -57,18 +57,12 @@ DATABASE_URL = f"postgresql+asyncpg://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{D
 
 engine = create_async_engine(
     DATABASE_URL, 
-    pool_pre_ping=True,  # Verify connection health before checkout
-    pool_recycle=300,    # Recycle connections every 5 minutes
+    pool_pre_ping=True,
+    pool_recycle=300,
     pool_size=10,
     max_overflow=20,
     connect_args={
-        "command_timeout": 60,  # Timeout for heavy spatial queries
-        "server_settings": {
-            "keepalives": "1",
-            "keepalives_idle": "30",
-            "keepalives_interval": "10",
-            "keepalives_count": "5",
-        }
+        "command_timeout": 60
     },
     echo=False
 )
@@ -156,7 +150,7 @@ async def get_layer_data(table_name: str, db: AsyncSession = Depends(get_db)):
 async def estimate_level(db: AsyncSession, table_name: str, lat: float, lng: float):
     query = text(f"""
         SELECT contour, 
-               ST_Distance(geom::geography, ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography) as dist
+        ST_Distance(geom::geography, ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography) as dist
         FROM "{table_name}"
         WHERE contour IS NOT NULL
         ORDER BY geom <-> ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)
