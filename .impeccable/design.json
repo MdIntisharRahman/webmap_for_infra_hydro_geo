@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-25T14:30:00Z",
+  "title": "Design System: Webmap",
+  "extensions": {
+    "colorMeta": {
+      "primary": { "role": "primary", "displayName": "Deep Ocean", "canonical": "#0d2838", "tonalRamp": ["#03090c", "#051119", "#081a25", "#0d2838", "#1c3c50", "#2c5169", "#43728f", "#78a7c2"] },
+      "primary-light": { "role": "secondary", "displayName": "Maritime Blue", "canonical": "#2d5e7c", "tonalRamp": ["#0b1820", "#163041", "#214761", "#2d5e7c", "#417a9e", "#5f95b6", "#87b2cd", "#b8d4e5"] },
+      "neutral-bg": { "role": "neutral", "displayName": "Base Canvas", "canonical": "#fdfbf7", "tonalRamp": ["#363025", "#5c523e", "#86785e", "#ada187", "#cbc3b1", "#e3ded3", "#f4f2eb", "#fdfbf7"] },
+      "panel-bg": { "role": "neutral", "displayName": "Glass Panel", "canonical": "rgba(255, 255, 255, 0.34)" },
+      "panel-border": { "role": "neutral", "displayName": "Panel Border", "canonical": "rgba(82, 82, 82, 0.847)" }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Primary panel titles and logos." },
+      "body": { "displayName": "Body", "purpose": "Standard interface controls and text." },
+      "label": { "displayName": "Label", "purpose": "Secondary titles and metadata." }
+    },
+    "shadows": [
+      { "name": "ambient-float", "value": "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05)", "purpose": "Ambient Drop Shadow to lift glass panels." }
+    ]
+  },
+  "components": [
+    {
+      "name": "Glass Panel",
+      "kind": "card",
+      "refersTo": "panel-glass",
+      "description": "The default floating container for all map overlay controls.",
+      "html": "<div class=\"ds-panel-glass\"><h1 class=\"ds-panel-title\">Layers</h1><p class=\"ds-panel-desc\">Map data settings.</p></div>",
+      "css": ".ds-panel-glass { background: rgba(255, 255, 255, 0.34); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 2px solid rgba(82, 82, 82, 0.847); border-radius: 6px; padding: 12px 20px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05); font-family: 'Inter', sans-serif; color: #313845; } .ds-panel-title { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 18px; margin: 0 0 4px 0; color: #313845; } .ds-panel-desc { font-family: 'Inter', sans-serif; font-size: 12px; color: #69707a; font-weight: 500; margin: 0; }"
+    },
+    {
+      "name": "Primary Badge",
+      "kind": "chip",
+      "refersTo": "badge-primary",
+      "description": "Small bold identifier, typically used for logos or key statuses.",
+      "html": "<div class=\"ds-badge\">GEO</div>",
+      "css": ".ds-badge { display: inline-block; background: #0d2838; color: #ffffff; font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 16px; padding: 8px 12px; border-radius: 4px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Glass Command Center",
+    "overview": "The interface acts as a transparent lens over complex geospatial data. The UI recedes to let the map shine, utilizing glassmorphism heavily to maintain context while keeping controls highly legible. It is a sleek and modern command center that balances a clean analyst workspace with tactical functionality.",
+    "keyCharacteristics": [
+      "High transparency to maximize map visibility.",
+      "Crisp, restrained typography.",
+      "Small radii and precise borders.",
+      "Floating layered architecture."
+    ],
+    "rules": [
+      {
+        "name": "The Map Priority Rule",
+        "body": "Solid opaque backgrounds are prohibited for floating map controls. If an element sits above the map, it must use the Glass Panel background to preserve geospatial context.",
+        "section": "colors"
+      }
+    ],
+    "dos": [
+      "Do use backdrop-filter: blur(12px) for all floating panels.",
+      "Do constrain corner radii to 4px or 6px for a sleek, technical feel."
+    ],
+    "donts": [
+      "Don't use solid opaque backgrounds for elements placed over the map.",
+      "Don't use highly saturated colors outside the defined Deep Ocean/Maritime Blue range."
+    ]
+  }
+}

@@ -1,0 +1,128 @@
+Kaliganga (Manikganj)
+h clearance 25
+v clearance 5
+route class IV
+remarks Dokkhin Balukanda
+river id NC-9
+min depth 0.2
+upazila 2 Manikganj Sadar, Singair, Nawabganj
+district 2 Manikganj, Dhaka
+ex drft ch 0.2
+exi dft rv 1.3
+route name Hazratpur - Paragan - Tora Shajani
+seasionali Perennial
+shape le 156.54207643
+
+CASE
+WHEN  "f_class_name" ='S' THEN '#005dff'
+WHEN  "f_class_name" ='I' THEN '#ffef00'
+WHEN  "f_class_name" ='II' THEN '#fffd0d' 
+WHEN  "f_class_name" ='III' THEN '#f8ff41'
+WHEN  "f_class_name" ='IV' THEN '#effd51'
+WHEN  "f_class_name" ='V' THEN '#edfa60'
+ELSE '#00b3ee'
+END
+
+CASE
+WHEN  "f_class_name" ='S' THEN 200
+WHEN  "f_class_name" ='I' THEN 175
+WHEN  "f_class_name" ='II' THEN 150 
+WHEN  "f_class_name" ='III' THEN 125
+WHEN  "f_class_name" ='IV' THEN 100
+WHEN  "f_class_name" ='V' THEN 75
+ELSE 0
+END
+
+CASE
+WHEN "re_class" = 'I_S' THEN 'S'
+WHEN "re_class" = 'I' THEN 'I'
+WHEN "re_class" = 'II' THEN 'II'
+WHEN "re_class" = 'III' THEN 'III'
+WHEN "re_class" = 'IV' THEN 'IV'
+WHEN "re_class" = 'V' THEN 'V'
+ELSE "class_lad"
+END
+
+#0028e4
+#1342ff
+
+CASE
+WHEN regexp_match("type", 'Major')=1 THEN '#0028e4'
+WHEN regexp_match("type", 'Other')=1 THEN '#385ffc'
+ELSE '#0019b0'
+END
+
+CASE
+WHEN regexp_match("type", 'Major')=1 THEN 100
+WHEN regexp_match("type", 'Other')=1 THEN 100
+ELSE 0
+END
+
+'[river_name, Name], [type, Type]'
+
+CASE
+WHEN "re_class" = 'I_S' THEN 'S'
+WHEN "re_class" = 'I' THEN 'I'
+WHEN "re_class" = 'II' THEN 'II'
+WHEN "re_class" = 'III' THEN 'III'
+WHEN "re_class" = 'IV' THEN 'IV'
+WHEN "re_class" = 'V' THEN 'V'
+ELSE "class_lad"
+END
+
+Now into the maps I have created some new fields-----------
+**keys: the keys contain the pair [field, Name] => The field will be the data and the name will be the name of the data for display
+these keys are what will appear in the toolbox as they do now. The display convention will be the same as it is now. 'See More' rule will remain the same.
+The first field, name pair will be the header, and of course the name of it need not be shown as it is now.
+
+**f_class_name: f_class_name is the features class name. Whenever in a map attributes there is this f_class_name it means the legends need to be shown as with current display with the RHD Road Network classification,
+everything should follow the RHD Road classification display rules that are in place now.
+
+**f_class_color: f_class_color is the color for the features. the features will be displayed with this color. 
+
+**f_class_weight: This dictates the weight of the features in percentage. If the value is 0, then that feature will be hidden. 
+
+Now this convention is done so that there is a general system which reads everything from the map data and nothing needs to be fixed afterward in the app js file.
+Again, there will be the engineering palette set as before to be applied for those that does not have this fields.
+In cases where there are no such fields then the common palette will be applied. 
+
+There will be max 4 legends (no is defined by the number of classes in f_class_name) be shown at once below the layer name, just as it is shown currently with RHD Road Network layer.
+When there are more than 4 such classes/legends 3 of them will be shown and there will be a circular button with the height of the texts. If that button is clicked a panel will appear at the right side with max height same as the height of the side panel at the left. Let's call it second panel. It will hover up over just as the side panel does now. Second panel will list all the classes and their respective display colors. The contents will be arranged from top to bottom and depending on the number of contents to accommodate—the second panel will be a scrollable one. This second panel will have a name at the bottom as header; the name being same as the layer name. In colors and behavior this second panel will be the same as that of the existing side panel. Only difference is that this second panel will have the pin button already activated when it comes off. Again, this second panel will not have any always visible part---because it only comes off when button from the side panel is clicked. Whenever this second panel appears the side panels pin will go deactivated and the panel will slide of to the side. However, when the second panel is already hovered and pinned if one can go for the side panel, bring it up and pin it too.
+
+It's better to keep the legends in one line, and if it overflows then there will the space for the round button and
+the contents will be cut from there to accommodate the button.
+Again, as the 0 weight features are hidden, in the details of the second panel there will be (hidden) written after
+the legend.
+
+One thing about the tooltip:
+In the tooltip all info specified in the keys field are shown.
+There's a little catch the name of the info will be the second member of each pair. That means the first memeber of
+each pair is the value and the name of that value is the second member of the pair. Update the code accordingly.
+
+One more thing describe all the map fields that will be used and their significance, effects in the README.md file as
+well.
+
+One more thing the first pair will be the header (that relatively large text) of the tooltip, that however is not
+  being displayed. The labels are not as specified by the second member of the pair. Update!
+
+  \ of course for the first pair the label won't be necessary.
+
+  I guess it's still not fixed. The parsing is somewhere problematic?
+
+  Now it's fantastic.
+  One thing that caught my eye is that, when the SLWL is 0, no value of the contour is shown in the tooltip, perhaps the
+  same for SHWL 0 value. Before going to edit codes let's be sure if it's intentional or not? What is causing it? Should
+  we specifically bringe change in the code just to update this behavior? OR, is it becasue we forgot something in the
+  code?
+
+  I think the slwl 0 value still out of display. Just make sure when info are being taken the 0 values are not treated
+  as empty. There are 'NULL' and Empty String values for falsy flags.
+
+   Now the README.md file needs a little update I think. Be elaborative and exemplify the things. Because it serves as
+  the prime documentation. If it's readable and explicitly explanative then one will quickly understand what to do as to
+  update the code or the maps.
+  "A JSON string/array containing pairs of [Value, Label]. The UI reads this to dynamically construct the tooltip. The
+  first pair is always extracted and used as the large header for the tooltip. The subsequent pairs are rendered in the
+  body (with built-in "See More" truncation for >3 items)."
+  The text above is a bit misleading, update and enhance.
+  Do exemplify for better and to make the README.md an effective tool for understanding the whole project.

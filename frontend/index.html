@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RHD Infrastructure Webmap</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css?v=4">
+</head>
+<body>
+    <div id="map"></div>
+
+    <!-- Small Header -->
+
+    <header class="app-header">
+        <div class="logo">RHD</div>
+        <div class="header-titles">
+            <h1>INFRASTRUCTURE & GEO PORTAL</h1>
+            <p>Bridge Engineering Unit</p>
+        </div>
+    </header>
+
+
+    <!-- Left Hover Control Panel -->
+    <div class="side-panel-container">
+        <div class="side-panel">
+            <div class="side-header">
+                <h2>MAP CONTROLS</h2>
+                <div id="pin-btn" class="pin-btn" title="Pin Panel">
+                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 17v5"></path>
+                        <path d="M9 10.5V7a3 3 0 0 1 6 0v3.5l2 4.5H7z"></path>
+                    </svg>
+                </div>
+            </div>
+            <div id="layer-list" class="side-layer-list">
+                <div class="loading-state">
+                    <div class="spinner"></div>
+                    <span>Loading maps...</span>
+                </div>
+            </div>
+            <div class="coord-tool">
+                <h3>Level Estimator</h3>
+                <div class="coord-inputs">
+                    <input type="text" id="coord-input" placeholder="e.g. 23.66, 91.06 or 23 45 33, 91 07 45">
+                </div>
+                <button id="coord-btn">Place Marker</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Right Hover Control Panel (Second Panel for extended legends) -->
+    <div class="right-panel-container" id="right-panel-container">
+        <div class="side-panel right-panel">
+            <div id="right-panel-content" class="side-layer-list right-panel-content">
+                <!-- Extended legend items go here -->
+            </div>
+            <div class="side-header right-panel-footer">
+                <h2 id="right-panel-title">Layer Name</h2>
+                <div id="right-pin-btn" class="pin-btn pinned-active" title="Pin Panel">
+                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 17v5"></path>
+                        <path d="M9 10.5V7a3 3 0 0 1 6 0v3.5l2 4.5H7z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Custom Tooltip -->
+    <div id="tooltip" class="tooltip hidden">
+        <div class="tooltip-header">
+            <span class="rhd-ref" id="tooltip-ref"></span>
+            <span class="layer-badge" id="tooltip-layer"></span>
+        </div>
+        <div class="tooltip-body">
+            <h3 id="tooltip-name"></h3>
+            <div class="tooltip-details" id="tooltip-details">
+                <!-- Additional properties dumped here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <script src="app.js?v=10"></script>
+<!-- impeccable-live-start -->
+<script src="http://localhost:8400/live.js?token=124d1af6-b914-4cb8-b54e-50f309aab01d"></script>
+<!-- impeccable-live-end -->
+</body>
+</html>
