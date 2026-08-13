@@ -1,0 +1,25 @@
+# Exported from Render on 2026-08-13T22:09:56Z
+version: "1"
+services:
+- type: web
+  name: webmap_for_infra_hydro_geo
+  runtime: docker
+  repo: https://github.com/MdIntisharRahman/webmap_for_infra_hydro_geo
+  plan: free
+  envVars:
+  - key: files.txt
+    sync: false
+  - key: POSTGRES_PORT
+    sync: false
+  - key: POSTGRES_HOST
+    sync: false
+  - key: POSTGRES_DB
+    sync: false
+  - key: POSTGRES_PASSWORD
+    sync: false
+  - key: POSTGRES_USER
+    sync: false
+  region: singapore
+  dockerContext: .
+  dockerfilePath: ./Dockerfile
+  autoDeployTrigger: "off"
