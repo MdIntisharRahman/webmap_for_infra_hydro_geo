@@ -1,8 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy import text
 from typing import AsyncGenerator
 import json
@@ -29,22 +28,24 @@ DATABASE_URL = f"postgresql+asyncpg://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{D
 
 engine = create_async_engine(
     DATABASE_URL, 
-    pool_pre_ping=True, # Verify connection health before checkout
-    pool_recycle=300,   # Recycles connections every 5 minutes
+    pool_pre_ping=True,  # Verify connection health before checkout
+    pool_recycle=300,    # Recycles connections every 5 minutes
     pool_size=10,
     max_overflow=20,
     connect_args={
-        "command_timeout":60, # Adjust timeout for heavy spatial queries
-        "server_settings":{
-            "keepalives":"1",
-            "keepalives_idle":"30",
-            "keepalives_interval":"30",
-            "keepalives_interval":"10",
-            "keepalives_count":"5",
-            }
-        },
-    echo=False)
-async_session_maker = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+        "command_timeout": 60,  # Adjust timeout for heavy spatial queries
+        "server_settings": {
+            "keepalives": "1",
+            "keepalives_idle": "30",
+            "keepalives_interval": "10",  # Fixed duplicate key issue
+            "keepalives_count": "5",
+        }
+    },
+    echo=False
+)
+
+# Standardized SQLAlchemy 2.0 Async Session Factory
+async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
 
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
@@ -52,7 +53,7 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
         yield session
 
 
-def slugify(text_val):
+def slugify(text_val: str) -> str:
     text_val = text_val.strip().lower()
     text_val = re.sub(r"[^a-z0-9]+", "_", text_val)
     return text_val.strip("_")
@@ -94,6 +95,7 @@ async def get_layer_data(table_name: str, db: AsyncSession = Depends(get_db)):
     if not re.match(r"^[a-z0-9_]+$", table_name):
         raise HTTPException(status_code=400, detail="Invalid table name")
 
+    # Corrected SQL comments from '#' to '--'
     query = text(f"""
         SELECT jsonb_build_object(
             'type',     'FeatureCollection',
@@ -103,13 +105,13 @@ async def get_layer_data(table_name: str, db: AsyncSession = Depends(get_db)):
             SELECT jsonb_build_object(
                 'type',       'Feature',
                 'id',         id,
-                # 'geometry',   ST_AsGeoJSON(geom)::jsonb,
-                # 'properties', to_jsonb(inputs) - 'geom' - 'id'
-                'geometry', ST_AsGeoJSON(ST_SimplifyPreserveTopology(geom,0.001))::jsonb,
+                -- 'geometry',   ST_AsGeoJSON(geom)::jsonb,
+                -- 'properties', to_jsonb(inputs) - 'geom' - 'id'
+                'geometry',   ST_AsGeoJSON(ST_SimplifyPreserveTopology(geom, 0.001))::jsonb,
                 'properties', to_jsonb(inputs) - 'geom' - 'id'
             ) AS feature
             FROM (SELECT * FROM "{table_name}") inputs
-            ) features;
+        ) features;
     """)
 
     try:
@@ -126,7 +128,7 @@ async def get_layer_data(table_name: str, db: AsyncSession = Depends(get_db)):
 async def estimate_level(db: AsyncSession, table_name: str, lat: float, lng: float):
     query = text(f"""
         SELECT contour, 
-                ST_Distance(geom::geography, ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography) as dist
+               ST_Distance(geom::geography, ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography) as dist
         FROM "{table_name}"
         WHERE contour IS NOT NULL
         ORDER BY geom <-> ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)
@@ -138,8 +140,8 @@ async def estimate_level(db: AsyncSession, table_name: str, lat: float, lng: flo
     if not rows:
         return None
 
-    num = 0
-    den = 0
+    num = 0.0
+    den = 0.0
     for row in rows:
         contour, dist = row
         # Convert meters to km
@@ -168,5 +170,6 @@ async def get_estimate(lat: float, lng: float, db: AsyncSession = Depends(get_db
         print("Error estimating levels:", e)
         raise HTTPException(status_code=500, detail="Error calculating estimations")
 
-# Mount frontend at the root so it serves as a single full-stack web app on cloud platforms
+
+# Mount static assets at root (placed last so dynamic routes take precedence)
 app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
