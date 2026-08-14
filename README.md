@@ -88,5 +88,5 @@ Run `./first_run.sh` to setup the environmen variables, update the maps—basica
 
 ## Deployment & Development
 
-* **Local Development**: Run `./start.sh` to spin up a local Uvicorn backend on port `8484` and a Python HTTP server on `8383`. To add a new layer insert a row in the `Maps/list_of_maps_for_the_webmap_and_their_names.md` file so that the script knows which GeoJSON files are to be loaded and relate names to their corresponding GeoJSON files. Run `./Update_Maps.sh` whenever you add new GeoJSON files. 
+* **Local Development**: Run `./start.sh` to spin up a local Uvicorn backend on port `8484` and a Python HTTP server on `8383`. To add a new layer insert a row in the `Maps/list_of_maps_for_the_webmap_and_their_names.md` file so that the script knows which GeoJSON files are to be loaded and relate names to their corresponding GeoJSON files. Run `./update_Maps.sh` whenever you add new GeoJSON files. 
 * **Production Deployment**: For execution in the web servers a complete `docker-compose.yml` is provided. Read **`web-deployment-instructions.md`** for secure production setup instructions.

@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RHD Infrastructure Webmap</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=4">
+    <link rel="stylesheet" href="resources/leaflet.css" />
+    <link rel="stylesheet" href="resources/fonts.css" />
+    <link rel="stylesheet" href="styles.css?v=6">
 </head>
 <body>
     <div id="map"></div>
@@ -44,6 +44,9 @@
                 <h3>Level Estimator</h3>
                 <div class="coord-inputs">
                     <input type="text" id="coord-input" placeholder="e.g. 23.66, 91.06 or 23 45 33, 91 07 45">
+                    <button id="target-btn" title="Pick coordinate from map" aria-label="Pick coordinate from map">
+                        <img src="resources/target-aim.svg" width="22" height="22" alt="Target icon">
+                    </button>
                 </div>
                 <button id="coord-btn">Place Marker</button>
             </div>
@@ -82,8 +85,8 @@
         </div>
     </div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-    <script src="app.js?v=10"></script>
+    <script src="resources/leaflet.js"></script>
+    <script src="app.js?v=12"></script>
 <!-- impeccable-live-start -->
 <script src="http://localhost:8400/live.js?token=124d1af6-b914-4cb8-b54e-50f309aab01d"></script>
 <!-- impeccable-live-end -->

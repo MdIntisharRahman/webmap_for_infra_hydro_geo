@@ -84,12 +84,19 @@ def load_data(db_url, maps_dir, md_filepath):
                 console.print(f"[bold red]✗ Error loading {filename}:[/bold red] {e}")
 
 if __name__ == "__main__":
-    db_user = os.getenv("POSTGRES_USER", "postgres")
-    db_pass = os.getenv("POSTGRES_PASSWORD", "postgres")
-    db_host = os.getenv("POSTGRES_HOST", "localhost")
-    db_port = os.getenv("POSTGRES_PORT", "5432")
-    db_name = os.getenv("POSTGRES_DB", "webmap")
-    default_db_url = f"postgresql://{db_user}:{db_pass}@{db_host}:{db_port}/{db_name}"
+    env_db_url = os.getenv("DATABASE_URL")
+    if env_db_url:
+        if env_db_url.startswith("postgres://"):
+            default_db_url = env_db_url.replace("postgres://", "postgresql://", 1)
+        else:
+            default_db_url = env_db_url
+    else:
+        db_user = os.getenv("POSTGRES_USER", "postgres")
+        db_pass = os.getenv("POSTGRES_PASSWORD", "postgres")
+        db_host = os.getenv("POSTGRES_HOST", "localhost")
+        db_port = os.getenv("POSTGRES_PORT", "5432")
+        db_name = os.getenv("POSTGRES_DB", "webmap")
+        default_db_url = f"postgresql://{db_user}:{db_pass}@{db_host}:{db_port}/{db_name}"
     
     parser = argparse.ArgumentParser(description='Load GeoJSON maps into PostGIS')
     parser.add_argument('--db', type=str, default=default_db_url, help='Database URL')
