@@ -47,13 +47,24 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-DB_USER = os.getenv("POSTGRES_USER", "postgres")
-DB_PASS = os.getenv("POSTGRES_PASSWORD", "postgres")
-DB_HOST = os.getenv("POSTGRES_HOST", "localhost")
-DB_PORT = os.getenv("POSTGRES_PORT", "5432")
-DB_NAME = os.getenv("POSTGRES_DB", "webmap")
-
-DATABASE_URL = f"postgresql+asyncpg://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+# Handle DATABASE_URL natively injected by Render or setup_db.py
+env_db_url = os.getenv("DATABASE_URL")
+if env_db_url:
+    # SQLAlchemy asyncpg requires 'postgresql+asyncpg://' instead of 'postgres://' or 'postgresql://'
+    if env_db_url.startswith("postgres://"):
+        DATABASE_URL = env_db_url.replace("postgres://", "postgresql+asyncpg://", 1)
+    elif env_db_url.startswith("postgresql://"):
+        DATABASE_URL = env_db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+    else:
+        DATABASE_URL = env_db_url
+else:
+    # Fallback to manual construction
+    DB_USER = os.getenv("POSTGRES_USER", "postgres")
+    DB_PASS = os.getenv("POSTGRES_PASSWORD", "postgres")
+    DB_HOST = os.getenv("POSTGRES_HOST", "localhost")
+    DB_PORT = os.getenv("POSTGRES_PORT", "5432")
+    DB_NAME = os.getenv("POSTGRES_DB", "webmap")
+    DATABASE_URL = f"postgresql+asyncpg://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
 engine = create_async_engine(
     DATABASE_URL, 
@@ -153,8 +164,8 @@ async def estimate_level(db: AsyncSession, table_name: str, lat: float, lng: flo
         ST_Distance(geom::geography, ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography) as dist
         FROM "{table_name}"
         WHERE contour IS NOT NULL
-        ORDER BY geom <-> ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)
-        LIMIT 3
+        ORDER BY geom::geography <-> ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography
+        LIMIT 5
     """)
     result = await db.execute(query, {"lat": lat, "lng": lng})
     rows = result.fetchall()

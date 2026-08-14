@@ -228,6 +228,19 @@ window.featureTooltipLocked = false;
 window.activeFeatureLayer = null;
 
 map.on('click', (e) => {
+    // Check if Target Mode is active for Level Estimator
+    const targetBtn = document.getElementById('target-btn');
+    if (targetBtn && targetBtn.classList.contains('active')) {
+        const lat = e.latlng.lat.toFixed(6);
+        const lng = e.latlng.lng.toFixed(6);
+        document.getElementById('coord-input').value = `${lat}, ${lng}`;
+        
+        targetBtn.classList.remove('active');
+        document.getElementById('map').classList.remove('crosshair-cursor');
+        document.getElementById('coord-btn').click(); // Auto-estimate!
+        return;
+    }
+
     if (e.originalEvent && e.originalEvent.target && e.originalEvent.target.closest('#tooltip')) {
         return;
     }
@@ -428,6 +441,12 @@ async function fetchAndRenderLayers() {
 
                     layer.on({
                         click: (e) => {
+                            // Let click pass to map if target mode is active
+                            const targetBtn = document.getElementById('target-btn');
+                            if (targetBtn && targetBtn.classList.contains('active')) {
+                                return; // Do not stop propagation
+                            }
+                            
                             L.DomEvent.stopPropagation(e);
                             
                             if (window.activeFeatureLayer && window.activeFeatureLayer !== layer && window.activeFeatureLayer.resetStyleFunc) {
@@ -557,7 +576,15 @@ document.getElementById('coord-btn').addEventListener('click', async () => {
     const { lat, lng } = coords;
     
     if (currentMarker) map.removeLayer(currentMarker);
-    currentMarker = L.marker([lat, lng]).addTo(map);
+    
+    const customIcon = L.icon({
+        iconUrl: 'resources/placemarker.svg',
+        iconSize: [78, 78],
+        iconAnchor: [39, 78],
+        tooltipAnchor: [0, -78]
+    });
+    
+    currentMarker = L.marker([lat, lng], { icon: customIcon }).addTo(map);
     map.setView([lat, lng], 13);
     
     try {
@@ -568,8 +595,8 @@ document.getElementById('coord-btn').addEventListener('click', async () => {
         let slwlText = data.slwl !== null ? `${data.slwl.toFixed(2)} m` : "N/A";
         
         const popupContent = `
-            <div style="font-family: var(--font-body); font-size: 13px;">
-                <strong style="color: var(--accent-blue); text-transform: uppercase;">Estimated Levels</strong><br>
+            <div style="font-family: var(--font-display); font-size: 13px;">
+                <strong style="color: var(--accent-blue); font-size: 15px; text-transform: uppercase;">Estimated Levels</strong><br>
                 <span style="color: var(--text-dim);">SHWL:</span> <b>${shwlText}</b><br>
                 <span style="color: var(--text-dim);">SLWL:</span> <b>${slwlText}</b>
             </div>
@@ -586,3 +613,18 @@ document.getElementById('coord-btn').addEventListener('click', async () => {
         currentMarker.bindTooltip("Error calculating estimation.").openTooltip();
     }
 });
+
+// Target Mode Logic
+const targetBtn = document.getElementById('target-btn');
+if (targetBtn) {
+    targetBtn.addEventListener('click', () => {
+        const isActive = targetBtn.classList.contains('active');
+        if (!isActive) {
+            targetBtn.classList.add('active');
+            document.getElementById('map').classList.add('crosshair-cursor');
+        } else {
+            targetBtn.classList.remove('active');
+            document.getElementById('map').classList.remove('crosshair-cursor');
+        }
+    });
+}

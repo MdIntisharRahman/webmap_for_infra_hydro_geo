@@ -123,6 +123,7 @@ body {
 }
 
 .side-panel-container:hover,
+.side-panel-container:focus-within,
 .side-panel-container.pinned {
     transform: translateY(-50%) translateX(0); /* Show completely */
 }
@@ -143,6 +144,7 @@ body {
 }
 
 .side-panel-container:hover::after,
+.side-panel-container:focus-within::after,
 .side-panel-container.pinned::after {
     opacity: 0;
 }
@@ -372,6 +374,29 @@ body {
 
 .coord-tool button:hover {
     background: #63b3ed;
+}
+
+#target-btn {
+    width: 34px;
+    flex-shrink: 0;
+    padding: 0;
+    background: #f1f5f9;
+    color: var(--text-dim);
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#target-btn:hover, #target-btn.active {
+    background: var(--accent-blue);
+    color: white;
+    border-color: var(--accent-blue);
+}
+
+.crosshair-cursor {
+    cursor: crosshair !important;
 }
 
 .loading-state {
