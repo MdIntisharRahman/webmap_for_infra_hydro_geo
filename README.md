@@ -25,11 +25,11 @@ The application uses a unique configuration-as-documentation approach.
 Built with **FastAPI** and **SQLAlchemy (Async)**, the backend acts as a highly optimized bridge between PostGIS and the Frontend.
 * **Dynamic Layer Discovery (`/api/layers`)**: Reads the markdown manifest and tells the frontend exactly which map layers are available to render.
 * **Native GeoJSON Serialization (`/api/layers/{table_name}`)**: Instead of fetching rows and converting them to JSON in Python, the backend offloads the heavy lifting to PostGIS. It uses `ST_AsGeoJSON` and `jsonb_build_object` to construct massive `FeatureCollection` payloads entirely within the database engine, resulting in extremely fast response times.
-* **Water Level Estimator (`/api/estimate_water_levels`)**: Given a latitude and longitude, the API queries the `shwl` (Stormwater High Water Level) and `slwl` (Stormwater Low Water Level) tables. It finds the 3 closest contour lines using the PostGIS `<->` operator and calculates an estimated water level using **Inverse Distance Weighting (IDW)**.
+* **Water Level Estimator (`/api/estimate_water_levels`)**: Given a latitude and longitude, the API queries the `shwl` (Stormwater High Water Level) and `slwl` (Stormwater Low Water Level) tables. It performs a **true geodesic K-Nearest Neighbor (KNN) search** (`geom::geography <-> ...`) to find the 5 closest contour lines and calculates an estimated water level using robust **Inverse Distance Weighting (IDW)**.
 
 ### 3. The Frontend (`frontend/app.js`)
 * **Leaflet.js**: Handles the heavy rendering of vector layers over a CARTO Voyager basemap.
-* **Coordinate Parsing**: A robust regex-based parser that allows users to input coordinates in almost any format (Decimal, DMS, Symbols) and instantly drops a marker on the map to fetch water level estimations.
+* **Coordinate Parsing & Target Acquisition**: A robust regex-based parser that allows users to input coordinates manually (Decimal, DMS, Symbols), or visually acquire them by activating a dynamic **Target crosshair tool** to click directly on the map, penetrating through polygon layers to effortlessly grab precise coordinates and automatically trigger water level estimations.
 * **Data-Driven Theming & Tooltips**: The frontend is completely decoupled from hardcoded logic. Styling, legends, and interactive tooltips are driven entirely by specific properties embedded within the GeoJSON features themselves. To customize how a layer behaves on the webmap, you simply add these specific fields to your GIS attribute table:
     * **`keys`**: A string containing bracketed pairs that maps a database property field to a human-readable label: `[field_name, Display Label]`. The UI's custom parsing engine reads this to dynamically construct the tooltip. 
       * **Example Format**: `[road_name, Road Name], [width, Road Width], [surface, Surface Type]`
@@ -54,7 +54,7 @@ Built with **FastAPI** and **SQLAlchemy (Async)**, the backend acts as a highly 
 The project utilizes a unified environment variable system to manage database credentials seamlessly across local and production environments[cite: 1].
 
 * **Local Development**: `uv` automatically loads the `.env` file[cite: 1]. The backend connects to the database via `POSTGRES_HOST=localhost`[cite: 1].
-* **Production (Docker)**: `docker-compose.yml` consumes the exact same `.env` file to configure the PostGIS container, while intelligently overriding `POSTGRES_HOST` to `db` for internal container networking[cite: 1].
+* **Production (Docker & PaaS)**: `docker-compose.yml` consumes the exact same `.env` file to configure the PostGIS container, while intelligently overriding `POSTGRES_HOST` to `db` for internal container networking. Alternatively, if hosted on a PaaS like Render, the app prioritizes a single injected `DATABASE_URL` string over individual credential fields.
 
 Both the async API backend and the synchronous map ingestion scripts dynamically parse these granular credentials to build their respective connection strings[cite: 1].
 
@@ -70,7 +70,8 @@ Managed via `uv` (see `pyproject.toml`):
 * **psycopg2-binary**: Synchronous fallback/adapter utilized by pandas/geopandas for data insertion.
 
 ### Frontend
-* **Leaflet.js** (loaded via CDN): Core mapping library.
+* **Leaflet.js** (Self-Hosted): Core mapping library.
+* **Offline Autonomy**: All frontend assets (Leaflet CSS/JS, Google Fonts, SVGs) are fully localized inside `frontend/resources/`, strictly decoupling the map from external CDNs that could fail or change policies.
 * **Vanilla JavaScript & CSS**: No heavy frontend frameworks (React/Vue/Angular) are required, ensuring lightning-fast load times.
 
 ### Infrastructure (Docker)
