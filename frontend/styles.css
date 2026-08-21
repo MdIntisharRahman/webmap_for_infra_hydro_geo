@@ -302,29 +302,7 @@ body {
     margin-bottom: 20px;
 }
 
-#layer-list {
-    max-height: 33vh;
-    overflow-y: auto;
-    overflow-x: hidden;
-    padding-right: 4px;
-}
-#layer-list::-webkit-scrollbar {
-    width: 6px;
-}
-#layer-list::-webkit-scrollbar-track {
-    background: transparent;
-}
-#layer-list::-webkit-scrollbar-thumb {
-    background: transparent;
-    border-radius: 4px;
-    transition: background 0.3s ease;
-}
-#layer-list:hover::-webkit-scrollbar-thumb {
-    background: rgba(2, 132, 199, 0.4);
-}
-#layer-list::-webkit-scrollbar-thumb:hover {
-    background: rgba(2, 132, 199, 0.7);
-}
+
 
 /* Coordinate Tool Styling */
 .coord-tool {
@@ -338,22 +316,26 @@ body {
 }
 
 .coord-tool h3 {
-    font-size: 12px;
-    margin-bottom: 8px;
-    color: var(--text-main);
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--accent-blue-deep);
+    margin: 0 0 8px 0;
+    letter-spacing: 1.5px;
     text-transform: uppercase;
-    letter-spacing: 1px;
 }
 
 .coord-inputs {
     display: flex;
     gap: 8px;
     margin-bottom: 8px;
+    align-items: center;
 }
 
 .coord-inputs input {
     width: 100%;
-    padding: 6px 8px;
+    height: 28px;
+    padding: 0 8px;
     border: 1px solid #e2e8f0;
     border-radius: 6px;
     font-size: 12px;
@@ -366,7 +348,7 @@ body {
     background: var(--accent-blue);
     color: white;
     border: none;
-    /* border-radius: 6px; */
+    border-radius: 6px;
     cursor: pointer;
     font-weight: 600;
     transition: background 0.2s;
@@ -377,22 +359,25 @@ body {
 }
 
 #target-btn {
-    width: 34px;
+    width: 35px;
+    height: 35px;
     flex-shrink: 0;
     padding: 0;
     background: #f1f5f9;
     color: var(--text-dim);
     border: 1px solid #cbd5e1;
-    border-radius: 6px;
+    border-radius: 50%;
     display: flex;
     justify-content: center;
     align-items: center;
+    transition: all 0.2s ease;
 }
 
 #target-btn:hover, #target-btn.active {
     background: var(--accent-blue);
     color: white;
     border-color: var(--accent-blue);
+    transform: scale(1.05);
 }
 
 .crosshair-cursor {
@@ -431,6 +416,7 @@ body {
     background: transparent;
     border: 1px solid var(--panel-border);
     padding: 10px 14px;
+    margin: 4px 6px;
     border-radius: 4px;
     transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     cursor: pointer;
@@ -543,10 +529,13 @@ body {
 /* Tooltip Revamp */
 .tooltip {
     position: absolute;
+    top: 0;
+    left: 0;
     z-index: 1100;
     pointer-events: auto;
     background: var(--panel-bg);
     backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border: 1px solid var(--panel-border);
     border-radius: 6px;
     padding: 12px 20px;
@@ -669,3 +658,289 @@ body {
     border-top-right-radius: 8px;
 }
 .leaflet-control-attribution a { color: var(--accent-blue) !important; }
+
+/* Tabs and Content Wrapper */
+.tabs-and-content {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+#tab-content-area {
+    flex: 1;
+    min-width: 0;
+    max-height: 33vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 4px;
+}
+
+#tab-content-area::-webkit-scrollbar {
+    width: 6px;
+}
+#tab-content-area::-webkit-scrollbar-track {
+    background: transparent;
+}
+#tab-content-area::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 4px;
+    transition: background 0.3s ease;
+}
+#tab-content-area:hover::-webkit-scrollbar-thumb {
+    background: rgba(2, 132, 199, 0.4);
+}
+#tab-content-area::-webkit-scrollbar-thumb:hover {
+    background: rgba(2, 132, 199, 0.7);
+}
+
+/* Vertical Fluid Tabs */
+.fluid-tabs.vertical-tabs {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    background: transparent;
+    border-radius: 0;
+    margin-bottom: 0;
+    padding: 0;
+    border-right: 2px solid #e2e8f0;
+    max-height: 33vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+.fluid-tabs.vertical-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.fluid-tabs.vertical-tabs .tab {
+    flex: none;
+    text-align: center;
+    padding: 16px 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-dim);
+    cursor: pointer;
+    position: relative;
+    z-index: 2;
+    transition: color 0.3s ease;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+}
+
+.fluid-tabs .tab.active {
+    color: var(--accent-blue);
+}
+
+.tab-slider {
+    position: absolute;
+    right: -2px;
+    top: 0;
+    width: 3px;
+    background: var(--accent-blue);
+    border-radius: 4px;
+    z-index: 1;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 0 8px rgba(2, 132, 199, 0.4);
+}
+
+#tab-content-area.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+#tab-content-area.no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+/* Tab Content Areas */
+.tab-content {
+    display: none;
+}
+.tab-content.active {
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+#about-us-content {
+    padding: 0 4px;
+    font-size: 11px;
+    line-height: 1.5;
+    color: var(--text-main);
+    background: transparent;
+    border: none;
+    min-height: 100%;
+}
+#about-us-content h1, #about-us-content h2, #about-us-content h3 {
+    margin-top: 16px;
+    margin-bottom: 8px;
+    color: var(--accent-blue);
+    font-size: 1.2em;
+}
+#about-us-content p {
+    margin-bottom: 12px;
+}
+#about-us-content ul {
+    margin-bottom: 12px;
+    padding-left: 20px;
+}
+#about-us-content li {
+    margin-bottom: 6px;
+}
+
+#custom-estimator-tooltip {
+    position: absolute;
+    z-index: 1100;
+    pointer-events: auto;
+    background: var(--panel-bg);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--panel-border);
+    border-radius: 6px;
+    padding: 12px 20px;
+    width: max-content;
+    max-width: 320px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+/* Custom Estimator Tooltip */
+.custom-estimator-tooltip {
+    background: var(--panel-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    padding: 10px 14px;
+    font-family: var(--font-display);
+    font-size: 12px;
+    color: var(--text-main);
+    width: 260px;
+    white-space: normal;
+}
+.custom-estimator-tooltip .est-header {
+    color: var(--accent-blue);
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    padding-bottom: 4px;
+}
+.custom-estimator-tooltip .est-row {
+    display: flex;
+    margin-bottom: 6px;
+    align-items: flex-start;
+}
+.custom-estimator-tooltip .est-key {
+    color: var(--text-dim);
+    font-weight: 500;
+    width: 100px;
+    flex-shrink: 0;
+}
+.custom-estimator-tooltip .est-val {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    color: var(--text-main);
+    flex: 1;
+    word-break: break-word;
+}
+.custom-estimator-tooltip .est-val.text-val {
+    font-family: var(--font-body);
+    font-size: 11px;
+}
+.custom-estimator-tooltip .est-more-btn {
+    background: #e2e8f0;
+    color: var(--text-dim);
+    border: none;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 10px;
+    cursor: pointer;
+    margin-top: 4px;
+    width: 100%;
+    transition: all 0.2s;
+}
+.custom-estimator-tooltip .est-more-btn:hover {
+    background: var(--accent-blue);
+    color: white;
+}
+.custom-estimator-tooltip .est-hidden-rows {
+    display: none;
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px dashed rgba(0,0,0,0.1);
+}
+.custom-estimator-tooltip .est-hidden-rows.show {
+    display: block;
+}
+
+
+.custom-estimator-popup .leaflet-popup-content-wrapper {
+    background: var(--panel-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    padding: 0;
+}
+.custom-estimator-popup .leaflet-popup-content {
+    margin: 0;
+    padding: 10px 14px;
+    font-family: var(--font-display);
+    font-size: 12px;
+    color: var(--text-main);
+    width: 260px !important;
+    white-space: normal;
+    line-height: 1.4;
+}
+.custom-estimator-popup .leaflet-popup-tip {
+    background: #ffffff; /* Simplest to just leave it white or match panel-bg */
+}
+.custom-estimator-popup .est-header {
+    color: var(--accent-blue);
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    padding-bottom: 4px;
+}
+.custom-estimator-popup .est-row {
+    display: flex;
+    margin-bottom: 6px;
+    align-items: flex-start;
+}
+.custom-estimator-popup .est-key {
+    color: var(--text-dim);
+    font-weight: 500;
+    width: 100px;
+    flex-shrink: 0;
+}
+.custom-estimator-popup .est-val {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    color: var(--text-main);
+    flex: 1;
+    word-break: break-word;
+}
+.custom-estimator-popup .est-val.text-val {
+    font-family: var(--font-body);
+    font-size: 11px;
+}
+
+.custom-estimator-popup .est-hidden-rows {
+    display: none;
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px dashed rgba(0,0,0,0.1);
+}
+.custom-estimator-popup .est-hidden-rows.show {
+    display: block;
+}
+

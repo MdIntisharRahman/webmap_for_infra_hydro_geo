@@ -120,9 +120,19 @@ async def get_layers():
             if len(parts) >= 2:
                 layer_name = parts[1]
                 table_name = slugify(layer_name)
-                layers.append({"name": layer_name, "table": table_name})
+                tab_name = parts[2] if len(parts) >= 3 and parts[2] else "Uncategorized"
+                show_first_raw = parts[3] if len(parts) >= 4 else ""
+                show_first = show_first_raw.strip().lower() in ["yes", "y"]
+                layers.append({"name": layer_name, "table": table_name, "tab": tab_name, "show_first": show_first})
     return layers
 
+@app.get("/api/about_us")
+async def get_about_us():
+    file_path = os.path.join(os.path.dirname(__file__), "..", "about_us.md")
+    if os.path.exists(file_path):
+        with open(file_path, "r", encoding="utf-8") as f:
+            return {"content": f.read()}
+    return {"content": "About us content not found."}
 
 @app.get("/api/layers/{table_name}")
 async def get_layer_data(table_name: str, db: AsyncSession = Depends(get_db)):
@@ -193,12 +203,49 @@ async def estimate_level(db: AsyncSession, table_name: str, lat: float, lng: flo
     return num / den
 
 
+import asyncio
+
 @app.get("/api/estimate_water_levels")
 async def get_estimate(lat: float, lng: float, db: AsyncSession = Depends(get_db)):
     try:
         shwl_val = await estimate_level(db, "shwl", lat, lng)
         slwl_val = await estimate_level(db, "slwl", lat, lng)
-        return {"shwl": shwl_val, "slwl": slwl_val}
+        
+        # Fetch nearby features
+        layers = await get_layers()
+        feature_layers = [lyr for lyr in layers if lyr["table"] not in ["shwl", "slwl"]]
+        
+        nearby_features = {}
+        
+        for lyr in feature_layers:
+            table = lyr["table"]
+            try:
+                # ST_DWithin 100m
+                query = text(f"""
+                    SELECT to_jsonb(inputs) - 'geom' - 'id' as props
+                    FROM "{table}" inputs
+                    WHERE ST_DWithin(geom::geography, ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography, 100)
+                    LIMIT 10
+                """)
+                # Use begin_nested to prevent an error in one layer from killing the whole session
+                async with db.begin_nested():
+                    res = await db.execute(query, {"lat": lat, "lng": lng})
+                    rows = res.fetchall()
+            except Exception:
+                rows = []
+
+            if rows:
+                feature_names = set()
+                for r in rows:
+                    props = r[0]
+                    if not props: continue
+                    val = props.get("f_class_name") or props.get("name") or props.get("Type") or props.get("type") or props.get("feature_name") or props.get("road_name") or props.get("river_name")
+                    if val:
+                        feature_names.add(str(val))
+                if feature_names:
+                    nearby_features[lyr["name"]] = ", <br>".join(feature_names)
+        
+        return {"shwl": shwl_val, "slwl": slwl_val, "nearby": nearby_features}
     except Exception as e:
         print("Error estimating levels:", e)
         raise HTTPException(status_code=500, detail="Error calculating estimations")
