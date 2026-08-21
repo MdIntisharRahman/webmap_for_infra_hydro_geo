@@ -6,7 +6,7 @@
     <title>RHD Infrastructure Webmap</title>
     <link rel="stylesheet" href="resources/leaflet.css" />
     <link rel="stylesheet" href="resources/fonts.css" />
-    <link rel="stylesheet" href="styles.css?v=18">
+    <link rel="stylesheet" href="styles.css?v=19">
 </head>
 <body>
     <div id="map"></div>
@@ -23,7 +23,7 @@
 
 
     <!-- Left Hover Control Panel -->
-    <div class="side-panel-container">
+    <div class="side-panel-container" tabindex="0">
         <div class="side-panel">
             <div class="side-header">
                 <h2>MAP CONTROLS</h2>
@@ -59,7 +59,7 @@
     </div>
     
     <!-- Right Hover Control Panel (Second Panel for extended legends) -->
-    <div class="right-panel-container" id="right-panel-container">
+    <div class="right-panel-container" id="right-panel-container" tabindex="0">
         <div class="side-panel right-panel">
             <div id="right-panel-content" class="side-layer-list right-panel-content">
                 <!-- Extended legend items go here -->
