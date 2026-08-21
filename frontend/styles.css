@@ -944,3 +944,160 @@ body {
     display: block;
 }
 
+/* ============================================================================
+   RESPONSIVE & ADAPTIVE DESIGN
+   ============================================================================ */
+
+/* Touch/Coarse Pointer Adaptations */
+@media (pointer: coarse) {
+    .side-panel-container {
+        transform: translateY(-50%) translateX(calc(-100% + 44px)); 
+    }
+    .side-panel-container::after {
+        width: 6px;
+        right: 19px;
+    }
+}
+
+/* Mobile Devices */
+@media (max-width: 767px) {
+    .app-header {
+        top: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        border-radius: 0;
+        border-top: none;
+        border-left: none;
+        border-right: none;
+        padding: 10px 16px;
+    }
+    .logo {
+        font-size: 16px;
+        padding: 6px 12px;
+    }
+    .header-titles h1 {
+        font-size: 15px;
+        padding-bottom: 2px;
+        margin-bottom: 2px;
+    }
+    .header-titles p {
+        font-size: 10px;
+    }
+
+    /* Map Controls -> Bottom Sheet */
+    .side-panel-container {
+        top: auto;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        transform: translateY(calc(100% - 48px)); 
+        width: 100%;
+        max-height: 70vh;
+        z-index: 1001; 
+        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+    }
+    .side-panel-container:hover,
+    .side-panel-container:focus-within,
+    .side-panel-container.pinned {
+        transform: translateY(0);
+    }
+    .side-panel-container::after {
+        top: 8px;
+        left: 50%;
+        right: auto;
+        transform: translateX(-50%);
+        width: 40px;
+        height: 5px;
+        background: rgba(0,0,0,0.2);
+    }
+    .side-panel {
+        border-radius: 16px 16px 0 0;
+        border: 1px solid var(--panel-border);
+        border-bottom: none;
+        padding: 24px 16px 16px 16px;
+    }
+
+    /* Tabs Horizontal Scroll */
+    .tabs-and-content {
+        flex-direction: column;
+    }
+    .fluid-tabs.vertical-tabs {
+        flex-direction: row;
+        width: 100%;
+        overflow-x: auto;
+        overflow-y: hidden;
+        border-right: none;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        margin-bottom: 8px;
+        padding: 0 4px;
+        -webkit-overflow-scrolling: touch;
+    }
+    .fluid-tabs.vertical-tabs .tab {
+        writing-mode: horizontal-tb;
+        transform: none;
+        padding: 10px 16px;
+        white-space: nowrap;
+        flex: 0 0 auto;
+    }
+    
+    #tab-content-area {
+        max-height: 250px;
+    }
+
+    /* Right Panel (Extended Legend) -> Bottom Sheet */
+    .right-panel-container {
+        top: auto;
+        bottom: 0;
+        right: 0;
+        left: 0;
+        transform: translateY(100%) translateX(0); 
+        width: 100%;
+        max-height: 50vh;
+        z-index: 1002;
+    }
+    .right-panel-container.pinned {
+        transform: translateY(0) translateX(0);
+    }
+    .right-panel {
+        border-radius: 16px 16px 0 0 !important;
+        border: 1px solid var(--panel-border) !important;
+        border-bottom: none !important;
+        border-left: none !important;
+        padding: 24px 16px 16px 16px;
+    }
+    
+    /* Move title to the top of the bottom sheet */
+    .right-panel-footer {
+        order: -1;
+        margin-top: 0;
+        margin-bottom: 12px;
+        border-top: none;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        padding-top: 0;
+        padding-bottom: 12px;
+    }
+    
+    .right-panel-container::after {
+        content: '';
+        position: absolute;
+        top: 8px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 40px;
+        height: 5px;
+        background: rgba(0,0,0,0.2);
+        border-radius: 4px;
+        z-index: 1003;
+    }
+
+    .leaflet-control-zoom {
+        margin-bottom: 60px !important; 
+        margin-right: 12px !important;
+    }
+    
+    .custom-estimator-popup .leaflet-popup-content {
+        width: 260px !important;
+    }
+}
+
