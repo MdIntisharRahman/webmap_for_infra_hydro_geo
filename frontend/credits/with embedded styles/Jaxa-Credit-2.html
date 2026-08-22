@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Engineering Web Map - ALOS World 3D (AW3D30)</title>
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <style>
+    /* Reset & Base Layout */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body, html { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; color: #1e293b; }
+    
+    #map {
+      width: 100%;
+      height: 100vh;
+      z-index: 1;
+    }
+
+    /* Modal Backdrop */
+    .disclaimer-modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(4px);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.25rem;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.25s ease, visibility 0.25s ease;
+    }
+
+    .disclaimer-modal-backdrop.is-active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* Modal Box */
+    .disclaimer-modal {
+      background: #ffffff;
+      border-radius: 10px;
+      max-width: 720px;
+      width: 100%;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      display: flex;
+      flex-direction: column;
+      max-height: 90vh;
+      border: 1px solid #cbd5e1;
+    }
+
+    .modal-header {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #f8fafc;
+      border-top-left-radius: 10px;
+      border-top-right-radius: 10px;
+    }
+
+    .modal-header h3 {
+      font-size: 1.15rem;
+      color: #0f172a;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .modal-header .dataset-badge {
+      background-color: #e0f2fe;
+      color: #0369a1;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.25rem 0.6rem;
+      border-radius: 9999px;
+      text-transform: uppercase;
+      letter-spacing: 0.025em;
+    }
+
+    .modal-body {
+      padding: 1.5rem;
+      overflow-y: auto;
+      font-size: 0.875rem;
+      line-height: 1.6;
+      color: #334155;
+    }
+
+    .modal-body h4 {
+      font-size: 0.95rem;
+      color: #0f172a;
+      margin-top: 1.25rem;
+      margin-bottom: 0.4rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .modal-body h4:first-child {
+      margin-top: 0;
+    }
+
+    .modal-body ul {
+      margin-left: 1.25rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .modal-body li {
+      margin-bottom: 0.35rem;
+    }
+
+    /* Links Section Grid */
+    .links-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 0.75rem;
+      margin-top: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .link-card {
+      display: block;
+      padding: 0.75rem 1rem;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      text-decoration: none;
+      color: #1e293b;
+      transition: all 0.2s ease;
+    }
+
+    .link-card:hover {
+      background: #f1f5f9;
+      border-color: #0284c7;
+      transform: translateY(-1px);
+    }
+
+    .link-card .card-title {
+      font-weight: 600;
+      color: #0369a1;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .link-card .card-desc {
+      font-size: 0.75rem;
+      color: #64748b;
+      margin-top: 0.25rem;
+    }
+
+    .external-icon {
+      font-size: 0.75rem;
+      color: #94a3b8;
+    }
+
+    /* Official JAXA Link Banner Container */
+    .jaxa-banner-container {
+      background: #f1f5f9;
+      border: 1px dashed #cbd5e1;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-top: 0.75rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 0.5rem;
+    }
+
+    .jaxa-banner-container .banner-caption {
+      font-size: 0.75rem;
+      color: #64748b;
+    }
+
+    .jaxa-banner-link {
+      display: inline-block;
+      transition: opacity 0.2s ease;
+    }
+
+    .jaxa-banner-link:hover {
+      opacity: 0.85;
+    }
+
+    .jaxa-banner-img {
+      width: 200px;
+      height: 40px;
+      display: block;
+      border: 1px solid #e2e8f0;
+      border-radius: 2px;
+    }
+
+    /* Modal Footer */
+    .modal-footer {
+      padding: 1rem 1.5rem;
+      border-top: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f8fafc;
+      border-bottom-left-radius: 10px;
+      border-bottom-right-radius: 10px;
+    }
+
+    .footer-note {
+      font-size: 0.75rem;
+      color: #64748b;
+    }
+
+    .btn-acknowledge {
+      background-color: #0284c7;
+      color: #ffffff;
+      border: none;
+      padding: 0.55rem 1.25rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.15s ease;
+    }
+
+    .btn-acknowledge:hover {
+      background-color: #0369a1;
+    }
+
+    /* Leaflet Attribution Link */
+    .leaflet-control-attribution a.jaxa-notice-link {
+      font-weight: 600;
+      color: #0284c7;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="map"></div>
+
+  <!-- Disclaimer & Information Modal -->
+  <div id="disclaimerBackdrop" class="disclaimer-modal-backdrop">
+    <div class="disclaimer-modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      
+      <div class="modal-header">
+        <h3 id="modalTitle">AW3D30 Dataset & Engineering Terms</h3>
+        <span class="dataset-badge">ALOS PRISM DSM</span>
+      </div>
+
+      <div class="modal-body">
+        <h4>1. Engineering Fitness & Disclaimer</h4>
+        <p>
+          Data rendered is based on the <strong>ALOS Global Digital Surface Model (AW3D30)</strong>. Pursuant to JAXA's Terms of Use, JAXA assumes no responsibility regarding the reliability of information or damages resulting from its use.
+        </p>
+        <ul>
+          <li><strong>Surface Model vs. Bare Earth:</strong> Heights represent DSM elevations (including vegetation canopy and structures), not bare-earth terrain (DTM).</li>
+          <li><strong>Application Limits:</strong> Designated for catchment-scale reconnaissance and macro-hydrology. Detailed bridge, culvert, and roadway designs require certified ground-truth topographic surveys (RTK-GNSS/Total Station/LiDAR).</li>
+        </ul>
+
+        <h4>2. Mandatory Source Attribution</h4>
+        <p>
+          In compliance with JAXA terms, all renders and derived analytics must indicate: <em>"ALOS Global Digital Surface Model (AW3D30) © Japan Aerospace Exploration Agency (JAXA)"</em>.
+        </p>
+
+        <h4>3. Official Resources & Related Links</h4>
+        <div class="links-grid">
+          
+          <a class="link-card" href="https://www.eorc.jaxa.jp/ALOS/en/dataset/aw3d30/aw3d30_e.htm" target="_blank" rel="noopener noreferrer">
+            <div class="card-title">
+              AW3D30 Official Portal
+              <span class="external-icon">&#x2197;</span>
+            </div>
+            <div class="card-desc">JAXA EORC Dataset documentation, release notes, and product format.</div>
+          </a>
+
+          <a class="link-card" href="http://aw3d.jp/en/index.html" target="_blank" rel="noopener noreferrer">
+            <div class="card-title">
+              NTT DATA / RESTEC AW3D
+              <span class="external-icon">&#x2197;</span>
+            </div>
+            <div class="card-desc">Commercial high-resolution (0.5m - 5m) 3D topographic models.</div>
+          </a>
+
+          <a class="link-card" href="http://global.jaxa.jp/projects/sat/alos/index.html" target="_blank" rel="noopener noreferrer">
+            <div class="card-title">
+              About ALOS "DAICHI"
+              <span class="external-icon">&#x2197;</span>
+            </div>
+            <div class="card-desc">Satellite mission profile, PRISM sensor specs, and orbital parameters.</div>
+          </a>
+
+          <a class="link-card" href="https://www.youtube.com/watch?v=YUo9Xgdnn08" target="_blank" rel="noopener noreferrer">
+            <div class="card-title">
+              AW3D Promotion Video (YouTube)
+              <span class="external-icon">&#x2197;</span>
+            </div>
+            <div class="card-desc">Overview of global 3D mapping and technology showcase.</div>
+          </a>
+
+          <a class="link-card" href="https://www.youtube.com/watch?v=pZg78PXnlQc" target="_blank" rel="noopener noreferrer">
+            <div class="card-title">
+              3D Map Video Samples (YouTube)
+              <span class="external-icon">&#x2197;</span>
+            </div>
+            <div class="card-desc">Visualizations and terrain flythroughs generated from ALOS data.</div>
+          </a>
+
+          <a class="link-card" href="https://global.jaxa.jp/policy.html" target="_blank" rel="noopener noreferrer">
+            <div class="card-title">
+              JAXA Site Policy & Terms
+              <span class="external-icon">&#x2197;</span>
+            </div>
+            <div class="card-desc">Official terms of use, copyright notices, and jurisdiction guidelines.</div>
+          </a>
+
+        </div>
+
+        <!-- Official JAXA Linking Banner -->
+        <div class="jaxa-banner-container">
+          <span class="banner-caption">Official agency link pursuant to JAXA Site Policy Section 5(2)[cite: 1]:</span>
+          <a class="jaxa-banner-link" href="https://global.jaxa.jp/" target="_blank" rel="noopener noreferrer" title="Japan Aerospace Exploration Agency (JAXA)">
+            <img class="jaxa-banner-img" src="https://global.jaxa.jp/images/banner_l_e.jpg" alt="Japan Aerospace Exploration Agency (JAXA) Official Site" width="200" height="40" />
+          </a>
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+        <span class="footer-note">Governing Law: Laws of Japan (Tokyo District Court)[cite: 1]</span>
+        <button id="btnAcknowledge" class="btn-acknowledge" type="button">Understood & Proceed</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script>
+    // 1. Initialize Map Context
+    const map = L.map('map', {
+      center: [23.4607, 91.1809], // Cumilla / Meghna Basin
+      zoom: 10,
+      attributionControl: false
+    });
+
+    // 2. Base Tile Layer
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19
+    }).addTo(map);
+
+    // 3. Leaflet Attribution Control with JAXA Source String
+    const customAttribution = L.control.attribution({
+      position: 'bottomright',
+      prefix: false
+    });
+
+    const jaxaAttributionHtml = [
+      '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a>',
+      'Elevation: <strong>ALOS AW3D30 (JAXA)</strong>',
+      '<a class="jaxa-notice-link" onclick="openDisclaimerModal()">Data Policy & Resources</a>'
+    ].join(' | ');
+
+    customAttribution.addAttribution(jaxaAttributionHtml);
+    customAttribution.addTo(map);
+
+    // 4. Modal Triggers & State Handling
+    const modalBackdrop = document.getElementById('disclaimerBackdrop');
+    const btnAcknowledge = document.getElementById('btnAcknowledge');
+
+    function openDisclaimerModal() {
+      modalBackdrop.classList.add('is-active');
+    }
+
+    function closeDisclaimerModal() {
+      modalBackdrop.classList.remove('is-active');
+      localStorage.setItem('aw3d30_policy_acknowledged', 'true');
+    }
+
+    btnAcknowledge.addEventListener('click', closeDisclaimerModal);
+
+    // Prompt modal on first visit
+    window.addEventListener('DOMContentLoaded', () => {
+      if (!localStorage.getItem('aw3d30_policy_acknowledged')) {
+        openDisclaimerModal();
+      }
+    });
+  </script>
+</body>
+</html>

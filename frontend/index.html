@@ -6,7 +6,7 @@
     <title>RHD Infrastructure Webmap</title>
     <link rel="stylesheet" href="resources/leaflet.css" />
     <link rel="stylesheet" href="resources/fonts.css" />
-    <link rel="stylesheet" href="styles.css?v=19">
+    <link rel="stylesheet" href="styles.css?v=30">
 </head>
 <body>
     <div id="map"></div>
@@ -50,7 +50,7 @@
                 <div class="coord-inputs">
                     <input type="text" id="coord-input" placeholder="e.g. 23.66, 91.06 or 23 45 33, 91 07 45">
                     <button id="target-btn" title="Pick coordinate from map" aria-label="Pick coordinate from map">
-                        <img src="resources/target-aim.svg" width="22" height="22" alt="Target icon">
+                        <img src="resources/images/target-aim.svg" width="22" height="22" alt="Target icon">
                     </button>
                 </div>
                 <button id="coord-btn">Place Marker</button>
@@ -76,6 +76,20 @@
         </div>
     </div>
     
+    <!-- Iframe Modal -->
+    <div id="iframe-modal" class="iframe-modal hidden">
+        <div class="iframe-modal-backdrop" id="iframe-modal-backdrop"></div>
+        <div class="iframe-modal-content">
+            <button class="iframe-modal-close" id="iframe-modal-close" aria-label="Close modal">
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+            <iframe id="iframe-modal-frame" src="" frameborder="0"></iframe>
+        </div>
+    </div>
+
     <!-- Custom Tooltip -->
     <div id="tooltip" class="tooltip hidden">
         <div class="tooltip-header">
@@ -91,8 +105,11 @@
     </div>
 
     <script src="resources/leaflet.js"></script>
+    <script src="resources/proj4.js"></script>
+    <script src="resources/georaster.js"></script>
+    <script src="resources/georaster-layer-for-leaflet.min.js"></script>
     <script src="resources/marked.min.js"></script>
-    <script src="app.js?v=24"></script>
+    <script src="app.js?v=49"></script>
 <!-- impeccable-live-start -->
 <script src="http://localhost:8400/live.js?token=124d1af6-b914-4cb8-b54e-50f309aab01d"></script>
 <!-- impeccable-live-end -->

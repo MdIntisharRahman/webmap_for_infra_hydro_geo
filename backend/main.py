@@ -4,6 +4,7 @@ import os
 import re
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
+import rasterio
 
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -95,7 +96,6 @@ def slugify(text_val: str) -> str:
 
 @app.get("/api/layers")
 async def get_layers():
-    # Read the markdown file to get the list of layers
     md_path = os.path.join(
         os.path.dirname(__file__),
         "..",
@@ -112,7 +112,7 @@ async def get_layers():
                 not line
                 or line.lower().startswith("| file name")
                 or line.lower().startswith("|file name")
-                or line.startswith("|-")
+                or line.startswith("|-") or "---" in line
                 or not line.startswith("|")
             ):
                 continue
@@ -121,9 +121,32 @@ async def get_layers():
                 layer_name = parts[1]
                 table_name = slugify(layer_name)
                 tab_name = parts[2] if len(parts) >= 3 and parts[2] else "Uncategorized"
-                show_first_raw = parts[3] if len(parts) >= 4 else ""
-                show_first = show_first_raw.strip().lower() in ["yes", "y"]
-                layers.append({"name": layer_name, "table": table_name, "tab": tab_name, "show_first": show_first})
+                show_first = (parts[3].strip().lower() in ["yes", "y"]) if len(parts) >= 4 else False
+                layer_type = parts[4].strip() if len(parts) >= 5 else "Vector"
+                transparency_str = parts[5].strip() if len(parts) >= 6 else ""
+                transparency = None
+                if transparency_str:
+                    try:
+                        transparency = float(transparency_str)
+                    except ValueError:
+                        pass
+                
+                derive = parts[6].strip() if len(parts) >= 7 else ""
+                estimate = (parts[7].strip().lower() in ["yes", "y"]) if len(parts) >= 8 else False
+                credit_page = parts[8].strip() if len(parts) >= 9 else ""
+                
+                layers.append({
+                    "name": layer_name, 
+                    "table": table_name, 
+                    "tab": tab_name, 
+                    "show_first": show_first,
+                    "type": layer_type,
+                    "transparency": transparency,
+                    "derive": derive,
+                    "estimate": estimate,
+                    "filename": parts[0],
+                    "credit_page": credit_page
+                })
     return layers
 
 @app.get("/api/about_us")
@@ -138,6 +161,11 @@ async def get_about_us():
 async def get_layer_data(table_name: str, db: AsyncSession = Depends(get_db)):
     if not re.match(r"^[a-z0-9_]+$", table_name):
         raise HTTPException(status_code=400, detail="Invalid table name")
+
+    layers = await get_layers()
+    layer = next((l for l in layers if l["table"] == table_name), None)
+    if layer and layer["type"].lower() == "raster":
+        return {"type": "FeatureCollection", "features": []}
 
     query = text(f"""
         SELECT jsonb_build_object(
@@ -168,12 +196,12 @@ async def get_layer_data(table_name: str, db: AsyncSession = Depends(get_db)):
         raise HTTPException(status_code=500, detail="Error fetching data")
 
 
-async def estimate_level(db: AsyncSession, table_name: str, lat: float, lng: float):
+async def estimate_level(db: AsyncSession, table_name: str, lat: float, lng: float, field: str):
     query = text(f"""
-        SELECT contour, 
+        SELECT "{field}", 
         ST_Distance(geom::geography, ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography) as dist
         FROM "{table_name}"
-        WHERE contour IS NOT NULL
+        WHERE "{field}" IS NOT NULL
         ORDER BY geom::geography <-> ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography
         LIMIT 5
     """)
@@ -186,16 +214,16 @@ async def estimate_level(db: AsyncSession, table_name: str, lat: float, lng: flo
     num = 0.0
     den = 0.0
     for row in rows:
-        contour, dist = row
+        val, dist = row
         # Convert meters to km
         d = dist / 1000.0
 
         # Division-by-Zero Protection
         if d == 0.0:
-            return contour
+            return val
 
         weight = 1.0 / (d**2)
-        num += weight * contour
+        num += weight * float(val)
         den += weight
 
     if den == 0:
@@ -206,50 +234,91 @@ async def estimate_level(db: AsyncSession, table_name: str, lat: float, lng: flo
 import asyncio
 
 @app.get("/api/estimate_water_levels")
-async def get_estimate(lat: float, lng: float, db: AsyncSession = Depends(get_db)):
+async def get_estimate(lat: float, lng: float, active_tables: str = "", db: AsyncSession = Depends(get_db)):
+    active_tables_list = active_tables.split(",") if active_tables else []
     try:
-        shwl_val = await estimate_level(db, "shwl", lat, lng)
-        slwl_val = await estimate_level(db, "slwl", lat, lng)
-        
-        # Fetch nearby features
         layers = await get_layers()
-        feature_layers = [lyr for lyr in layers if lyr["table"] not in ["shwl", "slwl"]]
-        
+        estimates = {}
         nearby_features = {}
         
-        for lyr in feature_layers:
+        for lyr in layers:
+            if active_tables_list and lyr["table"] not in active_tables_list:
+                continue
+            derive_str = lyr.get("derive", "")
+            is_estimate = lyr.get("estimate", False)
+            layer_type = lyr.get("type", "Vector").lower()
             table = lyr["table"]
-            try:
-                # ST_DWithin 100m
-                query = text(f"""
-                    SELECT to_jsonb(inputs) - 'geom' - 'id' as props
-                    FROM "{table}" inputs
-                    WHERE ST_DWithin(geom::geography, ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography, 100)
-                    LIMIT 10
-                """)
-                # Use begin_nested to prevent an error in one layer from killing the whole session
-                async with db.begin_nested():
-                    res = await db.execute(query, {"lat": lat, "lng": lng})
-                    rows = res.fetchall()
-            except Exception:
-                rows = []
-
-            if rows:
-                feature_names = set()
-                for r in rows:
-                    props = r[0]
-                    if not props: continue
-                    val = props.get("f_class_name") or props.get("name") or props.get("Type") or props.get("type") or props.get("feature_name") or props.get("road_name") or props.get("river_name")
-                    if val:
-                        feature_names.add(str(val))
-                if feature_names:
-                    nearby_features[lyr["name"]] = ", <br>".join(feature_names)
-        
-        return {"shwl": shwl_val, "slwl": slwl_val, "nearby": nearby_features}
+            filename = lyr.get("filename", "")
+            
+            # Parse Derive string e.g. [contour, SHWL] or [ , Elevation]
+            field = None
+            display = lyr["name"]
+            if derive_str:
+                m = re.match(r'\[(.*),(.*)\]', derive_str)
+                if m:
+                    field = m.group(1).strip()
+                    display = m.group(2).strip()
+            
+            if is_estimate:
+                if layer_type == "raster":
+                    # Query raster directly via rasterio
+                    tif_path = os.path.join(os.path.dirname(__file__), "..", "Maps", filename)
+                    val = None
+                    if os.path.exists(tif_path):
+                        with rasterio.open(tif_path) as src:
+                            try:
+                                for v in src.sample([(lng, lat)]):
+                                    val = float(v[0])
+                                    # For elevation missing values, handle nodata if needed (usually handled by float extraction unless massive negative)
+                                    if val < -9000:
+                                        val = None
+                                    break
+                            except Exception:
+                                pass
+                    if val is not None:
+                        estimates[display] = val
+                elif layer_type == "vector" and field:
+                    # IDW Estimation
+                    val = await estimate_level(db, table, lat, lng, field)
+                    if val is not None:
+                        estimates[display] = val
+            elif layer_type == "vector":
+                # Find nearest overlapping/nearby feature
+                try:
+                    query = text(f"""
+                        SELECT to_jsonb(inputs) - 'geom' - 'id' as props
+                        FROM "{table}" inputs
+                        WHERE ST_DWithin(geom::geography, ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography, 100)
+                        LIMIT 10
+                    """)
+                    async with db.begin_nested():
+                        res = await db.execute(query, {"lat": lat, "lng": lng})
+                        rows = res.fetchall()
+                except Exception:
+                    rows = []
+                
+                if rows:
+                    feature_names = set()
+                    for r in rows:
+                        props = r[0]
+                        if not props: continue
+                        if field:
+                            val = props.get(field)
+                        else:
+                            val = props.get("f_class_name") or props.get("name") or props.get("Type") or props.get("type") or props.get("feature_name") or props.get("road_name") or props.get("river_name")
+                        if val:
+                            feature_names.add(str(val))
+                    if feature_names:
+                        nearby_features[display] = ", <br>".join(feature_names)
+                        
+        return {"estimates": estimates, "nearby": nearby_features}
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         print("Error estimating levels:", e)
         raise HTTPException(status_code=500, detail="Error calculating estimations")
 
 
 # Mount static assets at root (placed last so dynamic routes take precedence)
+app.mount("/maps", StaticFiles(directory="Maps"), name="maps")
 app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")

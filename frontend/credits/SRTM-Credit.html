@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>RHD Infrastructure Webmap - SRTM 30m Credits</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=JetBrains+Mono:wght@500;600&family=Outfit:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="credits-style.css?v=1">
+</head>
+<body>
+
+  <main class="glass-panel">
+    <header class="header">
+      <h1>SRTM 30m Global Elevation</h1>
+      <div class="badges">
+        <span class="badge">NASA / NGA Mission</span>
+        <span class="badge">1 Arc-Second (~30m)</span>
+        <span class="badge">InSAR Topography</span>
+      </div>
+    </header>
+
+    <div class="content">
+      <section>
+        <h2>Provenance & Attribution</h2>
+        <p>
+          The digital elevation model layers served in this interface originate from the <strong>Shuttle Radar Topography Mission (SRTM)</strong>, flown aboard the Space Shuttle Endeavour (STS-99) in February 2000.
+        </p>
+        <p>
+          This dataset is a collaborative effort led by the <strong>National Aeronautics and Space Administration (NASA)</strong>, the <strong>National Geospatial-Intelligence Agency (NGA)</strong>, and the <strong>U.S. Geological Survey (USGS)</strong>.
+        </p>
+        <div class="citation-box">
+          NASA Shuttle Radar Topography Mission (SRTM) (2013). Shuttle Radar Topography Mission (SRTM) Global 1 arc second. Distributed by OpenTopography / USGS Earth Resources Observation and Science (EROS) Center.
+        </div>
+      </section>
+
+      <section>
+        <h2>Engineering Usage Notes</h2>
+        <div class="callout">
+          <span class="callout-title">Vertical Precision & Limitations</span>
+          <p style="margin-bottom: 0;">
+            SRTM data is an interferometric C-band radar product reflecting the reflective phase center of the surface (vegetation canopy, dense urban structures, and bare earth combined).
+          </p>
+        </div>
+        <ul>
+          <li><strong>Catchment & Route Corridor Scoping:</strong> Recommended for watershed delineation, preliminary alignment corridors, regional geomorphology, and preliminary grade planning.</li>
+          <li><strong>Not for Final Structural Design:</strong> Due to vertical deviations caused by canopy penetration limits and steep terrain shadowing/void filling, this product does not substitute terrestrial leveling, certified total station surveys, or high-density LiDAR.</li>
+          <li><strong>Datum Context:</strong> Horizontal datum is WGS84; vertical elevations are referenced to the WGS84/EGM96 geoid.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Official Portals & References</h2>
+        <div class="links-grid">
+          <a class="link-card" href="https://www.usgs.gov/centers/eros/science/usgs-eros-archive-digital-elevation-shuttle-radar-topography-mission-srtm-1-arc" target="_blank" rel="noopener noreferrer">
+            <div class="card-title">USGS EROS Archive <span>↗</span></div>
+            <div class="card-desc">Official distributor documentation, 1 Arc-Second void-filled dataset details.</div>
+          </a>
+          <a class="link-card" href="https://opentopography.org" target="_blank" rel="noopener noreferrer">
+            <div class="card-title">OpenTopography <span>↗</span></div>
+            <div class="card-desc">High-performance spatial distribution, API access, and processing.</div>
+          </a>
+          <a class="link-card" href="https://www.jpl.nasa.gov/missions/shuttle-radar-topography-mission-srtm" target="_blank" rel="noopener noreferrer">
+            <div class="card-title">NASA JPL Mission <span>↗</span></div>
+            <div class="card-desc">C-band / X-band spaceborne radar instrument specifications and orbit log.</div>
+          </a>
+          <a class="link-card" href="https://earthdata.nasa.gov/" target="_blank" rel="noopener noreferrer">
+            <div class="card-title">NASA Earthdata <span>↗</span></div>
+            <div class="card-desc">Open data access policy, global coverage, and scientific products.</div>
+          </a>
+        </div>
+      </section>
+      
+      <footer class="agency-footer">
+        <span>Public Domain / NASA Open Data Policy</span>
+        <span>EPSG:4326 / EGM96 Geoid</span>
+      </footer>
+    </div>
+  </main>
+
+</body>
+</html>

@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Engineering Web Map - AW3D30 Credits</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=JetBrains+Mono:wght@500;600&family=Outfit:wght@700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #0d2838;
+      --primary-light: #2d5e7c;
+      --neutral-bg: #fdfbf7;
+      --panel-bg: rgba(255, 255, 255, 0.85); /* Slightly opaque for readability */
+      --panel-border: rgba(82, 82, 82, 0.2);
+      --text-main: #313845;
+      --text-dim: #69707a;
+      
+      --font-display: 'Outfit', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--neutral-bg);
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 40px 20px;
+      /* Subtle grid background to fit the command center theme */
+      background-image: 
+        linear-gradient(rgba(13, 40, 56, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(13, 40, 56, 0.04) 1px, transparent 1px);
+      background-size: 20px 20px;
+      line-height: 1.6;
+    }
+
+    .glass-panel {
+      background: var(--panel-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 2px solid var(--panel-border);
+      border-radius: 6px;
+      padding: 40px;
+      max-width: 680px;
+      width: 100%;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+    }
+
+    .header {
+      border-bottom: 1px solid var(--panel-border);
+      padding-bottom: 24px;
+      margin-bottom: 24px;
+    }
+
+    .header h1 {
+      font-family: var(--font-display);
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 12px;
+      letter-spacing: -0.5px;
+    }
+
+    .badges {
+      display: flex;
+      gap: 8px;
+    }
+
+    .badge {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      font-weight: 600;
+      background: rgba(45, 94, 124, 0.1);
+      color: var(--primary-light);
+      padding: 4px 8px;
+      border-radius: 4px;
+      border: 1px solid rgba(45, 94, 124, 0.2);
+    }
+
+    .content section {
+      margin-bottom: 32px;
+    }
+
+    .content h2 {
+      font-family: var(--font-display);
+      font-size: 18px;
+      color: var(--primary);
+      margin-bottom: 12px;
+    }
+
+    .content p, .content li {
+      font-size: 14px;
+      color: var(--text-main);
+      margin-bottom: 12px;
+    }
+
+    .content ul {
+      margin-left: 20px;
+      margin-bottom: 16px;
+    }
+
+    .callout {
+      background: rgba(13, 40, 56, 0.03);
+      border-left: 1px solid var(--primary-light);
+      padding: 16px;
+      border-radius: 0 4px 4px 0;
+      margin: 16px 0;
+    }
+    
+    .callout-title {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--primary);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .links-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .link-card {
+      display: flex;
+      flex-direction: column;
+      padding: 16px;
+      background: rgba(253, 251, 247, 0.8);
+      border: 1px solid var(--panel-border);
+      border-radius: 4px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    .link-card:hover {
+      background: #ffffff;
+      border-color: var(--primary-light);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .card-title {
+      font-family: var(--font-display);
+      font-size: 14px;
+      color: var(--primary);
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .card-title span {
+      font-family: var(--font-mono);
+      color: var(--text-dim);
+      font-size: 14px;
+    }
+
+    .card-desc {
+      font-size: 12px;
+      color: var(--text-dim);
+      line-height: 1.5;
+    }
+
+    .jaxa-banner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      margin-top: 40px;
+      padding-top: 24px;
+      border-top: 1px solid var(--panel-border);
+    }
+
+    .jaxa-banner span {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-bottom: 12px;
+    }
+
+    .jaxa-banner img {
+      border: 1px solid var(--panel-border);
+      border-radius: 4px;
+      opacity: 0.9;
+      transition: opacity 0.2s;
+    }
+    
+    .jaxa-banner img:hover {
+      opacity: 1;
+    }
+    
+    @media (max-width: 600px) {
+      .links-grid {
+        grid-template-columns: 1fr;
+      }
+      .glass-panel {
+        padding: 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <main class="glass-panel">
+    <header class="header">
+      <h1>ALOS World 3D (AW3D30)</h1>
+      <div class="badges">
+        <span class="badge">ALOS PRISM DSM</span>
+        <span class="badge">Elevation Data</span>
+      </div>
+    </header>
+
+    <div class="content">
+      <section>
+        <h2>Provenance & Attribution</h2>
+        <p>
+          The geospatial elevation layers and digital surface models used in this map are derived from satellite observations provided by the <strong>Japan Aerospace Exploration Agency (JAXA)</strong>.
+        </p>
+        <p>
+          If you generate derived maps, visualizations, or analytical outputs using this elevation layer, please maintain the following citation: <br>
+          <em>"ALOS Global Digital Surface Model (AW3D30) © Japan Aerospace Exploration Agency (JAXA)"</em>.
+        </p>
+      </section>
+
+      <section>
+        <h2>Engineering Usage Notes</h2>
+        <div class="callout">
+          <span class="callout-title">Design Restriction</span>
+          <p style="margin-bottom: 0;">This dataset is designated for preliminary reconnaissance, catchment-scale hydrology, and regional planning. It is a Digital Surface Model (DSM) that includes vegetation and structural canopies, not a bare-earth terrain model (DTM).</p>
+        </div>
+        <ul>
+          <li><strong>Not for Detailed Design:</strong> Satellite surface models do not substitute certified ground-truth topographic surveys or airborne LiDAR.</li>
+          <li><strong>Geotechnical Verification:</strong> Regional elevations must be calibrated against official local benchmarks prior to making structural or finished grade decisions.</li>
+        </ul>
+        <p>In accordance with JAXA's Terms of Use, JAXA assumes no responsibility regarding the safety of contents or the reliability of information, nor any liability for damages resulting from its use.</p>
+      </section>
+
+      <section>
+        <h2>Resources</h2>
+        <div class="links-grid">
+          <a class="link-card" href="https://www.eorc.jaxa.jp/ALOS/en/dataset/aw3d30/aw3d30_e.htm" target="_blank" rel="noopener noreferrer">
+            <div class="card-title">AW3D30 Official Portal <span>↗</span></div>
+            <div class="card-desc">JAXA EORC documentation, format specifications, and release notes.</div>
+          </a>
+          <a class="link-card" href="http://aw3d.jp/en/index.html" target="_blank" rel="noopener noreferrer">
+            <div class="card-title">NTT DATA / RESTEC AW3D <span>↗</span></div>
+            <div class="card-desc">Commercial high-resolution (0.5m – 5m) 3D topographic models.</div>
+          </a>
+          <a class="link-card" href="http://global.jaxa.jp/projects/sat/alos/index.html" target="_blank" rel="noopener noreferrer">
+            <div class="card-title">About ALOS "DAICHI" <span>↗</span></div>
+            <div class="card-desc">Satellite mission background, PRISM optical sensor, and orbit details.</div>
+          </a>
+          <a class="link-card" href="https://global.jaxa.jp/policy.html" target="_blank" rel="noopener noreferrer">
+            <div class="card-title">JAXA Site Policy <span>↗</span></div>
+            <div class="card-desc">Official terms of use, copyright rules, and jurisdiction terms.</div>
+          </a>
+        </div>
+      </section>
+      
+      <div class="jaxa-banner">
+        <span>Official link provided pursuant to JAXA Site Policy</span>
+        <a href="https://global.jaxa.jp/" target="_blank" rel="noopener noreferrer" title="Japan Aerospace Exploration Agency (JAXA)">
+          <img src="https://global.jaxa.jp/images/banner_l_e.jpg" alt="JAXA Official Site" width="200" height="40" />
+        </a>
+      </div>
+    </div>
+  </main>
+
+</body>
+</html>

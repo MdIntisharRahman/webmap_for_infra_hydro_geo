@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>RHD Infrastructure Webmap - SRTM 30m Credits</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=JetBrains+Mono:wght@500;600&family=Outfit:wght@700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #0d2838;
+      --primary-light: #2d5e7c;
+      --neutral-bg: #fdfbf7;
+      --panel-bg: rgba(255, 255, 255, 0.92);
+      --panel-border: rgba(82, 82, 82, 0.2);
+      --text-main: #313845;
+      --text-dim: #69707a;
+      
+      --font-display: 'Outfit', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--neutral-bg);
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 40px 20px;
+      background-image: 
+        linear-gradient(rgba(13, 40, 56, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(13, 40, 56, 0.04) 1px, transparent 1px);
+      background-size: 20px 20px;
+      line-height: 1.6;
+    }
+
+    .glass-panel {
+      background: var(--panel-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 2px solid var(--panel-border);
+      border-radius: 0px;
+      padding: 40px;
+      max-width: 680px;
+      width: 100%;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+    }
+
+    .header {
+      border-bottom: 1px solid var(--panel-border);
+      padding-bottom: 24px;
+      margin-bottom: 24px;
+    }
+
+    .header h1 {
+      font-family: var(--font-display);
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 12px;
+      letter-spacing: -0.5px;
+    }
+
+    .badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .badge {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      font-weight: 600;
+      background: rgba(45, 94, 124, 0.1);
+      color: var(--primary-light);
+      padding: 4px 8px;
+      border-radius: 0px;
+      border: 1px solid rgba(45, 94, 124, 0.2);
+    }
+
+    .content section {
+      margin-bottom: 30px;
+    }
+
+    .content h2 {
+      font-family: var(--font-display);
+      font-size: 18px;
+      color: var(--primary);
+      margin-bottom: 12px;
+    }
+
+    .content p, .content li {
+      font-size: 14px;
+      color: var(--text-main);
+      margin-bottom: 12px;
+    }
+
+    .content ul {
+      margin-left: 20px;
+      margin-bottom: 16px;
+    }
+
+    .callout {
+      background: rgba(13, 40, 56, 0.03);
+      border-top: 1px solid var(--primary-light);
+      border-bottom: 1px solid var(--primary-light);
+      background: rgba(13, 40, 56, 0.03);
+      padding: 16px;
+      border-radius: 0 4px 4px 0;
+      margin: 16px 0;
+    }
+    
+    .callout-title {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--primary);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .citation-box {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      background: #ffffff;
+      border-bottom: 1px solid var(--panel-border);
+      border-top: 1px solid var(--panel-border);
+      padding: 12px;
+      border-radius: 0px;
+      color: var(--primary);
+      word-break: break-word;
+      line-height: 1.5;
+    }
+
+    .links-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .link-card {
+      display: flex;
+      flex-direction: column;
+      padding: 14px;
+      background: rgba(253, 251, 247, 0.8);
+      border: 1px solid var(--panel-border);
+      border-radius: 0px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    .link-card:hover {
+      background: #ffffff;
+      border-color: var(--primary-light);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .card-title {
+      font-family: var(--font-display);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .card-title span {
+      font-family: var(--font-mono);
+      color: var(--text-dim);
+      font-size: 13px;
+    }
+
+    .card-desc {
+      font-size: 12px;
+      color: var(--text-dim);
+      line-height: 1.4;
+    }
+
+    .agency-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 32px;
+      padding-top: 20px;
+      border-top: 1px solid var(--panel-border);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    @media (max-width: 600px) {
+      .links-grid {
+        grid-template-columns: 1fr;
+      }
+      .glass-panel {
+        padding: 24px;
+      }
+      .agency-footer {
+        flex-direction: column;
+        gap: 8px;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <main class="glass-panel">
+    <header class="header">
+      <h1>SRTM 30m Global Elevation</h1>
+      <div class="badges">
+        <span class="badge">NASA / NGA Mission</span>
+        <span class="badge">1 Arc-Second (~30m)</span>
+        <span class="badge">InSAR Topography</span>
+      </div>
+    </header>
+
+    <div class="content">
+      <section>
+        <h2>Provenance & Attribution</h2>
+        <p>
+          The digital elevation model layers served in this interface originate from the <strong>Shuttle Radar Topography Mission (SRTM)</strong>, flown aboard the Space Shuttle Endeavour (STS-99) in February 2000.
+        </p>
+        <p>
+          This dataset is a collaborative effort led by the <strong>National Aeronautics and Space Administration (NASA)</strong>, the <strong>National Geospatial-Intelligence Agency (NGA)</strong>, and the <strong>U.S. Geological Survey (USGS)</strong>.
+        </p>
+        <div class="citation-box">
+          NASA Shuttle Radar Topography Mission (SRTM) (2013). Shuttle Radar Topography Mission (SRTM) Global 1 arc second. Distributed by OpenTopography / USGS Earth Resources Observation and Science (EROS) Center.
+        </div>
+      </section>
+
+      <section>
+        <h2>Engineering Usage Notes</h2>
+        <div class="callout">
+          <span class="callout-title">Vertical Precision & Limitations</span>
+          <p style="margin-bottom: 0;">
+            SRTM data is an interferometric C-band radar product reflecting the reflective phase center of the surface (vegetation canopy, dense urban structures, and bare earth combined).
+          </p>
+        </div>
+        <ul>
+          <li><strong>Catchment & Route Corridor Scoping:</strong> Recommended for watershed delineation, preliminary alignment corridors, regional geomorphology, and preliminary grade planning.</li>
+          <li><strong>Not for Final Structural Design:</strong> Due to vertical deviations caused by canopy penetration limits and steep terrain shadowing/void filling, this product does not substitute terrestrial leveling, certified total station surveys, or high-density LiDAR.</li>
+          <li><strong>Datum Context:</strong> Horizontal datum is WGS84; vertical elevations are referenced to the WGS84/EGM96 geoid.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Official Portals & References</h2>
+        <div class="links-grid">
+          <a class="link-card" href="https://www.usgs.gov/centers/eros/science/usgs-eros-archive-digital-elevation-shuttle-radar-topography-mission-srtm-1-arc" target="_blank" rel="noopener noreferrer">
+            <div class="card-title">USGS EROS Archive <span>↗</span></div>
+            <div class="card-desc">Official distributor documentation, 1 Arc-Second void-filled dataset details.</div>
+          </a>
+          <a class="link-card" href="https://opentopography.org" target="_blank" rel="noopener noreferrer">
+            <div class="card-title">OpenTopography <span>↗</span></div>
+            <div class="card-desc">High-performance spatial distribution, API access, and processing.</div>
+          </a>
+          <a class="link-card" href="https://www.jpl.nasa.gov/missions/shuttle-radar-topography-mission-srtm" target="_blank" rel="noopener noreferrer">
+            <div class="card-title">NASA JPL Mission <span>↗</span></div>
+            <div class="card-desc">C-band / X-band spaceborne radar instrument specifications and orbit log.</div>
+          </a>
+          <a class="link-card" href="https://earthdata.nasa.gov/" target="_blank" rel="noopener noreferrer">
+            <div class="card-title">NASA Earthdata <span>↗</span></div>
+            <div class="card-desc">Open data access policy, global coverage, and scientific products.</div>
+          </a>
+        </div>
+      </section>
+      
+      <footer class="agency-footer">
+        <span>Public Domain / NASA Open Data Policy</span>
+        <span>EPSG:4326 / EGM96 Geoid</span>
+      </footer>
+    </div>
+  </main>
+
+</body>
+</html>
