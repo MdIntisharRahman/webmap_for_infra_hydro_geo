@@ -26,15 +26,18 @@ def parse_markdown_table(filepath):
             or line.lower().startswith("| file name")
             or line.lower().startswith("|file name")
             or line.startswith("|-")
+            or "---" in line
             or not line.startswith("|")
         ):
             continue
             
         parts = [p.strip() for p in line.split('|')[1:-1]]
         if len(parts) >= 2:
+            layer_type = parts[4].strip() if len(parts) >= 5 else "Vector"
             maps.append({
                 'filename': parts[0],
-                'layer_name': parts[1]
+                'layer_name': parts[1],
+                'type': layer_type
             })
     return maps
 
@@ -48,11 +51,16 @@ def load_data(db_url, maps_dir, md_filepath):
     for map_info in maps:
         filename = map_info['filename']
         layer_name = map_info['layer_name']
+        layer_type = map_info.get('type', 'Vector')
         table_name = slugify(layer_name)
         
         filepath = os.path.join(maps_dir, filename)
         if not os.path.exists(filepath):
             console.print(f"[bold yellow]Warning:[/bold yellow] File not found: [cyan]{filepath}[/cyan]. Skipping.")
+            continue
+            
+        if layer_type.lower() == 'raster':
+            console.print(f"[bold blue](i)[/bold blue] Skipping raster ingestion for '[cyan]{filename}[/cyan]' (queried directly via backend).")
             continue
             
         msg = f"Loading [cyan]{filename}[/cyan] (Layer: [bold]{layer_name}[/bold]) into table '[green]{table_name}[/green]'..."
@@ -78,10 +86,10 @@ def load_data(db_url, maps_dir, md_filepath):
                     index=True,
                     index_label='id'
                 )
-                console.print(f"[bold green]✓[/bold green] Successfully loaded [bold]{len(gdf)}[/bold] features into '[cyan]{table_name}[/cyan]'.")
+                console.print(f"[bold green]+[/bold green] Successfully loaded [bold]{len(gdf)}[/bold] features into '[cyan]{table_name}[/cyan]'.")
                 
             except Exception as e:
-                console.print(f"[bold red]✗ Error loading {filename}:[/bold red] {e}")
+                console.print(f"[bold red]! Error loading {filename}:[/bold red] {e}")
 
 if __name__ == "__main__":
     env_db_url = os.getenv("DATABASE_URL")

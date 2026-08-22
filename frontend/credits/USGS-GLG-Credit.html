@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>RHD Infrastructure Webmap - Surface Geology of Bangladesh Credits</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=JetBrains+Mono:wght@500;600&family=Outfit:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="credits-style.css?v=1">
+</head>
+<body>
+
+  <main class="glass-panel">
+    <header class="header">
+      <h1>Surface Geology of Bangladesh</h1>
+      <div class="badges">
+        <span class="badge">GSB / USGS Compilation</span>
+        <span class="badge">Scale 1:1,000,000</span>
+        <span class="badge">OFR 97-470-H</span>
+        <span class="badge">12,332 Polygons</span>
+      </div>
+    </header>
+
+    <div class="content">
+      <section>
+        <h2>Provenance & Attribution</h2>
+        <p>
+          The surface geology vector coverage served in this webmap originates from <strong>USGS Open-File Report 97-470-H</strong> (<em>Geologic and Geophysical Data of Bangladesh</em>)[cite: 2], compiled by the <strong>U.S. Geological Survey (USGS)</strong> in collaboration with the <strong>Geological Survey of Bangladesh (GSB)</strong>[cite: 2].
+        </p>
+        <p>
+          Digitized from the 1990 <em>Geological Map of Bangladesh</em> (1:1,000,000) by Md. Khurshid Alam, A.K.M. Shahidul Hasan, Mujibur Rahman Khan (GSB), and John W. Whitney (USGS)[cite: 2]. Coastlines and international boundaries incorporate base references from ESRI ArcWorld 1:3M and NIMA VMAP0[cite: 2].
+        </p>
+        <div class="citation-box">
+          Alam, M.K., Hasan, A.K.M.S., Khan, M.R., and Whitney, J.W., 1990 (Digital compilation by USGS, 2001). Surface Geology of Bangladesh (b_geog / geo8bg), U.S. Geological Survey Open-File Report 97-470-H. https://doi.org/10.5066/P9HZQA15
+        </div>
+      </section>
+
+      <section>
+        <h2>Geospatial & Technical Profile</h2>
+        <table class="meta-table">
+          <tr>
+            <td>Dataset / Layer Name</td>
+            <td>b_geog.shp / geo8bg (MultiPolygon)</td>
+          </tr>
+          <tr>
+            <td>Source Map Scale</td>
+            <td>1:1,000,000 (Scanned @ 200 DPI)</td>
+          </tr>
+          <tr>
+            <td>Feature Count</td>
+            <td>12,332 topologically cleaned polygons</td>
+          </tr>
+          <tr>
+            <td>Digitizing Tolerances</td>
+            <td>Fuzzy: 300 m | Weed: 100 m | Min feature: 200 m</td>
+          </tr>
+          <tr>
+            <td>Positional Accuracy</td>
+            <td>Source: &le;100 m | Rectification RMS: 250 m | Relative: 0.9 km</td>
+          </tr>
+          <tr>
+            <td>Horizontal Coordinates</td>
+            <td>Geographic (Decimal Degrees) / EPSG:4326</td>
+          </tr>
+          <tr>
+            <td>Geodetic Reference</td>
+            <td>Everest 1969 / NAD27 / WGS84 compatible</td>
+          </tr>
+          <tr>
+            <td>West / East Bounds</td>
+            <td>87.984932° E &mdash; 92.926903° E</td>
+          </tr>
+          <tr>
+            <td>South / North Bounds</td>
+            <td>20.552744° N &mdash; 26.733309° N</td>
+          </tr>
+        </table>
+      </section>
+
+      <section>
+        <h2>Key Attribute Schema</h2>
+        <p>Engineers and GIS analysts can filter geology using the core attributes:</p>
+        <ul>
+          <li><strong>GLG (Lithostratigraphy):</strong> Categorizes mapped formations such as <em>csd</em> (Beach sand), <em>asd/asl/asc</em> (Alluvial sand/silt/clay), <em>rb</em> (Barind clay residuum), <em>rm</em> (Madhupur clay residuum), <em>QTdt</em> (Dupi Tila Formation), <em>Tt</em> (Tipam Sandstone), <em>Tb</em> (Bhuban Formation), and <em>Tba</em> (Barail Formation).</li>
+          <li><strong>TYPE (General Class):</strong> High-level classification including <code>bed</code> (bedrock), <code>sed</code> (sedimentary deposits), <code>water</code> (rivers/oceans), and <code>lake</code> (inland water bodies).</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Engineering Usage Notes</h2>
+        <div class="callout">
+          <span class="callout-title">Regional Scoping & Geotechnical Limitations</span>
+          <p style="margin-bottom: 0;">
+            This layer represents regional surficial outcrops at 1:1,000,000 scale. Features under 200 meters in width or length were not captured during digitization.
+          </p>
+        </div>
+        <ul>
+          <li><strong>Corridor Screening & Morphological Context:</strong> Recommended for preliminary highway alignment studies, regional soil provenance mapping (e.g., Madhupur/Barind tracts vs. active floodplains), and macro-scale borrow source appraisal.</li>
+          <li><strong>Not for Foundation Design:</strong> This regional vector coverage does not replace site-specific geotechnical investigations (SPT, CPT, borehole logging, laboratory testing) mandated by highway and bridge engineering codes.</li>
+          <li><strong>Data License:</strong> Boundary data includes ESRI intellectual property used under license for internal viewing and research.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Official Portals & Data Access</h2>
+        <div class="links-grid">
+          <a class="link-card" href="https://pubs.usgs.gov/publication/ofr97470H" target="_blank" rel="noopener noreferrer">
+            <div class="card-title">USGS Report OFR 97-470-H <span>↗</span></div>
+            <div class="card-desc">Official USGS publication entry and release documentation.</div>
+          </a>
+          <a class="link-card" href="https://doi.org/10.5066/P9HZQA15" target="_blank" rel="noopener noreferrer">
+            <div class="card-title">ScienceBase Catalog <span>↗</span></div>
+            <div class="card-desc">Direct DOI download for shapefiles and FGDC XML metadata.</div>
+          </a>
+          <a class="link-card" href="http://gsb.gov.bd/" target="_blank" rel="noopener noreferrer">
+            <div class="card-title">Geological Survey of BD <span>↗</span></div>
+            <div class="card-desc">Source agency for the 1:1,000,000 Geological Map of Bangladesh.</div>
+          </a>
+          <a class="link-card" href="https://www.sciencebase.gov/catalog/item/527d4253e4b0858ea4fd3456" target="_blank" rel="noopener noreferrer">
+            <div class="card-title">OGC Web Services <span>↗</span></div>
+            <div class="card-desc">ScienceBase WMS / WFS spatial data streaming endpoints.</div>
+          </a>
+        </div>
+      </section>
+      
+      <footer class="agency-footer">
+        <span>GSB & USGS Joint Dataset / FGDC Compliant</span>
+        <span>EPSG:4326 (WGS 84)</span>
+      </footer>
+    </div>
+  </main>
+
+</body>
+</html>

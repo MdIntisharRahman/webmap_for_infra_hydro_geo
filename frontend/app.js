@@ -37,6 +37,7 @@ L.tileLayer(
 // UI ELEMENT REFERENCES
 // ============================================================================
 
+window.allLayerConfigs = [];
 const tabsContainerEl = document.getElementById("dynamic-tabs-container");
 const tabContentAreaEl = document.getElementById("tab-content-area");
 const tooltip = document.getElementById("tooltip");
@@ -93,7 +94,7 @@ if (rightPinBtn && rightPanelContainer) {
 // FEATURE STYLING FUNCTIONS
 // ============================================================================
 
-const getFeatureStyle = (feature, defaultColor) => {
+const getFeatureStyle = (feature, defaultColor, layerTransparency = null) => {
     let color = defaultColor;
     let weight = 1.5;
 
@@ -120,22 +121,28 @@ const getFeatureStyle = (feature, defaultColor) => {
         weight = isPolygon ? 0.75 : 1.5;
     }
 
+    if (layerTransparency !== null && layerTransparency < 0) {
+        return { weight: 0, opacity: 0, fillOpacity: 0, color: "transparent", interactive: false };
+    }
+
     let finalOpacity = 0.8;
     let finalFillOpacity = isPolygon ? 0.3 : 1;
 
-    if (
+    let t = null;
+    if (layerTransparency !== null && layerTransparency > 0) {
+        t = parseFloat(layerTransparency);
+    } else if (
         feature.properties &&
         feature.properties.f_class_transparency !== undefined &&
         feature.properties.f_class_transparency !== null &&
         feature.properties.f_class_transparency !== ""
     ) {
-        const t = parseFloat(feature.properties.f_class_transparency);
-        if (!isNaN(t)) {
-            // Convert transparency percentage to opacity (e.g., 20% transparent = 80% opaque = 0.8)
-            finalOpacity = (100 - t) / 100;
-            // Scale fill opacity proportionally if it is a polygon
-            finalFillOpacity = isPolygon ? Math.min(0.3, finalOpacity) : finalOpacity;
-        }
+        t = parseFloat(feature.properties.f_class_transparency);
+    }
+    
+    if (t !== null && !isNaN(t)) {
+        finalOpacity = (100 - t) / 100;
+        finalFillOpacity = isPolygon ? Math.min(0.3, finalOpacity) : finalOpacity;
     }
 
     return {
@@ -332,6 +339,7 @@ async function fetchAndRenderLayers() {
     try {
         const response = await fetch(`${API_BASE_URL}/layers`);
         const layers = await response.json();
+        window.allLayerConfigs = layers;
 
         // Build Tabs
         const uniqueTabs = [
@@ -428,295 +436,302 @@ async function fetchAndRenderLayers() {
             const layerInfo = layers[i];
             const color = engineeringColors[i % engineeringColors.length];
 
-            const layerDataRes = await fetch(
-                `${API_BASE_URL}/layers/${layerInfo.table}`,
-            );
-            const data = await layerDataRes.json();
-
-            // Extract dynamic classes from data
-            const classMap = new Map();
-            if (data.features) {
-                for (const feat of data.features) {
-                    if (
-                        feat.properties &&
-                        feat.properties.f_class_name &&
-                        feat.properties.f_class_color
-                    ) {
-                        const weight = feat.properties.f_class_weight;
-                        classMap.set(feat.properties.f_class_name, {
-                            color: feat.properties.f_class_color,
-                            weight:
-                                weight !== undefined && weight !== null
-                                    ? parseFloat(weight)
-                                    : 100,
-                        });
-                    }
-                }
-            }
-
-            const classEntries = Array.from(classMap.entries());
-            const hasClasses = classEntries.length > 0;
-
-            // ---- Create UI Toggle Item for layer control ----
             const item = document.createElement("div");
-            item.className = layerInfo.show_first !== false ? "layer-arc-item active" : "layer-arc-item";
-
-            let layerColorUI = `<div class="layer-color" style="background-color: ${color};"></div>`;
-            let subLegendUI = "";
-
-            if (hasClasses) {
-                // Build conic gradient
-                if (classEntries.length > 1) {
-                    const sliceAngle = 360 / classEntries.length;
-                    let gradParts = [];
-                    for (let j = 0; j < classEntries.length; j++) {
-                        gradParts.push(
-                            `${classEntries[j][1].color} ${j * sliceAngle}deg ${(j + 1) * sliceAngle}deg`,
-                        );
-                    }
-                    layerColorUI = `<div class="layer-color" style="background: conic-gradient(${gradParts.join(", ")});"></div>`;
-                } else {
-                    layerColorUI = `<div class="layer-color" style="background-color: ${classEntries[0][1].color};"></div>`;
-                }
-
-                // Build sub-legend (max 4, or 3 + more button)
-                subLegendUI = `<div class="layer-sub-legend" style="display: flex; gap: 6px; align-items: center; margin-left: 22px; width: calc(100% - 22px); font-size: 9px; color: var(--text-dim); font-weight: 600;">`;
-                subLegendUI += `<div style="display: flex; gap: 8px; overflow: hidden; white-space: nowrap; flex: 1;">`;
-
-                const displayLimit = 4;
-                const toShow =
-                    classEntries.length <= displayLimit ? classEntries.length : 3;
-
-                for (let k = 0; k < toShow; k++) {
-                    const cName = classEntries[k][0];
-                    const cColor = classEntries[k][1].color;
-                    let displayName = cName;
-
-                    subLegendUI += `<span style="display: flex; align-items: center; gap: 3px; flex-shrink: 0;" title="${cName}"><div style="width: 6px; height: 6px; border-radius: 50%; background: ${cColor}; flex-shrink: 0;"></div><span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 55px;">${displayName}</span></span>`;
-                }
-                subLegendUI += `</div>`;
-
-                if (classEntries.length > displayLimit) {
-                    subLegendUI += `<div class="legend-more-btn" title="See all classes" style="flex-shrink: 0;">+${classEntries.length - 3}</div>`;
-                }
-
-                subLegendUI += `</div>`;
+            item.className = "layer-item";
+            item.dataset.table = layerInfo.table;
+            
+            if (layerInfo.transparency !== null && layerInfo.transparency < 0) {
+                item.style.display = "none";
+                layerInfo.show_first = true; // force load
+            }
+            
+            let isVisuallyActive = layerInfo.show_first !== false;
+            let isLoaded = layerInfo.show_first !== false;
+            
+            if (isVisuallyActive) {
+                item.classList.add("active");
             }
 
+            let creditBtnUI = "";
+            if (layerInfo.credit_page) {
+                creditBtnUI = `<div class="credit-btn" data-url="credits/${layerInfo.credit_page}" title="View Credits">Cr</div>`;
+            }
+
+            const checkboxId = `cb-${i}`;
+            const checkboxUI = `<input id="${checkboxId}" class="layer-load-cb" type="checkbox" style="margin:0; cursor:pointer; flex-shrink:0; transform: scale(0.8);" ${isLoaded ? 'checked' : ''}>`;
+
+            // Restore v6 layout structure
             item.innerHTML = `
                 <div class="layer-info-container" style="display: flex; flex-direction: column; gap: 4px; flex: 1; overflow: hidden; margin-right: 12px;">
-                    <div class="layer-info">
-                        ${layerColorUI}
-                        <span class="layer-name">${layerInfo.name}</span>
+                    <div class="layer-info" style="display: flex; align-items: center; gap: 10px; overflow: hidden;">
+                        ${checkboxUI}
+                        <div class="layer-color-ui" style="display:flex; align-items:center; flex-shrink:0;"><div style="width: 12px; height: 12px; border-radius: 50%; background: #cbd5e1;"></div></div>
+                        <span class="layer-name sliding-name" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${layerInfo.name}">${layerInfo.name}</span>
+                        ${creditBtnUI}
                     </div>
-                    ${subLegendUI}
+                    <div class="sub-legend-ui" style="display: flex; gap: 6px; align-items: center; margin-left: 50px; width: calc(100% - 50px); font-size: 9px; color: var(--text-dim); font-weight: 600;"></div>
                 </div>
-                <div class="toggle-switch"></div>
+                <div class="toggle-switch" style="flex-shrink: 0;"></div>
             `;
-            const tabName = layerInfo.tab || "Uncategorized";
-            if (tabContentWrappers[tabName]) {
-                tabContentWrappers[tabName].appendChild(item);
-            }
-
-            // Attach more button handler if it exists
-            const moreBtn = item.querySelector(".legend-more-btn");
-            if (moreBtn) {
-                moreBtn.addEventListener("click", (e) => {
-                    e.stopPropagation(); // Prevent layer toggle
-
-                    // Unpin left side panel
-                    if (panelContainer) panelContainer.classList.remove("pinned");
-                    if (pinBtn) pinBtn.classList.remove("pinned-active");
-
-                    // Populate right panel
-                    const rightPanelTitle = document.getElementById("right-panel-title");
-                    const rightPanelContent = document.getElementById(
-                        "right-panel-content",
-                    );
-                    rightPanelTitle.textContent = layerInfo.name;
-
-                    rightPanelContent.innerHTML = "";
-                    for (const [cName, cData] of classEntries) {
-                        const isHidden = cData.weight === 0;
-                        const hiddenMarkup = isHidden
-                            ? `<span style="color: var(--text-dim); font-style: italic; font-weight: 400; margin-left: 4px;">(hidden)</span>`
-                            : "";
-                        rightPanelContent.innerHTML += `
-                            <div class="right-legend-item" ${isHidden ? 'style="opacity: 0.6;"' : ""}>
-                                <div class="right-legend-color" style="background: ${cData.color};"></div>
-                                <span>${cName}${hiddenMarkup}</span>
-                            </div>
-                        `;
-                    }
-
-                    // Open right panel and pin it automatically
-                    if (rightPanelContainer) {
-                        rightPanelContainer.classList.add("pinned");
-                    }
+            
+            const toggleSwitch = item.querySelector('.toggle-switch');
+            const loadCb = item.querySelector('.layer-load-cb');
+            const colorUI = item.querySelector('.layer-color-ui');
+            const subLegendUI = item.querySelector('.sub-legend-ui');
+            
+            const crBtn = item.querySelector(".credit-btn");
+            if (crBtn) {
+                crBtn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    const modal = document.getElementById('iframe-modal');
+                    const frame = document.getElementById('iframe-modal-frame');
+                    frame.src = crBtn.dataset.url;
+                    modal.classList.remove('hidden');
                 });
             }
 
-            // ---- Create Leaflet GeoJSON layer with styling and interactivity ----
-            const paneName = "pane_" + i;
-            if (!map.getPane(paneName)) {
-                map.createPane(paneName);
-            }
-            // Z-index: smaller index (earlier in table) = higher z-index (drawn on top)
-            map.getPane(paneName).style.zIndex = 400 + (layers.length - i);
-
-            const geoJsonLayer = L.geoJSON(data, {
-                pane: paneName,
-                filter: function (feature) {
-                    const name = (
-                        feature.properties.name ||
-                        feature.properties.river_name ||
-                        feature.properties.locality ||
-                        ""
-                    ).toLowerCase();
-                    if (name.includes("bay of bengal")) return false;
-                    return true;
-                },
-                style: (feature) => getFeatureStyle(feature, color),
-                onEachFeature: (feature, layer) => {
-                    const populateTooltip = (e) => {
-                        const props = feature.properties;
-
-                        let headerValue = " ";
-                        let displayKeys = null;
-
-                        if (props.keys) {
-                            let parsedKeys = [];
-                            try {
-                                let keysStr = props.keys;
-                                if (typeof keysStr === "string") {
-                                    // Custom regex parser to handle formats like: "[river name, Name], [type, Type]"
-                                    // Because the input is not valid JSON (no quotes around strings)
-                                    let regex = /\[([^,]+),\s*([^\]]+)\]/g;
-                                    let match;
-                                    while ((match = regex.exec(keysStr)) !== null) {
-                                        parsedKeys.push([match[1].trim(), match[2].trim()]);
-                                    }
-                                } else {
-                                    parsedKeys = keysStr;
-                                }
-                            } catch (err) {
-                                console.error("Error parsing keys:", err);
-                            }
-
-                            if (parsedKeys && parsedKeys.length > 0) {
-                                let hVal = props[parsedKeys[0][0]];
-                                headerValue =
-                                    hVal !== undefined && hVal !== null && hVal !== ""
-                                        ? hVal
-                                        : " ";
-                                displayKeys = parsedKeys.slice(1);
-                            }
-                        } else {
-                            // Fallback logic
-                            headerValue =
-                                props.contour !== undefined && props.contour !== null
-                                    ? `Contour: ${props.contour} m`
-                                    : props.name ||
-                                    props.road_name ||
-                                    props.river_name ||
-                                    props.locality ||
-                                    " ";
-                        }
-
-                        tooltipName.textContent = headerValue;
-                        tooltipLayer.textContent = layerInfo.name;
-
-                        // Hide ref logic for generic data
-                        tooltipRef.style.display = "none";
-
-                        renderTooltipProps(props, displayKeys);
-                        tooltip.classList.add("visible");
-                    };
-
-                    layer.on({
-                        click: (e) => {
-                            // Let click pass to map if target mode is active
-                            const targetBtn = document.getElementById("target-btn");
-                            if (targetBtn && targetBtn.classList.contains("active")) {
-                                return; // Do not stop propagation
-                            }
-
-                            L.DomEvent.stopPropagation(e);
-
-                            if (
-                                window.activeFeatureLayer &&
-                                window.activeFeatureLayer !== layer &&
-                                window.activeFeatureLayer.resetStyleFunc
-                            ) {
-                                window.activeFeatureLayer.resetStyleFunc();
-                            }
-
-                            window.featureTooltipLocked = true;
-                            window.activeFeatureLayer = layer;
-                            window.lockedLatLng = e.latlng;
-                            layer.resetStyleFunc = () => geoJsonLayer.resetStyle(layer);
-
-                            layer.setStyle(getHighlightStyle(feature, color));
-                            layer.bringToFront();
-
-                            populateTooltip(e);
-
-                            tooltip.style.transform = `translate3d(${e.originalEvent.pageX + 15}px, ${e.originalEvent.pageY + 15}px, 0)`;
-                        },
-                        mouseover: (e) => {
-                            if (window.featureTooltipLocked) return;
-
-                            if (window.tooltipHideTimeout)
-                                clearTimeout(window.tooltipHideTimeout);
-
-                            layer.setStyle(getHighlightStyle(feature, color));
-                            layer.bringToFront();
-
-                            window.activeFeatureLayer = layer;
-                            layer.resetStyleFunc = () => geoJsonLayer.resetStyle(layer);
-
-                            populateTooltip(e);
-                        },
-                        mouseout: (e) => {
-                            if (window.featureTooltipLocked) return;
-
-                            geoJsonLayer.resetStyle(layer);
-                            window.tooltipHideTimeout = setTimeout(() => {
-                                if (!window.featureTooltipLocked) {
-                                    tooltip.classList.remove("visible");
-                                    window.activeFeatureLayer = null;
-                                }
-                            }, 250);
-                        },
-                        mousemove: (e) => {
-                            if (window.featureTooltipLocked) return;
-                            tooltip.style.transform = `translate3d(${e.originalEvent.pageX + 15}px, ${e.originalEvent.pageY + 15}px, 0)`;
-                        },
-                    });
-                },
-            });
-
-            if (layerInfo.show_first !== false) {
-                geoJsonLayer.addTo(map);
-            }
-            loadedLayers[layerInfo.name] = geoJsonLayer;
-
-            // Auto-fit map bounds logic: if layer has classes (like RHD) or is first layer
-            if ((hasClasses && data.features && data.features.length > 0) || (layerInfo.show_first !== false && i === 0 && data.features && data.features.length > 0)) {
-                map.fitBounds(geoJsonLayer.getBounds());
-            }
-
-            let isActive = layerInfo.show_first !== false;
-            item.addEventListener("click", () => {
-                isActive = !isActive;
-                if (isActive) {
-                    item.classList.add("active");
-                    geoJsonLayer.addTo(map);
-                } else {
-                    item.classList.remove("active");
-                    map.removeLayer(geoJsonLayer);
+            const container = item.querySelector('.sliding-name-container');
+            const nameEl = item.querySelector('.sliding-name');
+            item.addEventListener('mouseenter', () => {
+                const diff = nameEl.scrollWidth - container.clientWidth;
+                if (diff > 0) {
+                    nameEl.style.transform = `translateX(-${diff + 5}px)`;
                 }
             });
+            item.addEventListener('mouseleave', () => {
+                nameEl.style.transform = `translateX(0)`;
+            });
+
+            tabContentWrappers[layerInfo.tab].appendChild(item);
+
+            let geoLayer = null;
+
+            const loadLayerData = async () => {
+                toggleSwitch.classList.add('loading');
+                try {
+                    const paneName = "pane_" + i;
+                    if (!map.getPane(paneName)) {
+                        map.createPane(paneName);
+                        map.getPane(paneName).style.zIndex = 400 + (layers.length - i);
+                    }
+
+                    if (layerInfo.type && layerInfo.type.toLowerCase() === "raster") {
+                        const url = `${API_BASE_URL}/maps/${encodeURIComponent(layerInfo.filename)}`;
+                        const georaster = await parseGeoraster(url);
+                        let rasterOpacity = 0.7;
+                        if (layerInfo.transparency !== null) {
+                            if (layerInfo.transparency < 0) {
+                                rasterOpacity = 0;
+                            } else {
+                                rasterOpacity = (100 - layerInfo.transparency) / 100;
+                            }
+                        }
+                        
+                        geoLayer = new GeoRasterLayer({
+                            georaster: georaster,
+                            opacity: rasterOpacity,
+                            resolution: 256,
+                            pane: paneName
+                        });
+                        colorUI.innerHTML = `<div style="width: 12px; height: 12px; border-radius: 50%; background: #9aa5b1; flex-shrink:0;"></div>`;
+                    } else {
+                        const layerDataRes = await fetch(`${API_BASE_URL}/layers/${layerInfo.table}`);
+                        const data = await layerDataRes.json();
+                        
+                        const classMap = new Map();
+                        if (data.features) {
+                            for (const feat of data.features) {
+                                if (feat.properties && feat.properties.f_class_name) {
+                                    let clr = feat.properties.color || feat.properties.f_class_color || '#9aa5b1';
+                                    if (clr && !clr.startsWith('#')) clr = '#' + clr;
+                                    classMap.set(feat.properties.f_class_name, clr);
+                                }
+                            }
+                        }
+                        const hasClasses = classMap.size > 0;
+                        if (hasClasses) {
+                            const classEntries = Array.from(classMap.entries());
+                            let gradientParts = [];
+                            let pct = 100 / classEntries.length;
+                            for (let i = 0; i < classEntries.length; i++) {
+                                let c = classEntries[i][1];
+                                gradientParts.push(`${c} ${i*pct}% ${(i+1)*pct}%`);
+                            }
+                            let bg = `conic-gradient(${gradientParts.join(', ')})`;
+                            colorUI.innerHTML = `<div style="width: 12px; height: 12px; border-radius: 50%; background: ${bg}; flex-shrink:0;"></div>`;
+                            let subHTML = `<div style="display: flex; gap: 8px; overflow: hidden; white-space: nowrap; flex: 1;">`;
+                            let count = 0;
+                            for (const [cName, cColor] of classEntries) {
+                                if (count < 3) {
+                                    subHTML += `<span style="display: flex; align-items: center; gap: 3px; flex-shrink: 0;" title="${cName}"><div style="width: 6px; height: 6px; border-radius: 50%; background: ${cColor}; flex-shrink: 0;"></div><span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 55px;">${cName}</span></span>`;
+                                }
+                                count++;
+                            }
+                            subHTML += `</div>`;
+                            if (count > 3) {
+                                subHTML += `<div class="legend-more-btn" title="See all classes" style="flex-shrink: 0; width: 14px; height: 14px; border-radius: 50%; background: #e2e8f0; color: var(--text-dim); font-size: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer;">+${count - 3}</div>`;
+                            }
+                            subLegendUI.innerHTML = subHTML;
+                            
+                            const moreBtn = subLegendUI.querySelector('.legend-more-btn');
+                            if (moreBtn) {
+                                moreBtn.addEventListener("click", (e) => {
+                                    e.stopPropagation();
+                                    const rightPanelTitle = document.getElementById("right-panel-title");
+                                    const rightPanelContent = document.getElementById("right-panel-content");
+                                    const rightPanelContainer = document.getElementById("right-panel-container");
+                                    if (rightPanelTitle) rightPanelTitle.textContent = layerInfo.name;
+                                    if (rightPanelContent) {
+                                        rightPanelContent.innerHTML = "";
+                                        for (const [cName, cData] of classEntries) {
+                                            rightPanelContent.innerHTML += `<div class="right-legend-item"><div class="right-legend-color" style="background: ${cData};"></div><span>${cName}</span></div>`;
+                                        }
+                                    }
+                                    if (rightPanelContainer) rightPanelContainer.classList.add("pinned");
+                                });
+                            }
+                        } else {
+                            colorUI.innerHTML = `<div style="width: 12px; height: 12px; border-radius: 50%; background: ${color}; flex-shrink:0;"></div>`;
+                        }
+
+                        geoLayer = L.geoJSON(data, {
+                            pane: paneName,
+                            filter: function (feature) {
+                                const name = (feature.properties.name || feature.properties.river_name || feature.properties.locality || "").toLowerCase();
+                                if (name.includes("bay of bengal")) return false;
+                                return true;
+                            },
+                            style: (feature) => getFeatureStyle(feature, color, layerInfo.transparency),
+                            onEachFeature: (feature, layer) => {
+                                const populateTooltip = (e) => {
+                                    const props = feature.properties;
+                                    let headerValue = " ";
+                                    let displayKeys = null;
+                                    if (props.keys) {
+                                        let parsedKeys = [];
+                                        try {
+                                            let keysStr = props.keys;
+                                            if (typeof keysStr === "string") {
+                                                let regex = /\[([^,]+),\s*([^\]]+)\]/g;
+                                                let match;
+                                                while ((match = regex.exec(keysStr)) !== null) {
+                                                    parsedKeys.push([match[1].trim(), match[2].trim()]);
+                                                }
+                                            } else {
+                                                parsedKeys = keysStr;
+                                            }
+                                        } catch (err) {}
+                                        if (parsedKeys && parsedKeys.length > 0) {
+                                            let hVal = props[parsedKeys[0][0]];
+                                            headerValue = hVal !== undefined && hVal !== null && hVal !== "" ? hVal : " ";
+                                            displayKeys = parsedKeys.slice(1);
+                                        }
+                                    } else {
+                                        headerValue = props.contour !== undefined && props.contour !== null ? `Contour: ${props.contour} m` : props.name || props.road_name || props.river_name || props.locality || " ";
+                                    }
+                                    const tooltipName = document.getElementById("tooltip-name");
+                                    const tooltipLayer = document.getElementById("tooltip-layer");
+                                    const tooltipRef = document.getElementById("tooltip-ref");
+                                    const tooltip = document.getElementById("tooltip");
+                                    if(tooltipName) tooltipName.textContent = headerValue;
+                                    if(tooltipLayer) tooltipLayer.textContent = layerInfo.name;
+                                    if(tooltipRef) tooltipRef.style.display = "none";
+                                    renderTooltipProps(props, displayKeys);
+                                    if(tooltip) tooltip.classList.add("visible");
+                                };
+                                layer.on({
+                                    click: (e) => {
+                                        const targetBtn = document.getElementById("target-btn");
+                                        if (targetBtn && targetBtn.classList.contains("active")) return;
+                                        L.DomEvent.stopPropagation(e);
+                                        if (window.activeFeatureLayer && window.activeFeatureLayer !== layer && window.activeFeatureLayer.resetStyleFunc) {
+                                            window.activeFeatureLayer.resetStyleFunc();
+                                        }
+                                        window.featureTooltipLocked = true;
+                                        window.activeFeatureLayer = layer;
+                                        window.lockedLatLng = e.latlng;
+                                        layer.resetStyleFunc = () => geoLayer.resetStyle(layer);
+                                        layer.setStyle(getHighlightStyle(feature, color, layerInfo.transparency));
+                                        layer.bringToFront();
+                                        populateTooltip(e);
+                                        const tooltip = document.getElementById("tooltip");
+                                        if(tooltip) tooltip.style.transform = `translate3d(${e.originalEvent.pageX + 15}px, ${e.originalEvent.pageY + 15}px, 0)`;
+                                    },
+                                    mouseover: (e) => {
+                                        if (window.featureTooltipLocked) return;
+                                        if (window.tooltipHideTimeout) clearTimeout(window.tooltipHideTimeout);
+                                        layer.setStyle(getHighlightStyle(feature, color, layerInfo.transparency));
+                                        layer.bringToFront();
+                                        window.activeFeatureLayer = layer;
+                                        layer.resetStyleFunc = () => geoLayer.resetStyle(layer);
+                                        populateTooltip(e);
+                                    },
+                                    mouseout: (e) => {
+                                        if (window.featureTooltipLocked) return;
+                                        geoLayer.resetStyle(layer);
+                                        window.tooltipHideTimeout = setTimeout(() => {
+                                            if (!window.featureTooltipLocked) {
+                                                const tooltip = document.getElementById("tooltip");
+                                                if(tooltip) tooltip.classList.remove("visible");
+                                                window.activeFeatureLayer = null;
+                                            }
+                                        }, 250);
+                                    },
+                                    mousemove: (e) => {
+                                        if (window.featureTooltipLocked) return;
+                                        const tooltip = document.getElementById("tooltip");
+                                        if(tooltip) tooltip.style.transform = `translate3d(${e.originalEvent.pageX + 15}px, ${e.originalEvent.pageY + 15}px, 0)`;
+                                    },
+                                });
+                            },
+                        });
+                    }
+                    loadedLayers[layerInfo.name] = geoLayer;
+                } catch (e) {
+                    console.error("Error loading layer:", e);
+                }
+                toggleSwitch.classList.remove('loading');
+            };
+
+            loadCb.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                if (loadCb.checked) {
+                    await loadLayerData();
+                    if (isVisuallyActive && geoLayer) {
+                        geoLayer.addTo(map);
+                        item.classList.add('active');
+                    }
+                } else {
+                    if (geoLayer) {
+                        map.removeLayer(geoLayer);
+                        geoLayer = null;
+                    }
+                    item.classList.remove('active');
+                    colorUI.innerHTML = `<div style="width: 12px; height: 12px; border-radius: 50%; background: #cbd5e1; flex-shrink:0;"></div>`;
+                    subLegendUI.innerHTML = '';
+                    delete loadedLayers[layerInfo.name];
+                }
+            });
+
+            item.addEventListener("click", () => {
+                if (!loadCb.checked) return;
+                isVisuallyActive = !isVisuallyActive;
+                if (isVisuallyActive) {
+                    item.classList.add("active");
+                    if (geoLayer) geoLayer.addTo(map);
+                } else {
+                    item.classList.remove("active");
+                    if (geoLayer) map.removeLayer(geoLayer);
+                }
+            });
+
+            if (isLoaded) {
+                loadLayerData().then(() => {
+                    if (isVisuallyActive && geoLayer) {
+                        geoLayer.addTo(map);
+                    }
+                });
+            }
         }
     } catch (error) {
         console.error("Error fetching layers data:", error);
@@ -787,7 +802,7 @@ document.getElementById("coord-btn").addEventListener("click", async () => {
     if (currentMarker) map.removeLayer(currentMarker);
 
     const customIcon = L.icon({
-        iconUrl: "resources/placemarker.svg",
+        iconUrl: "resources/images/placemarker.svg",
         iconSize: [78, 78],
         iconAnchor: [39, 78],
         tooltipAnchor: [0, -78],
@@ -798,18 +813,34 @@ document.getElementById("coord-btn").addEventListener("click", async () => {
     map.setView([lat, lng], 13);
 
     try {
+        let activeTables = Array.from(document.querySelectorAll('.layer-load-cb:checked'))
+                                .map(cb => cb.closest('.layer-item').dataset.table)
+                                .filter(Boolean);
+        
+        if (window.allLayerConfigs) {
+            window.allLayerConfigs.forEach(layer => {
+                if (layer.transparency !== null && layer.transparency < 0) {
+                    if (!activeTables.includes(layer.table)) {
+                        activeTables.push(layer.table);
+                    }
+                }
+            });
+        }
+        
+        activeTables = activeTables.join(',');
         const res = await fetch(
-            `${API_BASE_URL}/estimate_water_levels?lat=${lat}&lng=${lng}`,
+            `${API_BASE_URL}/estimate_water_levels?lat=${lat}&lng=${lng}&active_tables=${activeTables}`,
         );
         const data = await res.json();
 
-        let shwlText = data.shwl !== null ? `${data.shwl.toFixed(2)} m` : "N/A";
-        let slwlText = data.slwl !== null ? `${data.slwl.toFixed(2)} m` : "N/A";
-
-        let allRows = [
-            `<div class="est-row"><div class="est-key">SHWL:</div><div class="est-val">${shwlText}</div></div>`,
-            `<div class="est-row"><div class="est-key">SLWL:</div><div class="est-val">${slwlText}</div></div>`
-        ];
+        let allRows = [];
+        
+        if (data.estimates) {
+            for (const [label, val] of Object.entries(data.estimates)) {
+                let text = val !== null ? `${val.toFixed(2)} m` : "N/A";
+                allRows.push(`<div class="est-row"><div class="est-key">${label}:</div><div class="est-val">${text}</div></div>`);
+            }
+        }
 
         if (data.nearby) {
             for (const [layerName, features] of Object.entries(data.nearby)) {
@@ -882,3 +913,17 @@ tabsContainerEl.addEventListener("mousemove", (e) => {
 tabsContainerEl.addEventListener("mouseleave", () => {
     clearInterval(tabScrollInterval);
 });
+
+// Modal close handlers
+const iframeModal = document.getElementById('iframe-modal');
+const iframeClose = document.getElementById('iframe-modal-close');
+const iframeBackdrop = document.getElementById('iframe-modal-backdrop');
+
+if (iframeModal) {
+    const closeModal = () => {
+        iframeModal.classList.add('hidden');
+        document.getElementById('iframe-modal-frame').src = '';
+    };
+    iframeClose.addEventListener('click', closeModal);
+    iframeBackdrop.addEventListener('click', closeModal);
+}

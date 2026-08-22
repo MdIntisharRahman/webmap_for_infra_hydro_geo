@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>RHD Infrastructure Webmap - Surface Geology of Bangladesh Credits</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=JetBrains+Mono:wght@500;600&family=Outfit:wght@700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #0d2838;
+      --primary-light: #2d5e7c;
+      --neutral-bg: #fdfbf7;
+      --panel-bg: rgba(255, 255, 255, 0.92);
+      --panel-border: rgba(82, 82, 82, 0.2);
+      --text-main: #313845;
+      --text-dim: #69707a;
+      
+      --font-display: 'Outfit', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--neutral-bg);
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 40px 20px;
+      background-image: 
+        linear-gradient(rgba(13, 40, 56, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(13, 40, 56, 0.04) 1px, transparent 1px);
+      background-size: 20px 20px;
+      line-height: 1.6;
+    }
+
+    .glass-panel {
+      background: var(--panel-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 2px solid var(--panel-border);
+      border-radius: 0px;
+      padding: 40px;
+      max-width: 680px;
+      width: 100%;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+    }
+
+    .header {
+      border-bottom: 1px solid var(--panel-border);
+      padding-bottom: 24px;
+      margin-bottom: 24px;
+    }
+
+    .header h1 {
+      font-family: var(--font-display);
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 12px;
+      letter-spacing: -0.5px;
+    }
+
+    .badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .badge {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      font-weight: 600;
+      background: rgba(45, 94, 124, 0.1);
+      color: var(--primary-light);
+      padding: 4px 8px;
+      border-radius: 0px;
+      border: 1px solid rgba(45, 94, 124, 0.2);
+    }
+
+    .content section {
+      margin-bottom: 30px;
+    }
+
+    .content h2 {
+      font-family: var(--font-display);
+      font-size: 18px;
+      color: var(--primary);
+      margin-bottom: 12px;
+    }
+
+    .content p, .content li {
+      font-size: 14px;
+      color: var(--text-main);
+      margin-bottom: 12px;
+    }
+
+    .content ul {
+      margin-left: 20px;
+      margin-bottom: 16px;
+    }
+
+    .callout {
+      background: rgba(13, 40, 56, 0.03);
+      border-top: 1px solid var(--primary-light);
+      border-bottom: 1px solid var(--primary-light);
+      padding: 16px;
+      border-radius: 0;
+      margin: 16px 0;
+    }
+    
+    .callout-title {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--primary);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .citation-box {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      background: #ffffff;
+      border-bottom: 1px solid var(--panel-border);
+      border-top: 1px solid var(--panel-border);
+      padding: 12px;
+      border-radius: 0px;
+      color: var(--primary);
+      word-break: break-word;
+      line-height: 1.5;
+    }
+
+    .meta-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      margin: 14px 0;
+    }
+
+    .meta-table td {
+      padding: 6px 10px;
+      border-bottom: 1px solid rgba(82, 82, 82, 0.12);
+    }
+
+    .meta-table td:first-child {
+      color: var(--text-dim);
+      font-weight: 600;
+      width: 35%;
+    }
+
+    .meta-table td:last-child {
+      color: var(--primary);
+    }
+
+    .links-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .link-card {
+      display: flex;
+      flex-direction: column;
+      padding: 14px;
+      background: rgba(253, 251, 247, 0.8);
+      border: 1px solid var(--panel-border);
+      border-radius: 0px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    .link-card:hover {
+      background: #ffffff;
+      border-color: var(--primary-light);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .card-title {
+      font-family: var(--font-display);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .card-title span {
+      font-family: var(--font-mono);
+      color: var(--text-dim);
+      font-size: 13px;
+    }
+
+    .card-desc {
+      font-size: 12px;
+      color: var(--text-dim);
+      line-height: 1.4;
+    }
+
+    .agency-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 32px;
+      padding-top: 20px;
+      border-top: 1px solid var(--panel-border);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    @media (max-width: 600px) {
+      .links-grid {
+        grid-template-columns: 1fr;
+      }
+      .glass-panel {
+        padding: 24px;
+      }
+      .agency-footer {
+        flex-direction: column;
+        gap: 8px;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <main class="glass-panel">
+    <header class="header">
+      <h1>Surface Geology of Bangladesh</h1>
+      <div class="badges">
+        <span class="badge">GSB / USGS Compilation</span>
+        <span class="badge">Scale 1:1,000,000</span>
+        <span class="badge">OFR 97-470-H</span>
+        <span class="badge">12,332 Polygons</span>
+      </div>
+    </header>
+
+    <div class="content">
+      <section>
+        <h2>Provenance & Attribution</h2>
+        <p>
+          The surface geology vector coverage served in this webmap originates from <strong>USGS Open-File Report 97-470-H</strong> (<em>Geologic and Geophysical Data of Bangladesh</em>)[cite: 2], compiled by the <strong>U.S. Geological Survey (USGS)</strong> in collaboration with the <strong>Geological Survey of Bangladesh (GSB)</strong>[cite: 2].
+        </p>
+        <p>
+          Digitized from the 1990 <em>Geological Map of Bangladesh</em> (1:1,000,000) by Md. Khurshid Alam, A.K.M. Shahidul Hasan, Mujibur Rahman Khan (GSB), and John W. Whitney (USGS)[cite: 2]. Coastlines and international boundaries incorporate base references from ESRI ArcWorld 1:3M and NIMA VMAP0[cite: 2].
+        </p>
+        <div class="citation-box">
+          Alam, M.K., Hasan, A.K.M.S., Khan, M.R., and Whitney, J.W., 1990 (Digital compilation by USGS, 2001). Surface Geology of Bangladesh (b_geog / geo8bg), U.S. Geological Survey Open-File Report 97-470-H. https://doi.org/10.5066/P9HZQA15
+        </div>
+      </section>
+
+      <section>
+        <h2>Geospatial & Technical Profile</h2>
+        <table class="meta-table">
+          <tr>
+            <td>Dataset / Layer Name</td>
+            <td>b_geog.shp / geo8bg (MultiPolygon)</td>
+          </tr>
+          <tr>
+            <td>Source Map Scale</td>
+            <td>1:1,000,000 (Scanned @ 200 DPI)</td>
+          </tr>
+          <tr>
+            <td>Feature Count</td>
+            <td>12,332 topologically cleaned polygons</td>
+          </tr>
+          <tr>
+            <td>Digitizing Tolerances</td>
+            <td>Fuzzy: 300 m | Weed: 100 m | Min feature: 200 m</td>
+          </tr>
+          <tr>
+            <td>Positional Accuracy</td>
+            <td>Source: &le;100 m | Rectification RMS: 250 m | Relative: 0.9 km</td>
+          </tr>
+          <tr>
+            <td>Horizontal Coordinates</td>
+            <td>Geographic (Decimal Degrees) / EPSG:4326</td>
+          </tr>
+          <tr>
+            <td>Geodetic Reference</td>
+            <td>Everest 1969 / NAD27 / WGS84 compatible</td>
+          </tr>
+          <tr>
+            <td>West / East Bounds</td>
+            <td>87.984932° E &mdash; 92.926903° E</td>
+          </tr>
+          <tr>
+            <td>South / North Bounds</td>
+            <td>20.552744° N &mdash; 26.733309° N</td>
+          </tr>
+        </table>
+      </section>
+
+      <section>
+        <h2>Key Attribute Schema</h2>
+        <p>Engineers and GIS analysts can filter geology using the core attributes:</p>
+        <ul>
+          <li><strong>GLG (Lithostratigraphy):</strong> Categorizes mapped formations such as <em>csd</em> (Beach sand), <em>asd/asl/asc</em> (Alluvial sand/silt/clay), <em>rb</em> (Barind clay residuum), <em>rm</em> (Madhupur clay residuum), <em>QTdt</em> (Dupi Tila Formation), <em>Tt</em> (Tipam Sandstone), <em>Tb</em> (Bhuban Formation), and <em>Tba</em> (Barail Formation).</li>
+          <li><strong>TYPE (General Class):</strong> High-level classification including <code>bed</code> (bedrock), <code>sed</code> (sedimentary deposits), <code>water</code> (rivers/oceans), and <code>lake</code> (inland water bodies).</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Engineering Usage Notes</h2>
+        <div class="callout">
+          <span class="callout-title">Regional Scoping & Geotechnical Limitations</span>
+          <p style="margin-bottom: 0;">
+            This layer represents regional surficial outcrops at 1:1,000,000 scale. Features under 200 meters in width or length were not captured during digitization.
+          </p>
+        </div>
+        <ul>
+          <li><strong>Corridor Screening & Morphological Context:</strong> Recommended for preliminary highway alignment studies, regional soil provenance mapping (e.g., Madhupur/Barind tracts vs. active floodplains), and macro-scale borrow source appraisal.</li>
+          <li><strong>Not for Foundation Design:</strong> This regional vector coverage does not replace site-specific geotechnical investigations (SPT, CPT, borehole logging, laboratory testing) mandated by highway and bridge engineering codes.</li>
+          <li><strong>Data License:</strong> Boundary data includes ESRI intellectual property used under license for internal viewing and research.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Official Portals & Data Access</h2>
+        <div class="links-grid">
+          <a class="link-card" href="https://pubs.usgs.gov/publication/ofr97470H" target="_blank" rel="noopener noreferrer">
+            <div class="card-title">USGS Report OFR 97-470-H <span>↗</span></div>
+            <div class="card-desc">Official USGS publication entry and release documentation.</div>
+          </a>
+          <a class="link-card" href="https://doi.org/10.5066/P9HZQA15" target="_blank" rel="noopener noreferrer">
+            <div class="card-title">ScienceBase Catalog <span>↗</span></div>
+            <div class="card-desc">Direct DOI download for shapefiles and FGDC XML metadata.</div>
+          </a>
+          <a class="link-card" href="http://gsb.gov.bd/" target="_blank" rel="noopener noreferrer">
+            <div class="card-title">Geological Survey of BD <span>↗</span></div>
+            <div class="card-desc">Source agency for the 1:1,000,000 Geological Map of Bangladesh.</div>
+          </a>
+          <a class="link-card" href="https://www.sciencebase.gov/catalog/item/527d4253e4b0858ea4fd3456" target="_blank" rel="noopener noreferrer">
+            <div class="card-title">OGC Web Services <span>↗</span></div>
+            <div class="card-desc">ScienceBase WMS / WFS spatial data streaming endpoints.</div>
+          </a>
+        </div>
+      </section>
+      
+      <footer class="agency-footer">
+        <span>GSB & USGS Joint Dataset / FGDC Compliant</span>
+        <span>EPSG:4326 (WGS 84)</span>
+      </footer>
+    </div>
+  </main>
+
+</body>
+</html>
