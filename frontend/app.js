@@ -58,10 +58,10 @@ const engineeringColors = [
     "#9f7aea",
     "#ed8936",
     "#00b5d8",
+    "#3b82f6",
+    "#f59e0b",
     "#f11e1e",
     "#616874",
-    "#f59e0b",
-    "#3b82f6",
     "#10b981",
 ];
 
@@ -105,6 +105,7 @@ const getFeatureStyle = (feature, defaultColor, layerTransparency = null) => {
 
     const geomType = feature.geometry.type;
     const isPolygon = geomType.includes("Polygon");
+    const isPoint = geomType.includes("Point");
 
     // Handle weight from feature properties if exists
     if (
@@ -116,9 +117,9 @@ const getFeatureStyle = (feature, defaultColor, layerTransparency = null) => {
         if (pct === 0) {
             return { weight: 0, opacity: 0, fillOpacity: 0, color: "transparent" };
         }
-        weight = isPolygon ? (0.75 * pct) / 100 : (1.5 * pct) / 100;
+        weight = isPolygon ? (0.75 * pct) / 100 : isPoint ? (1 * pct) / 100 : (1.5 * pct) / 100;
     } else {
-        weight = isPolygon ? 0.75 : 1.5;
+        weight = isPolygon ? 0.75 : isPoint ? 1 : 1.5;
     }
 
     if (layerTransparency !== null && layerTransparency < 0) {
@@ -126,7 +127,7 @@ const getFeatureStyle = (feature, defaultColor, layerTransparency = null) => {
     }
 
     let finalOpacity = 0.8;
-    let finalFillOpacity = isPolygon ? 0.3 : 1;
+    let finalFillOpacity = isPolygon ? 0.3 : isPoint ? 0.8 : 1;
 
     let t = null;
     if (layerTransparency !== null && layerTransparency > 0) {
@@ -142,7 +143,7 @@ const getFeatureStyle = (feature, defaultColor, layerTransparency = null) => {
     
     if (t !== null && !isNaN(t)) {
         finalOpacity = (100 - t) / 100;
-        finalFillOpacity = isPolygon ? Math.min(0.3, finalOpacity) : finalOpacity;
+        finalFillOpacity = isPolygon ? Math.min(0.3, finalOpacity) : isPoint ? Math.min(0.8, finalOpacity) : finalOpacity;
     }
 
     return {
@@ -152,16 +153,19 @@ const getFeatureStyle = (feature, defaultColor, layerTransparency = null) => {
         fillOpacity: finalFillOpacity,
         opacity: finalOpacity,
         lineCap: "round",
+        radius: isPoint ? 2.5 : undefined,
     };
 };
 
 const getHighlightStyle = (feature, color) => {
     const isPolygon = feature.geometry.type.includes("Polygon");
+    const isPoint = feature.geometry.type.includes("Point");
     return {
-        weight: isPolygon ? 1.5 : 2.5,
+        weight: isPolygon ? 1.5 : isPoint ? 2 : 2.5,
         color: "#4a5568",
-        fillOpacity: isPolygon ? 0.6 : 1,
+        fillOpacity: isPolygon ? 0.6 : isPoint ? 1 : 1,
         opacity: 1,
+        radius: isPoint ? 3.5 : undefined,
     };
 };
 
@@ -183,6 +187,19 @@ const renderTooltipProps = (props, displayKeys) => {
 
     let count = 0;
 
+    const formatValue = (keyLabel, value) => {
+        if (typeof value === "string") {
+            const trimmed = value.trim();
+            if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+                const linkText = (keyLabel && keyLabel.toLowerCase().includes("see more"))
+                    ? "Open Link ↗"
+                    : "See More ↗";
+                return `<a href="${trimmed}" target="_blank" rel="noopener noreferrer" class="detail-link" title="${trimmed}">${linkText}</a>`;
+            }
+        }
+        return value;
+    };
+
     if (displayKeys) {
         // Data-driven keys logic
         for (const pair of displayKeys) {
@@ -192,9 +209,11 @@ const renderTooltipProps = (props, displayKeys) => {
 
             if (val === undefined || val === null || val === "") continue;
 
+            const formattedVal = formatValue(label, val);
+
             const row = document.createElement("div");
             row.className = "detail-row";
-            row.innerHTML = `<span class="detail-key">${label}</span><span class="detail-val">${val}</span>`;
+            row.innerHTML = `<span class="detail-key">${label}</span><span class="detail-val">${formattedVal}</span>`;
 
             if (count < 3) tooltipDetails.appendChild(row);
             else otherPropsContainer.appendChild(row);
@@ -239,9 +258,12 @@ const renderTooltipProps = (props, displayKeys) => {
             )
                 continue;
 
+            const label = key.replace(/_/g, " ");
+            const formattedVal = formatValue(label, value);
+
             const row = document.createElement("div");
             row.className = "detail-row";
-            row.innerHTML = `<span class="detail-key">${key.replace(/_/g, " ")}</span><span class="detail-val">${value}</span>`;
+            row.innerHTML = `<span class="detail-key">${label}</span><span class="detail-val">${formattedVal}</span>`;
 
             if (count < 3) tooltipDetails.appendChild(row);
             else otherPropsContainer.appendChild(row);
@@ -378,9 +400,29 @@ async function fetchAndRenderLayers() {
 
         // Tab switching logic
         const updateSlider = (activeTab) => {
-            slider.style.height = activeTab.offsetHeight + "px";
-            slider.style.transform = `translateY(${activeTab.offsetTop}px)`;
+            if (window.innerWidth <= 767) {
+                slider.style.height = "3px";
+                slider.style.width = activeTab.offsetWidth + "px";
+                slider.style.transform = `translateX(${activeTab.offsetLeft}px)`;
+                slider.style.top = "auto";
+                slider.style.bottom = "-1px";
+                slider.style.right = "auto";
+                slider.style.left = "0";
+            } else {
+                slider.style.width = "3px";
+                slider.style.height = activeTab.offsetHeight + "px";
+                slider.style.transform = `translateY(${activeTab.offsetTop}px)`;
+                slider.style.top = "0";
+                slider.style.bottom = "auto";
+                slider.style.right = "-2px";
+                slider.style.left = "auto";
+            }
         };
+
+        window.addEventListener('resize', () => {
+            const activeTab = tabsContainerEl.querySelector(".tab.active");
+            if (activeTab) updateSlider(activeTab);
+        });
 
         tabsContainerEl.addEventListener("click", (e) => {
             if (e.target.classList.contains("tab")) {
@@ -516,7 +558,7 @@ async function fetchAndRenderLayers() {
                     }
 
                     if (layerInfo.type && layerInfo.type.toLowerCase() === "raster") {
-                        const url = `${API_BASE_URL}/maps/${encodeURIComponent(layerInfo.filename)}`;
+                        const url = API_BASE_URL.replace("/api", "") + `/maps/${encodeURIComponent(layerInfo.filename)}`;
                         const georaster = await parseGeoraster(url);
                         let rasterOpacity = 0.7;
                         if (layerInfo.transparency !== null) {
@@ -559,43 +601,78 @@ async function fetchAndRenderLayers() {
                             }
                             let bg = `conic-gradient(${gradientParts.join(', ')})`;
                             colorUI.innerHTML = `<div style="width: 12px; height: 12px; border-radius: 50%; background: ${bg}; flex-shrink:0;"></div>`;
-                            let subHTML = `<div style="display: flex; gap: 8px; overflow: hidden; white-space: nowrap; flex: 1;">`;
-                            let count = 0;
-                            for (const [cName, cColor] of classEntries) {
-                                if (count < 3) {
-                                    subHTML += `<span style="display: flex; align-items: center; gap: 3px; flex-shrink: 0;" title="${cName}"><div style="width: 6px; height: 6px; border-radius: 50%; background: ${cColor}; flex-shrink: 0;"></div><span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 55px;">${cName}</span></span>`;
-                                }
-                                count++;
-                            }
-                            subHTML += `</div>`;
-                            if (count > 3) {
-                                subHTML += `<div class="legend-more-btn" title="See all classes" style="flex-shrink: 0; width: 14px; height: 14px; border-radius: 50%; background: #e2e8f0; color: var(--text-dim); font-size: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer;">+${count - 3}</div>`;
-                            }
-                            subLegendUI.innerHTML = subHTML;
-                            
-                            const moreBtn = subLegendUI.querySelector('.legend-more-btn');
-                            if (moreBtn) {
-                                moreBtn.addEventListener("click", (e) => {
-                                    e.stopPropagation();
-                                    const rightPanelTitle = document.getElementById("right-panel-title");
-                                    const rightPanelContent = document.getElementById("right-panel-content");
-                                    const rightPanelContainer = document.getElementById("right-panel-container");
-                                    if (rightPanelTitle) rightPanelTitle.textContent = layerInfo.name;
-                                    if (rightPanelContent) {
-                                        rightPanelContent.innerHTML = "";
-                                        for (const [cName, cData] of classEntries) {
-                                            rightPanelContent.innerHTML += `<div class="right-legend-item"><div class="right-legend-color" style="background: ${cData};"></div><span>${cName}</span></div>`;
-                                        }
+                            subLegendUI.innerHTML = "";
+                            const renderLegends = () => {
+                                const containerWidth = subLegendUI.clientWidth || 200;
+                                let available = containerWidth - 30; // 30px for +X button
+                                let subHTML = `<div style="display: flex; gap: 8px; overflow: hidden; white-space: nowrap; flex: 1;">`;
+                                let count = 0;
+                                let rendered = 0;
+                                for (const [cName, cColor] of classEntries) {
+                                    // Estimate width: 15px for dot/gap + ~6.5px per char + 10px padding
+                                    let estWidth = 15 + (cName.length * 6.5);
+                                    if (estWidth > 75) estWidth = 75; // max-width is 55px + 20px
+                                    
+                                    if (available - estWidth > 0) {
+                                        subHTML += `<span style="display: flex; align-items: center; gap: 3px; flex-shrink: 0;" title="${cName}"><div style="width: 6px; height: 6px; border-radius: 50%; background: ${cColor}; flex-shrink: 0;"></div><span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 55px;">${cName}</span></span>`;
+                                        available -= (estWidth + 8); // gap
+                                        rendered++;
+                                    } else {
+                                        break;
                                     }
-                                    if (rightPanelContainer) rightPanelContainer.classList.add("pinned");
-                                });
-                            }
+                                    count++;
+                                }
+                                subHTML += `</div>`;
+                                
+                                const remaining = classEntries.length - rendered;
+                                if (remaining > 0) {
+                                    subHTML += `<div class="legend-more-btn" title="See all classes" style="flex-shrink: 0; width: 24px; height: 18px; border-radius: 10px; background: #e2e8f0; color: var(--text-dim); font-size: 10px; font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer;">+${remaining}</div>`;
+                                }
+                                subLegendUI.innerHTML = subHTML;
+                                
+                                const moreBtn = subLegendUI.querySelector('.legend-more-btn');
+                                if (moreBtn) {
+                                    moreBtn.addEventListener("click", (e) => {
+                                        e.stopPropagation();
+                                        const rightPanelTitle = document.getElementById("right-panel-title");
+                                        const rightPanelContent = document.getElementById("right-panel-content");
+                                        const rightPanelContainer = document.getElementById("right-panel-container");
+                                        if (rightPanelTitle) rightPanelTitle.textContent = layerInfo.name;
+                                        if (rightPanelContent) {
+                                            rightPanelContent.innerHTML = "";
+                                            for (const [cName, cData] of classEntries) {
+                                                rightPanelContent.innerHTML += `<div class="right-legend-item"><div class="right-legend-color" style="background: ${cData};"></div><span>${cName}</span></div>`;
+                                            }
+                                        }
+                                        if (rightPanelContainer) rightPanelContainer.classList.add("pinned");
+                                    });
+                                }
+                            };
+                            
+                            // Initial render (might have 0 clientWidth if display is none, so setTimeout)
+                            setTimeout(renderLegends, 50);
+                            
+                            // Re-render on resize
+                            const ro = new ResizeObserver(() => {
+                                // Only re-render if width changed significantly to avoid infinite loops
+                                if (subLegendUI.clientWidth > 0 && Math.abs(subLegendUI.clientWidth - (subLegendUI._lastWidth || 0)) > 10) {
+                                    subLegendUI._lastWidth = subLegendUI.clientWidth;
+                                    renderLegends();
+                                }
+                            });
+                            ro.observe(subLegendUI);
+                            
+                            // Cleanup observer when item is removed or unchecked
+                            item._ro = ro;
                         } else {
                             colorUI.innerHTML = `<div style="width: 12px; height: 12px; border-radius: 50%; background: ${color}; flex-shrink:0;"></div>`;
                         }
 
                         geoLayer = L.geoJSON(data, {
                             pane: paneName,
+                            pointToLayer: (feature, latlng) => {
+                                return L.circleMarker(latlng, getFeatureStyle(feature, color, layerInfo.transparency));
+                            },
                             filter: function (feature) {
                                 const name = (feature.properties.name || feature.properties.river_name || feature.properties.locality || "").toLowerCase();
                                 if (name.includes("bay of bengal")) return false;
@@ -622,9 +699,19 @@ async function fetchAndRenderLayers() {
                                             }
                                         } catch (err) {}
                                         if (parsedKeys && parsedKeys.length > 0) {
-                                            let hVal = props[parsedKeys[0][0]];
-                                            headerValue = hVal !== undefined && hVal !== null && hVal !== "" ? hVal : " ";
-                                            displayKeys = parsedKeys.slice(1);
+                                            const firstKeyField = parsedKeys[0][0].toLowerCase();
+                                            if (["name", "title", "road_name", "river_name"].includes(firstKeyField)) {
+                                                let hVal = props[parsedKeys[0][0]];
+                                                headerValue = hVal !== undefined && hVal !== null && hVal !== "" ? hVal : " ";
+                                                displayKeys = parsedKeys.slice(1);
+                                            } else if (props.Name || props.name || props.road_name || props.river_name || props.locality) {
+                                                headerValue = props.Name || props.name || props.road_name || props.river_name || props.locality;
+                                                displayKeys = parsedKeys;
+                                            } else {
+                                                let hVal = props[parsedKeys[0][0]];
+                                                headerValue = hVal !== undefined && hVal !== null && hVal !== "" ? hVal : " ";
+                                                displayKeys = parsedKeys.slice(1);
+                                            }
                                         }
                                     } else {
                                         headerValue = props.contour !== undefined && props.contour !== null ? `Contour: ${props.contour} m` : props.name || props.road_name || props.river_name || props.locality || " ";
