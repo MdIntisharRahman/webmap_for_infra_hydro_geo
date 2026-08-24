@@ -21,7 +21,7 @@ RUN uv sync --frozen
 # Copy source code and maps
 COPY backend/ backend/
 COPY frontend/ frontend/
-COPY import_local_maps.py ./
+COPY import_local_maps.py about_us.md ./
 COPY Maps/ Maps/
 
 # Copy our custom startup script

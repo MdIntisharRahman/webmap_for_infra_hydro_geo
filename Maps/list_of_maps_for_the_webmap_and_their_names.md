@@ -7,4 +7,4 @@
 | RHD Road Network-Julia-2.geojson                            | RHD Road Network  | Infrastructure | Yes        | Vector |              | [rd_nr, Road]             | No       |                      |
 | geological_map_bd.geojson                                   | Geological Map    | Geo            | No         | Vector |              | [f_class_name, Formation] | No       | USGS-GLG-Credit.html |
 | compressed BGD SRTM30 Opentopography Clipped to the Map.tif | Elevation Map     | Geo            | No         | Raster | 50           | [ , Elevation]            | Yes      | SRTM-Credit.html     |
-| Merged_All_Boreholes.geojson                                | Borelog Map       |Infrastructure  | No         | Vector |              |                           | No       | Prosoil-Credit.html  |
+| Merged_All_Boreholes.geojson                                | Borelog Map       |Infrastructure  | No         | Vector | 50           |                           | No       | Prosoil-Credit.html  |

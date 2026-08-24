@@ -134,7 +134,7 @@ body {
     display: flex;
     flex-direction: column;
     z-index: 1000;
-    transition: transform 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: transform 1s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .side-panel-container:hover,
@@ -177,7 +177,7 @@ body {
     display: flex;
     flex-direction: column;
     z-index: 1000;
-    transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .right-panel-container.pinned {
@@ -451,7 +451,7 @@ body {
     padding: 10px 14px;
     margin: 4px 6px;
     border-radius: 4px;
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     cursor: pointer;
 }
 
@@ -555,7 +555,7 @@ body {
     height: 12px;
     background: white;
     border-radius: 50%;
-    transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
@@ -651,6 +651,21 @@ body {
     text-align: right;
     max-width: 200px;
     word-break: break-word;
+}
+
+.detail-link,
+.detail-val a {
+    color: #2563eb;
+    text-decoration: underline;
+    font-weight: 700;
+    cursor: pointer;
+    transition: color 0.15s ease;
+}
+
+.detail-link:hover,
+.detail-val a:hover {
+    color: #1d4ed8;
+    text-decoration: underline;
 }
 
 .see-more-btn {
@@ -798,7 +813,7 @@ body {
     background: var(--accent-blue);
     border-radius: 4px;
     z-index: 1;
-    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 0 0 8px rgba(2, 132, 199, 0.4);
 }
 
@@ -1089,9 +1104,9 @@ body {
         right: 0;
         transform: translateY(calc(100% - 48px));
         width: 100%;
-        max-height: 70vh;
+        height: 55vh; max-height: 55vh;
         z-index: 1001;
-        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .side-panel-container:hover,
@@ -1143,7 +1158,14 @@ body {
     }
 
     #tab-content-area {
-        max-height: 250px;
+        flex: 1;
+        max-height: none;
+    }
+    .tabs-and-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
     }
 
     /* Right Panel (Extended Legend) -> Bottom Sheet */
@@ -1364,7 +1386,7 @@ body {
         --bc: var(--active);
         --d-o: .3s;
         --d-t: .6s;
-        --d-t-e: cubic-bezier(.2, .85, .32, 1.2);
+        --d-t-e: cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     input[type=checkbox]:disabled,
@@ -1521,4 +1543,71 @@ body {
     border-radius: 50%;
     margin-right: 4px;
     flex-shrink: 0;
+}
+/* Tablet Adaptations */
+@media (min-width: 768px) and (max-width: 1180px) and (pointer: coarse) {
+    .side-panel-container {
+        width: 300px;
+    }
+    .right-panel-container {
+        width: 300px;
+    }
+}
+
+/* Wide Monitor Adaptations */
+@media (min-width: 1600px) {
+    .side-panel-container {
+        width: 400px;
+    }
+    .right-panel-container.pinned {
+        transform: translateY(-50%) translateX(0);
+        width: 400px;
+    }
+}
+
+
+/* Touch Target Adaptations for all Touch Devices (Phones & Tablets) */
+@media (pointer: coarse) {
+    /* Increase functional touch area without changing visual size drastically */
+    .pin-btn {
+        width: 44px;
+        height: 44px;
+        /* Visual center */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .pin-btn svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    .legend-more-btn, .credit-btn {
+        width: 32px; /* Slightly larger, visually acceptable */
+        height: 32px;
+        font-size: 14px;
+    }
+    
+    .toggle-switch {
+        width: 40px;
+        height: 24px;
+    }
+    
+    .toggle-switch::after {
+        width: 18px;
+        height: 18px;
+        top: 3px;
+        left: 3px;
+    }
+
+    .layer-item.active .toggle-switch::after {
+        transform: translateX(16px);
+    }
+    
+    /* Make Layer items larger to tap */
+    .layer-item {
+        padding: 14px 16px;
+        margin: 6px;
+    }
 }
