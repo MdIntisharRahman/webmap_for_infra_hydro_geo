@@ -20,23 +20,15 @@ L.control.zoom({ position: "bottomright" }).addTo(map);
 
 L.control
     .attribution({ position: "bottomleft" })
-    .addAttribution(
-        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-    )
     .addTo(map);
-
-L.tileLayer(
-    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-    {
-        maxZoom: 19,
-    },
-).addTo(map);
 
 // ============================================================================
 // UI ELEMENT REFERENCES
 // ============================================================================
 
 window.allLayerConfigs = [];
+window.activeBasemapLayer = null;
+window.activeBasemapItem = null;
 const tabsContainerEl = document.getElementById("dynamic-tabs-container");
 const tabContentAreaEl = document.getElementById("tab-content-area");
 const tooltip = document.getElementById("tooltip");
@@ -497,13 +489,20 @@ async function fetchAndRenderLayers() {
                 item.classList.add("active");
             }
 
+            const isBasemap = layerInfo.type && layerInfo.type.toLowerCase() === 'basemap';
+            
             let creditBtnUI = "";
-            if (layerInfo.credit_page) {
+            if (layerInfo.credit_page && !isBasemap) {
                 creditBtnUI = `<div class="credit-btn" data-url="credits/${layerInfo.credit_page}" title="View Credits">Cr</div>`;
             }
 
             const checkboxId = `cb-${i}`;
-            const checkboxUI = `<input id="${checkboxId}" class="layer-load-cb" type="checkbox" style="margin:0; cursor:pointer; flex-shrink:0; transform: scale(0.8);" ${isLoaded ? 'checked' : ''}>`;
+            let checkboxUI = '';
+            if (isBasemap) {
+                checkboxUI = `<input id="${checkboxId}" class="layer-load-cb basemap-radio" name="basemap-group" type="radio" style="margin:0; cursor:pointer; flex-shrink:0; transform: scale(0.8);" ${isLoaded ? 'checked' : ''}>`;
+            } else {
+                checkboxUI = `<input id="${checkboxId}" class="layer-load-cb" type="checkbox" style="margin:0; cursor:pointer; flex-shrink:0; transform: scale(0.8);" ${isLoaded ? 'checked' : ''}>`;
+            }
 
             // Restore v6 layout structure
             item.innerHTML = `
@@ -569,7 +568,30 @@ async function fetchAndRenderLayers() {
                         map.getPane(paneName).style.zIndex = 400 + (layers.length - i);
                     }
 
-                    if (layerInfo.type && layerInfo.type.toLowerCase() === "raster") {
+                    if (layerInfo.type && layerInfo.type.toLowerCase() === "basemap") {
+                        let attributionHtml = '';
+                        if (layerInfo.credit_page) {
+                            const match = layerInfo.credit_page.match(/^(.*?)\s*\[(.*?)\]$/);
+                            if (match) {
+                                attributionHtml = `&copy; <a href="${match[1].trim()}" target="_blank">${match[2].trim()}</a>`;
+                            } else {
+                                attributionHtml = layerInfo.credit_page;
+                            }
+                        }
+                        
+                        let maxZoom = 19;
+                        if (layerInfo.zoom_level) {
+                            maxZoom = parseInt(layerInfo.zoom_level, 10) || 19;
+                        }
+                        
+                        geoLayer = L.tileLayer(layerInfo.filename, {
+                            maxZoom: maxZoom,
+                            attribution: attributionHtml,
+                            pane: "tilePane"
+                        });
+                        
+                        colorUI.innerHTML = `<div style="width: 12px; height: 12px; border-radius: 50%; background: #cbd5e1; flex-shrink:0;"></div>`;
+                    } else if (layerInfo.type && layerInfo.type.toLowerCase() === "raster") {
                         const displayFilename = layerInfo.rendered_filename || layerInfo.filename;
                         const url = API_BASE_URL.replace("/api", "") + `/maps/${encodeURIComponent(displayFilename)}`;
                         const georaster = await parseGeoraster(url);
@@ -804,44 +826,98 @@ async function fetchAndRenderLayers() {
                 toggleSwitch.classList.remove('loading');
             };
 
-            loadCb.addEventListener('click', async (e) => {
-                e.stopPropagation();
-                if (loadCb.checked) {
-                    await loadLayerData();
-                    if (isVisuallyActive && geoLayer) {
-                        geoLayer.addTo(map);
-                        item.classList.add('active');
-                    }
-                } else {
-                    if (geoLayer) {
-                        map.removeLayer(geoLayer);
-                        geoLayer = null;
-                    }
-                    item.classList.remove('active');
-                    colorUI.innerHTML = `<div style="width: 12px; height: 12px; border-radius: 50%; background: #cbd5e1; flex-shrink:0;"></div>`;
-                    subLegendUI.innerHTML = '';
-                    delete loadedLayers[layerInfo.name];
-                }
-            });
-
-            item.addEventListener("click", () => {
-                if (!loadCb.checked) return;
-                isVisuallyActive = !isVisuallyActive;
-                if (isVisuallyActive) {
-                    item.classList.add("active");
-                    if (geoLayer) geoLayer.addTo(map);
-                } else {
-                    item.classList.remove("active");
-                    if (geoLayer) map.removeLayer(geoLayer);
-                }
-            });
-
-            if (isLoaded) {
-                loadLayerData().then(() => {
-                    if (isVisuallyActive && geoLayer) {
-                        geoLayer.addTo(map);
+            if (isBasemap) {
+                loadCb.addEventListener('change', async (e) => {
+                    console.log("Basemap radio changed for:", layerInfo.name, "checked:", loadCb.checked);
+                    if (loadCb.checked) {
+                        if (window.activeBasemapLayer && window.activeBasemapLayer !== geoLayer) {
+                            console.log("Removing previous basemap");
+                            map.removeLayer(window.activeBasemapLayer);
+                        }
+                        if (window.activeBasemapItem && window.activeBasemapItem !== item) {
+                            window.activeBasemapItem.classList.remove('active');
+                        }
+                        
+                        if (!geoLayer) {
+                            console.log("Loading basemap data...");
+                            await loadLayerData();
+                        }
+                        
+                        if (geoLayer) {
+                            console.log("Adding new basemap to map");
+                            geoLayer.addTo(map);
+                            geoLayer.bringToBack();
+                            item.classList.add('active');
+                            window.activeBasemapLayer = geoLayer;
+                            window.activeBasemapItem = item;
+                        }
+                        isVisuallyActive = true;
                     }
                 });
+                
+                item.addEventListener("click", () => {
+                    if (!loadCb.checked) {
+                        loadCb.checked = true;
+                        loadCb.dispatchEvent(new Event('change'));
+                    }
+                });
+                
+                if (isLoaded) {
+                    loadLayerData().then(() => {
+                        if (isVisuallyActive && geoLayer) {
+                            if (!window.activeBasemapLayer) {
+                                geoLayer.addTo(map);
+                                geoLayer.bringToBack();
+                                window.activeBasemapLayer = geoLayer;
+                                window.activeBasemapItem = item;
+                            } else {
+                                loadCb.checked = false;
+                                item.classList.remove('active');
+                                isVisuallyActive = false;
+                            }
+                        }
+                    });
+                }
+            } else {
+                loadCb.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    if (loadCb.checked) {
+                        await loadLayerData();
+                        if (isVisuallyActive && geoLayer) {
+                            geoLayer.addTo(map);
+                            item.classList.add('active');
+                        }
+                    } else {
+                        if (geoLayer) {
+                            map.removeLayer(geoLayer);
+                            geoLayer = null;
+                        }
+                        item.classList.remove('active');
+                        colorUI.innerHTML = `<div style="width: 12px; height: 12px; border-radius: 50%; background: #cbd5e1; flex-shrink:0;"></div>`;
+                        subLegendUI.innerHTML = '';
+                        delete loadedLayers[layerInfo.name];
+                    }
+                });
+
+                item.addEventListener("click", () => {
+                    if (!loadCb.checked) return;
+                    isVisuallyActive = !isVisuallyActive;
+                    if (isVisuallyActive) {
+                        item.classList.add("active");
+                        if (geoLayer) geoLayer.addTo(map);
+                    } else {
+                        item.classList.remove("active");
+                        if (geoLayer) map.removeLayer(geoLayer);
+                    }
+                });
+
+                if (isLoaded) {
+                    loadLayerData().then(() => {
+                        if (isVisuallyActive && geoLayer) {
+                            geoLayer.addTo(map);
+                        }
+                    });
+                }
             }
         }
     } catch (error) {

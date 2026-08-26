@@ -54,13 +54,17 @@ def load_data(db_url, maps_dir, md_filepath):
         layer_type = map_info.get('type', 'Vector')
         table_name = slugify(layer_name)
         
-        filepath = os.path.join(maps_dir, filename)
-        if not os.path.exists(filepath):
-            console.print(f"[bold yellow]Warning:[/bold yellow] File not found: [cyan]{filepath}[/cyan]. Skipping.")
+        if layer_type.lower() == 'basemap':
+            console.print(f"[bold blue](i)[/bold blue] Skipping basemap for '[cyan]{layer_name}[/cyan]' (handled in frontend).")
             continue
             
         if layer_type.lower() == 'raster':
             console.print(f"[bold blue](i)[/bold blue] Skipping raster ingestion for '[cyan]{filename}[/cyan]' (queried directly via backend).")
+            continue
+            
+        filepath = os.path.join(maps_dir, filename)
+        if not os.path.exists(filepath):
+            console.print(f"[bold yellow]Warning:[/bold yellow] File not found: [cyan]{filepath}[/cyan]. Skipping.")
             continue
             
         msg = f"Loading [cyan]{filename}[/cyan] (Layer: [bold]{layer_name}[/bold]) into table '[green]{table_name}[/green]'..."

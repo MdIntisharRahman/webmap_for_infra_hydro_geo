@@ -135,6 +135,7 @@ async def get_layers():
                 units = parts[7].strip() if len(parts) >= 8 else ""
                 estimate = (parts[8].strip().lower() in ["yes", "y"]) if len(parts) >= 9 else False
                 credit_page = parts[9].strip() if len(parts) >= 10 else ""
+                zoom_level = parts[10].strip() if len(parts) >= 11 else ""
                 
                 filename = parts[0]
                 rendered_filename = None
@@ -164,7 +165,8 @@ async def get_layers():
                     "estimate": estimate,
                     "filename": filename,
                     "rendered_filename": rendered_filename,
-                    "credit_page": credit_page
+                    "credit_page": credit_page,
+                    "zoom_level": zoom_level
                 })
     return layers
 
