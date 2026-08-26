@@ -745,8 +745,16 @@ async function fetchAndRenderLayers() {
                                             }
                                         } catch (err) {}
                                         if (parsedKeys && parsedKeys.length > 0) {
-                                            const firstKeyField = parsedKeys[0][0].toLowerCase();
-                                            if (["name", "title", "road_name", "river_name"].includes(firstKeyField)) {
+                                            let hasNameInKeys = false;
+                                            for (let i = 0; i < parsedKeys.length; i++) {
+                                                const fieldName = parsedKeys[i][0].toLowerCase();
+                                                if (["name", "title", "road_name", "river_name", "locality"].includes(fieldName)) {
+                                                    hasNameInKeys = true;
+                                                    break;
+                                                }
+                                            }
+
+                                            if (hasNameInKeys) {
                                                 let hVal = props[parsedKeys[0][0]];
                                                 headerValue = hVal !== undefined && hVal !== null && hVal !== "" ? hVal : " ";
                                                 displayKeys = parsedKeys.slice(1);
