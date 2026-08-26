@@ -67,8 +67,14 @@ body {
     font-size: 20px;
     padding: 10px 16px;
     border-radius: 0px;
-    /* box-shadow: 0 4px 10px rgba(13, 40, 56, 0.3); */
+    box-shadow: 0 4px 10px rgba(13, 40, 56, 0.3);
     letter-spacing: 1px;
+}
+
+.logo img {
+    width: 72px;
+    height: 72px;
+    margin-right: 8px;
 }
 
 .header-titles h1 {
@@ -79,8 +85,8 @@ body {
     line-height: 1.1;
     letter-spacing: -0.5px;
     position: relative;
-    padding-bottom: 8px;
-    margin-bottom: 8px;
+    padding-bottom: 7px;
+    margin-bottom:  7px;
 }
 
 @keyframes h1-pulse-gloss {
@@ -369,7 +375,7 @@ body {
     height: 28px;
     padding: 0 8px;
     border: 1px solid #e2e8f0;
-    border-radius: 6px;
+    /* border-radius: 6px; */
     font-size: 12px;
     outline: none;
 }
@@ -380,7 +386,7 @@ body {
     background: var(--accent-blue);
     color: white;
     border: none;
-    border-radius: 6px;
+    /* border-radius: 6px; */
     cursor: pointer;
     font-weight: 600;
     transition: background 0.2s;
@@ -391,8 +397,8 @@ body {
 }
 
 #target-btn {
-    width: 35px;
-    height: 35px;
+    width: 27px;
+    height: 27px;
     flex-shrink: 0;
     padding: 0;
     background: #f1f5f9;
@@ -450,7 +456,7 @@ body {
     border: 1px solid var(--panel-border);
     padding: 10px 14px;
     margin: 4px 6px;
-    border-radius: 4px;
+    border-radius: 0px;
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     cursor: pointer;
 }
@@ -1032,6 +1038,7 @@ body {
     font-weight: 600;
     color: var(--text-main);
     flex: 1;
+    text-align: right;
     word-break: break-word;
 }
 
@@ -1102,7 +1109,7 @@ body {
         bottom: 0;
         left: 0;
         right: 0;
-        transform: translateY(calc(100% - 48px));
+        transform: translateY(calc(100% - 130px));
         width: 100%;
         height: 55vh; max-height: 55vh;
         z-index: 1001;
@@ -1584,9 +1591,21 @@ body {
     }
 
     .legend-more-btn, .credit-btn {
-        width: 32px; /* Slightly larger, visually acceptable */
-        height: 32px;
-        font-size: 14px;
+        width: 22px;
+        height: 22px;
+        font-size: 11px;
+        position: relative;
+    }
+    
+    /* Expand touch area invisibly */
+    .legend-more-btn::after, .credit-btn::after {
+        content: '';
+        position: absolute;
+        top: -12px;
+        bottom: -12px;
+        left: -12px;
+        right: -12px;
+        border-radius: 50%;
     }
     
     .toggle-switch {
