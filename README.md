@@ -103,30 +103,57 @@ The entire webmap is driven by a central configuration file located at `Maps/lis
 
 | Column | Description |
 | :--- | :--- |
-| **File Name** | The exact name of the file located in the `Maps/` directory (e.g., `data.geojson`, `elevation.tif`). Must include the extension. |
+| **File Name** | The exact name of the file located in the `Maps/` directory (e.g., `data.geojson`, `elevation.tif`). Must include the extension. For `Basemap` types, this is the XYZ tile URL (e.g., `https://{s}.tile.osm.org/{z}/{x}/{y}.png`). |
 | **Name of the Layer** | The human-readable name that will appear in the webmap's side panel and legends. |
-| **Tab** | The category/tab under which this layer will be grouped in the side panel (e.g., `Hydro`, `Infrastructure`, `Geo`). |
+| **Tab** | The category/tab under which this layer will be grouped in the side panel (e.g., `Hydro`, `Infrastructure`, `Geo`). Must be `Basemap` for basemap layers. |
 | **Show First** | (`Yes` or `No`). If `Yes`, the layer is automatically toggled ON and visible when the webmap first loads. |
-| **Type** | (`Vector` or `Raster`). Use `Vector` for GeoJSON points, lines, or polygons. Use `Raster` for `.tif` grids. |
-| **Transparency** | (Optional). A percentage value (e.g., `50`). If left blank, it defaults to standard opacity. If set to a negative value (e.g., `-100`), it creates a **"Ghost Layer"** (hidden from the map UI but still queried by the data estimator). |
-| **Derive** | (Optional). Used by the Point Data Estimator. Formatted as `[field_name, Display Label]`. For rasters, the field name is usually left blank (e.g., `[ , Elevation]`). You can also specify multiple values separated by commas, like `[depth, SLWL], [width, Width]`. |
-| **Units** | (Optional). The physical unit corresponding to the derived value (e.g., `m`, `g`). If deriving multiple values, separate units with a comma (e.g., `m, m`). |
-| **Estimate** | (`Yes` or `No`). If `Yes`, this layer is queried whenever a user clicks the map to estimate values via the Point Data Estimator. |
-| **Credit Page** | (Optional). The filename of an HTML attribution page located in `frontend/credits/` (e.g., `Prosoil-Credit.html`). Triggers a 'cr' button in the UI. |
+| **Type** | (`Vector`, `Raster`, or `Basemap`). Use `Vector` for GeoJSON points/polygons. Use `Raster` for `.tif` grids. Use `Basemap` for background tile servers. |
+| **Transparency** | (Optional). A percentage value (e.g., `50`). If set to a negative value (e.g., `-100`), it creates a **"Ghost Layer"** (hidden from the map UI but queried by the data estimator). |
+| **Derive** | (Optional). Used by the Point Data Estimator. Formatted as `[field_name, Display Label]`. You can specify multiple separated by commas. |
+| **Units** | (Optional). The physical unit corresponding to the derived value (e.g., `m`, `g`). |
+| **Estimate** | (`Yes` or `No`). If `Yes`, queried whenever a user clicks the map to estimate values. |
+| **Credit Page** | (Optional). The HTML file in `frontend/credits/` (e.g., `Prosoil.html`). **For Basemaps ONLY**, you can write a direct HTML hyperlink string like `<a href="https://openstreetmap.org">OSM</a>`. |
+| **Zoom Level** | (Optional). **For Basemaps ONLY**. Defines the maximum zoom limit for the tile server (e.g., `19`). |
 
 ### Examples
 
 **Example 1: The Basics (Easy Difficulty)**
 *You want to add a simple GeoJSON containing regional boundaries. You want it grouped under "Geo", disabled by default, with no special data estimations.*
-`| regional_bounds.geojson | Regional Boundaries | Geo | No | Vector | | | | No | |`
+`| regional_bounds.geojson | Regional Boundaries | Geo | No | Vector | | | | No | | |`
 - **Why this is easy:** You only provide the essential file details, name, category, and type. The rest is left blank or `No`.
 
 **Example 2: Adding a Raster Map with Estimations (Moderate Difficulty)**
 *You want to add a GeoTIFF temperature map. You want it semi-transparent (40%), and you want the Point Data Estimator to derive the temperature in Celsius.*
-`| temperature_grid.tif | Annual Temp | Geo | No | Raster | 40 | [ , Temperature] | C | Yes | Temp-Credit.html |`
+`| temperature_grid.tif | Annual Temp | Geo | No | Raster | 40 | [ , Temperature] | C | Yes | Temp-Credit.html | |`
 - **Why this is moderate:** You specify `Raster` type, set a `Transparency` of 40, and configure the `Derive` column to map the raster pixel value to the label "Temperature" with a unit of "C". You also link a credit page.
 
 **Example 3: Complex Vector with Multiple Derivations (Highest Difficulty)**
 *You have a highly detailed GeoJSON of underground water aquifers. You want the map to automatically show it on load, but you want to extract TWO distinct values (Depth and Salinity) when the user clicks the map, applying different units.*
-`| aquifers_deep.geojson | Deep Aquifers | Hydro | Yes | Vector | | [depth, Depth], [salinity, Salinity Level] | m, ppt | Yes | Hydro-Credit.html |`
-- **Why this is difficult:** You are utilizing advanced `Derive` syntax to extract multiple attributes simultaneously. The `Derive` column uses array pairs (`[depth, Depth], [salinity, Salinity Level]`), and the `Units` column specifies matching units (`m, ppt`) separated by a comma. The backend will perform IDW estimation on both fields concurrently.
+`| aquifers_deep.geojson | Deep Aquifers | Hydro | Yes | Vector | | [depth, Depth], [salinity, Salinity Level] | m, ppt | Yes | Hydro-Credit.html | |`
+- **Why this is difficult:** You utilize advanced `Derive` syntax. The backend will perform IDW estimation on both fields concurrently.
+
+**Example 4: Adding an Online Basemap**
+*You want to add the CyclOSM background map, ensure its radio button is grouped in the Basemap tab, and provide proper attribution link.*
+`| https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png | CycleOSM | Basemap | Yes | Basemap | | | | | https://www.openstreetmap.org/copyright [OSM] | 19 |`
+- **Why this is unique:** The `File Name` acts as a direct internet URL (passing `{x}, {y}, {z}` variables directly to Leaflet). The `Credit Page` dynamically parses `url [Text]` into a clickable hyperlink anchored natively to the map canvas, and `Zoom Level` safely caps zooming at 19.
+
+---
+
+### Architecture & Type Exclusivity (How Data Scopes Work)
+
+To ensure high performance and predictable UI behavior, the platform enforces strict **Type Exclusivity** across the full stack (Frontend Map Engine, Backend Python API, and Database Loader). Properties belonging to one `Type` logically cannot bleed into another.
+
+#### 1. Basemap Architecture (`Type = Basemap`)
+Basemaps represent the fundamental bottom-layer visualization of the earth. Because they are fetched continuously from external XYZ tile servers (like OpenStreetMap or ESRI) as the user pans and zooms, their pipeline skips the database entirely.
+- **Mutually Exclusive UI**: Basemaps are rendered as radio buttons. The frontend engine strictly ensures only **one** basemap can be loaded and visually active at any time.
+- **File Name Routing**: The `File Name` column is treated as a raw HTTP URL template, bypassing local file checks.
+- **Attribution Scope (`Credit Page`)**: Basemaps do **not** generate "Cr" buttons or modal popups. Instead, their `Credit Page` column expects a raw HTML string (e.g., `<a href="...">OSM</a>`), which the engine natively injects into the bottom-left Leaflet copyright banner when the map is active.
+- **Isolated Config (`Zoom Level`)**: The `Zoom Level` column is an exclusive property of Basemaps, configuring the external tile server cap to prevent requesting broken images.
+- **Data Exclusion**: Because Basemaps are pre-rendered images, the Backend Point Data Estimator securely skips them. They are ignored by SQL distance queries and IDW calculations.
+
+#### 2. Vector & Raster Architecture (`Type = Vector` or `Raster`)
+Vectors (GeoJSONs) and Rasters (GeoTIFFs) represent your analytical overlays. They are ingested deeply into the system, queryable by the database, and stackable in the UI.
+- **Stackable UI**: Rendered as independent checkboxes. Users can overlay infinite combinations of vectors and rasters simultaneously on top of the active Basemap.
+- **File Name Routing**: The `File Name` expects a physical file residing in the `Maps/` folder, which triggers ingestion by `import_local_maps.py`.
+- **Attribution Scope (`Credit Page`)**: Vectors and Rasters look for an `.html` file path in the `frontend/credits/` directory (e.g., `Prosoil.html`). They generate a clickable "Cr" button in the layer list that pops open a modal iframe window to display complex formatting, logos, and licenses. 
+- **Estimator Integration**: Vectors and Rasters exclusively utilize the `Derive`, `Units`, and `Estimate` columns. The backend actively scans these layers during a map click, executing `ST_DWithin` algorithms for Vectors and Inverse Distance Weighting (IDW) for Rasters to extract data points.
