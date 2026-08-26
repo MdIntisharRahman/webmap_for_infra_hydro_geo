@@ -21,15 +21,14 @@ L.control.zoom({ position: "bottomright" }).addTo(map);
 L.control
     .attribution({ position: "bottomleft" })
     .addAttribution(
-        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/">CARTO</a>',
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     )
     .addTo(map);
 
 L.tileLayer(
-    "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
+    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
     {
-        subdomains: "abcd",
-        maxZoom: 20,
+        maxZoom: 19,
     },
 ).addTo(map);
 
@@ -99,8 +98,12 @@ const getFeatureStyle = (feature, defaultColor, layerTransparency = null) => {
     let weight = 1.5;
 
     // Check if data-driven styling is available
-    if (feature.properties && feature.properties.f_class_color) {
-        color = feature.properties.f_class_color;
+    if (feature.properties) {
+        let fc = feature.properties.color || feature.properties.f_class_color;
+        if (fc) {
+            if (!fc.startsWith('#') && !fc.startsWith('rgb')) fc = '#' + fc;
+            color = fc;
+        }
     }
 
     const geomType = feature.geometry.type;
@@ -504,11 +507,13 @@ async function fetchAndRenderLayers() {
 
             // Restore v6 layout structure
             item.innerHTML = `
-                <div class="layer-info-container" style="display: flex; flex-direction: column; gap: 4px; flex: 1; overflow: hidden; margin-right: 12px;">
-                    <div class="layer-info" style="display: flex; align-items: center; gap: 10px; overflow: hidden;">
+                <div class="layer-info-container" style="display: flex; flex-direction: column; gap: 4px; flex: 1; margin-right: 12px; min-width: 0;">
+                    <div class="layer-info" style="display: flex; align-items: center; gap: 10px;">
                         ${checkboxUI}
                         <div class="layer-color-ui" style="display:flex; align-items:center; flex-shrink:0;"><div style="width: 12px; height: 12px; border-radius: 50%; background: #cbd5e1;"></div></div>
-                        <span class="layer-name sliding-name" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${layerInfo.name}">${layerInfo.name}</span>
+                        <div class="sliding-name-container" style="flex: 1; overflow: hidden; white-space: nowrap; display: flex; align-items: center; min-width: 0; position: relative;">
+                            <span class="layer-name sliding-name" style="display: inline-block; transition: transform 0.3s ease; overflow: visible; flex-shrink: 0;" title="${layerInfo.name}">${layerInfo.name}</span>
+                        </div>
                         ${creditBtnUI}
                     </div>
                     <div class="sub-legend-ui" style="display: flex; gap: 6px; align-items: center; margin-left: 50px; width: calc(100% - 50px); font-size: 9px; color: var(--text-dim); font-weight: 600;"></div>
@@ -534,15 +539,22 @@ async function fetchAndRenderLayers() {
 
             const container = item.querySelector('.sliding-name-container');
             const nameEl = item.querySelector('.sliding-name');
-            item.addEventListener('mouseenter', () => {
+            const handleSlide = () => {
                 const diff = nameEl.scrollWidth - container.clientWidth;
                 if (diff > 0) {
+                    nameEl.style.transition = `transform ${diff * 0.02}s linear`;
                     nameEl.style.transform = `translateX(-${diff + 5}px)`;
                 }
-            });
-            item.addEventListener('mouseleave', () => {
+            };
+            const handleReset = () => {
+                nameEl.style.transition = `transform 0.3s ease`;
                 nameEl.style.transform = `translateX(0)`;
-            });
+            };
+            
+            item.addEventListener('mouseenter', handleSlide);
+            item.addEventListener('mouseleave', handleReset);
+            item.addEventListener('touchstart', handleSlide, {passive: true});
+            item.addEventListener('touchend', () => { setTimeout(handleReset, 1500); }, {passive: true});
 
             tabContentWrappers[layerInfo.tab].appendChild(item);
 
@@ -558,7 +570,8 @@ async function fetchAndRenderLayers() {
                     }
 
                     if (layerInfo.type && layerInfo.type.toLowerCase() === "raster") {
-                        const url = API_BASE_URL.replace("/api", "") + `/maps/${encodeURIComponent(layerInfo.filename)}`;
+                        const displayFilename = layerInfo.rendered_filename || layerInfo.filename;
+                        const url = API_BASE_URL.replace("/api", "") + `/maps/${encodeURIComponent(displayFilename)}`;
                         const georaster = await parseGeoraster(url);
                         let rasterOpacity = 0.7;
                         if (layerInfo.transparency !== null) {
@@ -604,17 +617,17 @@ async function fetchAndRenderLayers() {
                             subLegendUI.innerHTML = "";
                             const renderLegends = () => {
                                 const containerWidth = subLegendUI.clientWidth || 200;
-                                let available = containerWidth - 30; // 30px for +X button
+                                let available = containerWidth - 26; // for +X button
                                 let subHTML = `<div style="display: flex; gap: 8px; overflow: hidden; white-space: nowrap; flex: 1;">`;
                                 let count = 0;
                                 let rendered = 0;
                                 for (const [cName, cColor] of classEntries) {
-                                    // Estimate width: 15px for dot/gap + ~6.5px per char + 10px padding
-                                    let estWidth = 15 + (cName.length * 6.5);
-                                    if (estWidth > 75) estWidth = 75; // max-width is 55px + 20px
+                                    // Estimate width: 12px for dot/gap + ~5.5px per char
+                                    let estWidth = 12 + (cName.length * 5.5);
+                                    if (estWidth > 95) estWidth = 95; // max-width is 80px + 15px
                                     
-                                    if (available - estWidth > 0) {
-                                        subHTML += `<span style="display: flex; align-items: center; gap: 3px; flex-shrink: 0;" title="${cName}"><div style="width: 6px; height: 6px; border-radius: 50%; background: ${cColor}; flex-shrink: 0;"></div><span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 55px;">${cName}</span></span>`;
+                                    if (available - estWidth >= 0) {
+                                        subHTML += `<span style="display: flex; align-items: center; gap: 3px; flex-shrink: 0;" title="${cName}"><div style="width: 6px; height: 6px; border-radius: 50%; background: ${cColor}; flex-shrink: 0;"></div><span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 80px;">${cName}</span></span>`;
                                         available -= (estWidth + 8); // gap
                                         rendered++;
                                     } else {
@@ -665,7 +678,18 @@ async function fetchAndRenderLayers() {
                             // Cleanup observer when item is removed or unchecked
                             item._ro = ro;
                         } else {
-                            colorUI.innerHTML = `<div style="width: 12px; height: 12px; border-radius: 50%; background: ${color}; flex-shrink:0;"></div>`;
+                            let singleColor = color;
+                            if (data.features && data.features.length > 0) {
+                                const fp = data.features[0].properties;
+                                if (fp) {
+                                    let clr = fp.color || fp.f_class_color;
+                                    if (clr) {
+                                        if (!clr.startsWith('#') && !clr.startsWith('rgb')) clr = '#' + clr;
+                                        singleColor = clr;
+                                    }
+                                }
+                            }
+                            colorUI.innerHTML = `<div style="width: 12px; height: 12px; border-radius: 50%; background: ${singleColor}; flex-shrink:0;"></div>`;
                         }
 
                         geoLayer = L.geoJSON(data, {
@@ -833,6 +857,12 @@ fetchAndRenderLayers();
 // ============================================================================
 
 let currentMarker = null;
+window.closeEstimatorMarker = () => {
+    if (currentMarker) {
+        map.removeLayer(currentMarker);
+        currentMarker = null;
+    }
+};
 
 function parseDMS(input) {
     const parts = input.split(",");
@@ -924,7 +954,14 @@ document.getElementById("coord-btn").addEventListener("click", async () => {
         
         if (data.estimates) {
             for (const [label, val] of Object.entries(data.estimates)) {
-                let text = val !== null ? `${val.toFixed(2)} m` : "N/A";
+                let text = "N/A";
+                if (val !== null && typeof val === "object" && val.value !== undefined) {
+                    text = val.value !== null ? `${Number(val.value).toFixed(2)} ${val.unit}`.trim() : "N/A";
+                } else if (val !== null && typeof val === "number") {
+                    text = val.toFixed(2);
+                } else if (val !== null) {
+                    text = val;
+                }
                 allRows.push(`<div class="est-row"><div class="est-key">${label}:</div><div class="est-val">${text}</div></div>`);
             }
         }
@@ -947,7 +984,10 @@ document.getElementById("coord-btn").addEventListener("click", async () => {
         }
 
         const popupContent = `
-        <div class="est-header">Point Data Estimator</div>
+        <div class="est-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <span>Point Data Estimator</span>
+            <img class="est-close-btn" src="resources/images/cross-nrm.svg" alt="Close" title="Close Marker" style="cursor: pointer; transition: content 0.2s; height: 10.7px;" onmouseover="this.src='resources/images/cross-cls.svg';" onmouseout="this.src='resources/images/cross-nrm.svg';" onclick="window.closeEstimatorMarker();">
+        </div>
         ${visibleRows}
         ${seeMoreHTML}
         `;

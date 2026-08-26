@@ -132,8 +132,25 @@ async def get_layers():
                         pass
                 
                 derive = parts[6].strip() if len(parts) >= 7 else ""
-                estimate = (parts[7].strip().lower() in ["yes", "y"]) if len(parts) >= 8 else False
-                credit_page = parts[8].strip() if len(parts) >= 9 else ""
+                units = parts[7].strip() if len(parts) >= 8 else ""
+                estimate = (parts[8].strip().lower() in ["yes", "y"]) if len(parts) >= 9 else False
+                credit_page = parts[9].strip() if len(parts) >= 10 else ""
+                
+                filename = parts[0]
+                rendered_filename = None
+                
+                if layer_type.lower() == "raster":
+                    maps_dir = os.path.join(os.path.dirname(__file__), "..", "Maps")
+                    base_name, _ = os.path.splitext(filename)
+                    base_norm = base_name.replace("_", " ")
+                    if os.path.exists(maps_dir):
+                        for f in os.listdir(maps_dir):
+                            f_norm = f.replace("_", " ")
+                            if f_norm.startswith(base_norm + "-Rendered"):
+                                rendered_filename = f
+                                break
+                    if not rendered_filename:
+                        rendered_filename = base_name + "-Rendered.tif"
                 
                 layers.append({
                     "name": layer_name, 
@@ -143,8 +160,10 @@ async def get_layers():
                     "type": layer_type,
                     "transparency": transparency,
                     "derive": derive,
+                    "units": units,
                     "estimate": estimate,
-                    "filename": parts[0],
+                    "filename": filename,
+                    "rendered_filename": rendered_filename,
                     "credit_page": credit_page
                 })
     return layers
@@ -250,14 +269,16 @@ async def get_estimate(lat: float, lng: float, active_tables: str = "", db: Asyn
             table = lyr["table"]
             filename = lyr.get("filename", "")
             
-            # Parse Derive string e.g. [contour, SHWL] or [ , Elevation]
-            field = None
-            display = lyr["name"]
+            # Parse Derive string e.g. [contour, SHWL] or [contour, SHWL], [depth, SLWL]
+            derive_list = []
             if derive_str:
-                m = re.match(r'\[(.*),(.*)\]', derive_str)
-                if m:
-                    field = m.group(1).strip()
-                    display = m.group(2).strip()
+                matches = re.findall(r'\[(.*?), *(.*?)\]', derive_str)
+                if matches:
+                    derive_list = [(m[0].strip(), m[1].strip()) for m in matches]
+            if not derive_list:
+                derive_list = [(None, lyr["name"])]
+                
+            units_list = [u.strip() for u in lyr.get("units", "").split(",")] if lyr.get("units") else []
             
             if is_estimate:
                 if layer_type == "raster":
@@ -269,19 +290,23 @@ async def get_estimate(lat: float, lng: float, active_tables: str = "", db: Asyn
                             try:
                                 for v in src.sample([(lng, lat)]):
                                     val = float(v[0])
-                                    # For elevation missing values, handle nodata if needed (usually handled by float extraction unless massive negative)
+                                    # For elevation missing values, handle nodata if needed
                                     if val < -9000:
                                         val = None
                                     break
                             except Exception:
                                 pass
                     if val is not None:
-                        estimates[display] = val
-                elif layer_type == "vector" and field:
-                    # IDW Estimation
-                    val = await estimate_level(db, table, lat, lng, field)
-                    if val is not None:
-                        estimates[display] = val
+                        for i, (field, display) in enumerate(derive_list):
+                            unit_str = units_list[i] if i < len(units_list) else (units_list[-1] if units_list else "")
+                            estimates[display] = {"value": val, "unit": unit_str}
+                elif layer_type == "vector":
+                    for i, (field, display) in enumerate(derive_list):
+                        if field:
+                            val = await estimate_level(db, table, lat, lng, field)
+                            if val is not None:
+                                unit_str = units_list[i] if i < len(units_list) else (units_list[-1] if units_list else "")
+                                estimates[display] = {"value": val, "unit": unit_str}
             elif layer_type == "vector":
                 # Find nearest overlapping/nearby feature
                 try:
@@ -298,18 +323,19 @@ async def get_estimate(lat: float, lng: float, active_tables: str = "", db: Asyn
                     rows = []
                 
                 if rows:
-                    feature_names = set()
-                    for r in rows:
-                        props = r[0]
-                        if not props: continue
-                        if field:
-                            val = props.get(field)
-                        else:
-                            val = props.get("f_class_name") or props.get("name") or props.get("Type") or props.get("type") or props.get("feature_name") or props.get("road_name") or props.get("river_name")
-                        if val:
-                            feature_names.add(str(val))
-                    if feature_names:
-                        nearby_features[display] = ", <br>".join(feature_names)
+                    for i, (field, display) in enumerate(derive_list):
+                        feature_names = set()
+                        for r in rows:
+                            props = r[0]
+                            if not props: continue
+                            if field:
+                                val = props.get(field)
+                            else:
+                                val = props.get("f_class_name") or props.get("name") or props.get("Type") or props.get("type") or props.get("feature_name") or props.get("road_name") or props.get("river_name")
+                            if val:
+                                feature_names.add(str(val))
+                        if feature_names:
+                            nearby_features[display] = ", <br>".join(feature_names)
                         
         return {"estimates": estimates, "nearby": nearby_features}
     except Exception as e:

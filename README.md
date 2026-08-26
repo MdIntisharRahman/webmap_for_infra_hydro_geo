@@ -94,3 +94,39 @@ When rendering the interactive popup/tooltip for a feature, the application uses
 1. **Explicit First-Key Naming**: If the very first pair in your `keys` field explicitly references a naming property (like `name`, `title`, `road_name`, or `river_name`), the application immediately uses its value as the header and removes it from the bulleted list below.
 2. **Implicit Name Fallback (The Override)**: If the first pair in the `keys` field is something else (e.g., `[xcoord, Easting]`), the application checks if the feature properties inherently contain a naming field (`Name`, `name`, `road_name`, `river_name`, or `locality`). If found, it intelligently assigns this as the header title, while keeping your explicit `keys` array fully intact in the bulleted list below. 
 3. **Strict First-Key Fallback**: If neither of the above applies (no explicit name first, and no implicit name fields exist), it defaults to aggressively ripping the first pair out of your `keys` array and using its value as the header.
+
+## Adding New Maps (The Manifest File)
+
+The entire webmap is driven by a central configuration file located at `Maps/list_of_maps_for_the_webmap_and_their_names.md`. To add a new map layer, you simply add a new row to the Markdown table in this file, and the application will dynamically parse it, ingest it, and render it.
+
+### Column Definitions
+
+| Column | Description |
+| :--- | :--- |
+| **File Name** | The exact name of the file located in the `Maps/` directory (e.g., `data.geojson`, `elevation.tif`). Must include the extension. |
+| **Name of the Layer** | The human-readable name that will appear in the webmap's side panel and legends. |
+| **Tab** | The category/tab under which this layer will be grouped in the side panel (e.g., `Hydro`, `Infrastructure`, `Geo`). |
+| **Show First** | (`Yes` or `No`). If `Yes`, the layer is automatically toggled ON and visible when the webmap first loads. |
+| **Type** | (`Vector` or `Raster`). Use `Vector` for GeoJSON points, lines, or polygons. Use `Raster` for `.tif` grids. |
+| **Transparency** | (Optional). A percentage value (e.g., `50`). If left blank, it defaults to standard opacity. If set to a negative value (e.g., `-100`), it creates a **"Ghost Layer"** (hidden from the map UI but still queried by the data estimator). |
+| **Derive** | (Optional). Used by the Point Data Estimator. Formatted as `[field_name, Display Label]`. For rasters, the field name is usually left blank (e.g., `[ , Elevation]`). You can also specify multiple values separated by commas, like `[depth, SLWL], [width, Width]`. |
+| **Units** | (Optional). The physical unit corresponding to the derived value (e.g., `m`, `g`). If deriving multiple values, separate units with a comma (e.g., `m, m`). |
+| **Estimate** | (`Yes` or `No`). If `Yes`, this layer is queried whenever a user clicks the map to estimate values via the Point Data Estimator. |
+| **Credit Page** | (Optional). The filename of an HTML attribution page located in `frontend/credits/` (e.g., `Prosoil-Credit.html`). Triggers a 'cr' button in the UI. |
+
+### Examples
+
+**Example 1: The Basics (Easy Difficulty)**
+*You want to add a simple GeoJSON containing regional boundaries. You want it grouped under "Geo", disabled by default, with no special data estimations.*
+`| regional_bounds.geojson | Regional Boundaries | Geo | No | Vector | | | | No | |`
+- **Why this is easy:** You only provide the essential file details, name, category, and type. The rest is left blank or `No`.
+
+**Example 2: Adding a Raster Map with Estimations (Moderate Difficulty)**
+*You want to add a GeoTIFF temperature map. You want it semi-transparent (40%), and you want the Point Data Estimator to derive the temperature in Celsius.*
+`| temperature_grid.tif | Annual Temp | Geo | No | Raster | 40 | [ , Temperature] | C | Yes | Temp-Credit.html |`
+- **Why this is moderate:** You specify `Raster` type, set a `Transparency` of 40, and configure the `Derive` column to map the raster pixel value to the label "Temperature" with a unit of "C". You also link a credit page.
+
+**Example 3: Complex Vector with Multiple Derivations (Highest Difficulty)**
+*You have a highly detailed GeoJSON of underground water aquifers. You want the map to automatically show it on load, but you want to extract TWO distinct values (Depth and Salinity) when the user clicks the map, applying different units.*
+`| aquifers_deep.geojson | Deep Aquifers | Hydro | Yes | Vector | | [depth, Depth], [salinity, Salinity Level] | m, ppt | Yes | Hydro-Credit.html |`
+- **Why this is difficult:** You are utilizing advanced `Derive` syntax to extract multiple attributes simultaneously. The `Derive` column uses array pairs (`[depth, Depth], [salinity, Salinity Level]`), and the `Units` column specifies matching units (`m, ppt`) separated by a comma. The backend will perform IDW estimation on both fields concurrently.
