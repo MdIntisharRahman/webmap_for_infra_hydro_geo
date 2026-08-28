@@ -503,19 +503,29 @@ async function fetchAndRenderLayers() {
             }
 
             const checkboxId = `cb-${i}`;
-            let checkboxUI = '';
-            if (isBasemap) {
-                checkboxUI = `<input id="${checkboxId}" class="layer-load-cb basemap-radio" name="basemap-group" type="radio" style="margin:0; cursor:pointer; flex-shrink:0; transform: scale(0.8);" ${isLoaded ? 'checked' : ''}>`;
-            } else {
-                checkboxUI = `<input id="${checkboxId}" class="layer-load-cb" type="checkbox" style="margin:0; cursor:pointer; flex-shrink:0; transform: scale(0.8);" ${isLoaded ? 'checked' : ''}>`;
-            }
+            const isChecked = isLoaded ? 'checked' : '';
+            const inputType = isBasemap ? 'radio' : 'checkbox';
+            const inputName = isBasemap ? 'name="basemap-group"' : '';
+            const classExtras = isBasemap ? 'basemap-radio layer-load-cb' : 'layer-load-cb';
+            
+            checkboxUI = `
+                <label class="ios-checkbox">
+                  <input id="${checkboxId}" class="${classExtras}" ${inputName} type="${inputType}" ${isChecked} />
+                  <div class="checkbox-wrapper">
+                    <div class="checkbox-bg"></div>
+                    <svg fill="none" viewBox="0 0 24 24" class="checkbox-icon">
+                      <path stroke-linejoin="round" stroke-linecap="round" stroke-width="4" stroke="currentColor" d="M4 12L10 18L20 6" class="check-path"></path>
+                    </svg>
+                  </div>
+                </label>
+            `;
 
             // Restore v6 layout structure
             item.innerHTML = `
                 <div class="layer-info-container" style="display: flex; flex-direction: column; gap: 4px; flex: 1; margin-right: 12px; min-width: 0;">
                     <div class="layer-info" style="display: flex; align-items: center; gap: 10px;">
                         ${checkboxUI}
-                        <div class="layer-color-ui" style="display:flex; align-items:center; flex-shrink:0;"><div style="width: 12px; height: 12px; border-radius: 50%; background: #cbd5e1;"></div></div>
+                        <div class="layer-color-ui" style="display:flex; align-items:center; flex-shrink:0;"><div style="width: 1em; height: 1em; border-radius: 50%; background: #cbd5e1;"></div></div>
                         <div class="sliding-name-container" style="flex: 1; overflow: hidden; white-space: nowrap; display: flex; align-items: center; min-width: 0; position: relative;">
                             <span class="layer-name sliding-name" style="display: inline-block; transition: transform 0.3s ease; overflow: visible; flex-shrink: 0;" title="${layerInfo.name}">${layerInfo.name}</span>
                         </div>
@@ -596,7 +606,7 @@ async function fetchAndRenderLayers() {
                             pane: "tilePane"
                         });
                         
-                        colorUI.innerHTML = `<div style="width: 12px; height: 12px; border-radius: 50%; background: #cbd5e1; flex-shrink:0;"></div>`;
+                        colorUI.innerHTML = `<div style="width: 1em; height: 1em; border-radius: 50%; background: #cbd5e1; flex-shrink:0;"></div>`;
                     } else if (layerInfo.type && layerInfo.type.toLowerCase() === "raster") {
                         const rMeta = window.rasterMetadata && window.rasterMetadata[layerInfo.filename];
                         
@@ -619,7 +629,76 @@ async function fetchAndRenderLayers() {
                             console.warn("No metadata found for raster:", layerInfo.filename);
                             geoLayer = L.imageOverlay("", [[0,0],[0,0]], { opacity: 0 }); // dummy
                         }
-                        colorUI.innerHTML = `<div style="width: 12px; height: 12px; border-radius: 50%; background: #9aa5b1; flex-shrink:0;"></div>`;
+
+                        if (layerInfo.color_map && layerInfo.color_map.length > 0) {
+                            const classEntries = layerInfo.color_map.map(cm => [cm.label, cm.color]);
+                            let gradientParts = [];
+                            let pct = 100 / classEntries.length;
+                            for (let i = 0; i < classEntries.length; i++) {
+                                let c = classEntries[i][1];
+                                gradientParts.push(`${c} ${i*pct}% ${(i+1)*pct}%`);
+                            }
+                            let bg = `conic-gradient(${gradientParts.join(', ')})`;
+                            colorUI.innerHTML = `<div style="width: 1em; height: 1em; border-radius: 50%; background: ${bg}; flex-shrink:0;"></div>`;
+                            subLegendUI.innerHTML = "";
+                            const renderLegends = () => {
+                                const containerWidth = subLegendUI.clientWidth || 200;
+                                let available = containerWidth - 26; // for +X button
+                                let subHTML = `<div style="display: flex; gap: 8px; overflow: hidden; white-space: nowrap; flex: 1;">`;
+                                let count = 0;
+                                let rendered = 0;
+                                for (const [cName, cColor] of classEntries) {
+                                    let estWidth = 12 + (cName.length * 5.5);
+                                    if (estWidth > 95) estWidth = 95;
+                                    
+                                    if (available - estWidth >= 0) {
+                                        subHTML += `<span style="display: flex; align-items: center; gap: 3px; flex-shrink: 0;" title="${cName}"><div style="width: 6px; height: 6px; border-radius: 50%; background: ${cColor}; flex-shrink: 0;"></div><span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 80px;">${cName}</span></span>`;
+                                        available -= (estWidth + 8);
+                                        rendered++;
+                                    } else {
+                                        break;
+                                    }
+                                    count++;
+                                }
+                                subHTML += `</div>`;
+                                
+                                const remaining = classEntries.length - rendered;
+                                if (remaining > 0) {
+                                    subHTML += `<div class="legend-more-btn" title="See all classes" style="flex-shrink: 0; width: 24px; height: 18px; border-radius: 10px; background: #e2e8f0; color: var(--text-dim); font-size: 10px; font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer;">+${remaining}</div>`;
+                                }
+                                subLegendUI.innerHTML = subHTML;
+                                
+                                const moreBtn = subLegendUI.querySelector('.legend-more-btn');
+                                if (moreBtn) {
+                                    moreBtn.addEventListener("click", (e) => {
+                                        e.stopPropagation();
+                                        const rightPanelTitle = document.getElementById("right-panel-title");
+                                        const rightPanelContent = document.getElementById("right-panel-content");
+                                        const rightPanelContainer = document.getElementById("right-panel-container");
+                                        if (rightPanelTitle) rightPanelTitle.textContent = layerInfo.name;
+                                        if (rightPanelContent) {
+                                            rightPanelContent.innerHTML = "";
+                                            for (const [cName, cData] of classEntries) {
+                                                rightPanelContent.innerHTML += `<div class="right-legend-item"><div class="right-legend-color" style="background: ${cData};"></div><span>${cName}</span></div>`;
+                                            }
+                                        }
+                                        if (rightPanelContainer) rightPanelContainer.classList.add("pinned");
+                                    });
+                                }
+                            };
+                            
+                            setTimeout(renderLegends, 50);
+                            
+                            const ro = new ResizeObserver(() => {
+                                if (subLegendUI.clientWidth > 0 && Math.abs(subLegendUI.clientWidth - (subLegendUI._lastWidth || 0)) > 10) {
+                                    subLegendUI._lastWidth = subLegendUI.clientWidth;
+                                    renderLegends();
+                                }
+                            });
+                            ro.observe(subLegendUI);
+                        } else {
+                            colorUI.innerHTML = `<div style="width: 1em; height: 1em; border-radius: 50%; background: #9aa5b1; flex-shrink:0;"></div>`;
+                        }
                     } else {
                         const layerDataRes = await fetch(`${API_BASE_URL}/layers/${layerInfo.table}`);
                         const data = await layerDataRes.json();
@@ -644,7 +723,7 @@ async function fetchAndRenderLayers() {
                                 gradientParts.push(`${c} ${i*pct}% ${(i+1)*pct}%`);
                             }
                             let bg = `conic-gradient(${gradientParts.join(', ')})`;
-                            colorUI.innerHTML = `<div style="width: 12px; height: 12px; border-radius: 50%; background: ${bg}; flex-shrink:0;"></div>`;
+                            colorUI.innerHTML = `<div style="width: 1em; height: 1em; border-radius: 50%; background: ${bg}; flex-shrink:0;"></div>`;
                             subLegendUI.innerHTML = "";
                             const renderLegends = () => {
                                 const containerWidth = subLegendUI.clientWidth || 200;
@@ -720,7 +799,7 @@ async function fetchAndRenderLayers() {
                                     }
                                 }
                             }
-                            colorUI.innerHTML = `<div style="width: 12px; height: 12px; border-radius: 50%; background: ${singleColor}; flex-shrink:0;"></div>`;
+                            colorUI.innerHTML = `<div style="width: 1em; height: 1em; border-radius: 50%; background: ${singleColor}; flex-shrink:0;"></div>`;
                         }
 
                         geoLayer = L.geoJSON(data, {
@@ -910,7 +989,7 @@ async function fetchAndRenderLayers() {
                             geoLayer = null;
                         }
                         item.classList.remove('active');
-                        colorUI.innerHTML = `<div style="width: 12px; height: 12px; border-radius: 50%; background: #cbd5e1; flex-shrink:0;"></div>`;
+                        colorUI.innerHTML = `<div style="width: 1em; height: 1em; border-radius: 50%; background: #cbd5e1; flex-shrink:0;"></div>`;
                         subLegendUI.innerHTML = '';
                         delete loadedLayers[layerInfo.name];
                     }

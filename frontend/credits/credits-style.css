@@ -8,7 +8,7 @@
       --text-dim: #69707a;
       
       --font-display: 'Outfit', sans-serif;
-      --font-body: 'Inter', sans-serif;
+      --font-body: 'Samsung Sans','Inter', sans-serif;
       --font-mono: 'JetBrains Mono', monospace;
     }
 
@@ -104,7 +104,7 @@
       border-bottom: 1px solid var(--primary-light);
       background: rgba(13, 40, 56, 0.03);
       padding: 16px;
-      border-radius: 0 4px 4px 0;
+      border-radius: 0px;
       margin: 16px 0;
     }
     
