@@ -152,6 +152,30 @@ async def get_layers():
                                 break
                     if not rendered_filename:
                         rendered_filename = base_name + "-Rendered.tif"
+                        
+                    # Parse color map if exists
+                    color_map_path = os.path.join(maps_dir, base_name + "-color_map.txt")
+                    color_map = []
+                    if os.path.exists(color_map_path):
+                        with open(color_map_path, "r", encoding="utf-8") as cmf:
+                            lines_cm = cmf.readlines()
+                            passed_interp = False
+                            for cm_line in lines_cm:
+                                cm_line = cm_line.strip()
+                                if not cm_line or cm_line.startswith("#"):
+                                    continue
+                                if cm_line.startswith("INTERPOLATION:"):
+                                    passed_interp = True
+                                    continue
+                                if passed_interp:
+                                    cm_parts = cm_line.split(",")
+                                    if len(cm_parts) >= 6:
+                                        r, g, b, a = cm_parts[1].strip(), cm_parts[2].strip(), cm_parts[3].strip(), cm_parts[4].strip()
+                                        legend_name = ",".join(cm_parts[5:]).strip()
+                                        color_map.append({
+                                            "color": f"rgba({r}, {g}, {b}, {float(a)/255:.2f})",
+                                            "label": legend_name
+                                        })
                 
                 layers.append({
                     "name": layer_name, 
@@ -165,6 +189,7 @@ async def get_layers():
                     "estimate": estimate,
                     "filename": filename,
                     "rendered_filename": rendered_filename,
+                    "color_map": color_map if layer_type.lower() == "raster" else None,
                     "credit_page": credit_page,
                     "zoom_level": zoom_level
                 })

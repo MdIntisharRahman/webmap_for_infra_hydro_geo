@@ -18,7 +18,7 @@
     /* Soft active state */
     --font-display: 'Outfit', sans-serif;
     --font-body: 'Inter', sans-serif;
-    --font-body-special: 'SmartGothic', 'Poppins',sans-serif;
+    --font-body-special: 'SmartGothic', 'Poppins', sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
     --font-subhead: 'ITC Stone Sans', 'Poppins', sans-serif;
 }
@@ -77,13 +77,13 @@ body {
     height: 56px;
     width: auto;
     object-fit: contain;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
     transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), filter 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .logo img:hover {
     transform: translateY(-1px) scale(1.03);
-    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
 }
 
 .header-titles h1 {
@@ -462,6 +462,7 @@ body {
 
 /* Layer Control Item */
 .layer-item {
+    font-size: 13px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -489,7 +490,7 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .layer-color {
@@ -500,7 +501,7 @@ body {
 }
 
 .layer-name {
-    font-size: 12px;
+    font-size: 1em;
     font-weight: 600;
     color: var(--text-main);
     white-space: nowrap;
@@ -1109,7 +1110,7 @@ body {
         font-size: 16px;
         padding: 0;
     }
-    
+
     .logo img {
         height: 40px;
     }
@@ -1656,6 +1657,7 @@ body {
 
     /* Make Layer items larger to tap */
     .layer-item {
+        font-size: 15px;
         padding: 14px 16px;
         margin: 6px;
     }
@@ -1666,11 +1668,13 @@ body {
     .app-header {
         display: none !important;
     }
+
     .side-panel-container {
         height: 80vh !important;
         max-height: 80vh !important;
         transform: translateY(calc(100% - 60px)) !important;
     }
+
     .side-panel-container:focus-within {
         transform: translateY(0) !important;
     }
@@ -1679,9 +1683,12 @@ body {
 
 /* Touch Target Enhancements */
 @media (pointer: coarse) {
-    .coord-tool input, .coord-tool button {
+
+    .coord-tool input,
+    .coord-tool button {
         min-height: 44px;
     }
+
     #target-btn {
         width: 44px;
         height: 44px;
@@ -1693,6 +1700,7 @@ body {
 .custom-estimator-popup {
     max-width: 95vw;
 }
+
 .custom-estimator-popup .leaflet-popup-content {
     max-width: calc(100vw - 40px);
     overflow-x: auto;
@@ -1704,9 +1712,11 @@ body {
     .side-header h2 {
         font-size: clamp(14px, 1vw, 18px);
     }
-    .layer-item label {
+
+    .layer-item {
         font-size: clamp(14px, 0.8vw, 16px);
     }
+
     .logo img {
         height: 72px;
     }
@@ -1718,3 +1728,109 @@ body {
     filter: brightness(1.0) saturate(0.7) contrast(0.87) !important;
 }
 
+
+/* iOS Style Animated Checkbox */
+.ios-checkbox {
+    --checkbox-size: 1em;
+    --checkbox-color: var(--accent-blue);
+    --checkbox-bg: #e2e8f0;
+    --checkbox-border: #cbd5e1;
+
+    position: relative;
+    display: inline-flex;
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    flex-shrink: 0;
+    margin: -10px;
+    padding: 10px;
+    align-items: center;
+    justify-content: center;
+    /* Prevent clipping when scaling */
+    overflow: visible;
+}
+
+.ios-checkbox input {
+    display: none;
+    border-radius: 50%;
+}
+
+.checkbox-wrapper {
+    position: relative;
+    width: var(--checkbox-size);
+    height: var(--checkbox-size);
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+}
+
+.checkbox-bg {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 1.5px solid var(--checkbox-border);
+    background: white;
+    transition: all 0.2s ease;
+}
+
+.checkbox-icon {
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: 70%;
+    height: 70%;
+    color: white;
+    transform: scale(0);
+    transition: all 0.2s ease;
+}
+
+.check-path {
+    stroke-dasharray: 40;
+    stroke-dashoffset: 40;
+    transition: stroke-dashoffset 0.3s ease 0.1s;
+}
+
+/* Checked State */
+.ios-checkbox input:checked+.checkbox-wrapper .checkbox-bg {
+    background: var(--checkbox-color);
+    border-color: var(--checkbox-color);
+}
+
+.ios-checkbox input:checked+.checkbox-wrapper .checkbox-icon {
+    transform: scale(1);
+}
+
+.ios-checkbox input:checked+.checkbox-wrapper .check-path {
+    stroke-dashoffset: 0;
+}
+
+/* Hover Effects */
+.ios-checkbox:hover .checkbox-wrapper {
+    transform: scale(1.05);
+}
+
+/* Active Animation */
+.ios-checkbox:active .checkbox-wrapper {
+    transform: scale(0.95);
+}
+
+/* Focus Styles */
+.ios-checkbox input:focus+.checkbox-wrapper .checkbox-bg {
+    box-shadow: 0 0 0 3px var(--accent-blue-dim);
+}
+
+/* Animation */
+@keyframes bounceCheckbox {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+.ios-checkbox input:checked+.checkbox-wrapper {
+    animation: bounceCheckbox 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
