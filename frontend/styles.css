@@ -18,7 +18,9 @@
     /* Soft active state */
     --font-display: 'Outfit', sans-serif;
     --font-body: 'Inter', sans-serif;
+    --font-body-special: 'SmartGothic', 'Poppins',sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
+    --font-subhead: 'ITC Stone Sans', 'Poppins', sans-serif;
 }
 
 * {
@@ -127,10 +129,10 @@ body {
 }
 
 .header-titles p {
-    font-family: var(--font-body);
+    font-family: var(--font-subhead);
     font-size: 12px;
     color: var(--accent-blue-deep);
-    font-weight: 700;
+    font-weight: 999;
     text-transform: uppercase;
     letter-spacing: 1px;
 }
@@ -886,6 +888,7 @@ body {
 
 #about-us-content p {
     margin-bottom: 12px;
+    font-family: var(--font-body-special);
 }
 
 #about-us-content ul {
