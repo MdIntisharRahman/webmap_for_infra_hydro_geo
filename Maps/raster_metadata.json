@@ -1,0 +1,114 @@
+{
+  "CLIPPED-1000_0.2s.grd-Converted.tif": {
+    "png_filename": "CLIPPED-1000_0.2s.grd-Converted.png",
+    "png_url": "/maps/CLIPPED-1000_0.2s.grd-Converted.png",
+    "bounds": [
+      [
+        20.74375,
+        88.01875000000001
+      ],
+      [
+        26.63125,
+        92.66875
+      ]
+    ]
+  },
+  "CLIPPED-1000_1s.grd-Converted.tif": {
+    "png_filename": "CLIPPED-1000_1s.grd-Converted.png",
+    "png_url": "/maps/CLIPPED-1000_1s.grd-Converted.png",
+    "bounds": [
+      [
+        20.74375,
+        88.01875000000001
+      ],
+      [
+        26.63125,
+        92.66875
+      ]
+    ]
+  },
+  "CLIPPED-1000_PGA.grd-Converted.tif": {
+    "png_filename": "CLIPPED-1000_PGA.grd-Converted.png",
+    "png_url": "/maps/CLIPPED-1000_PGA.grd-Converted.png",
+    "bounds": [
+      [
+        20.7375,
+        88.00000000000006
+      ],
+      [
+        26.6375,
+        92.67500000000005
+      ]
+    ]
+  },
+  "CLIPPED-2500_0.2s.grd-Converted.tif": {
+    "png_filename": "CLIPPED-2500_0.2s.grd-Converted.png",
+    "png_url": "/maps/CLIPPED-2500_0.2s.grd-Converted.png",
+    "bounds": [
+      [
+        20.74375,
+        88.01875000000001
+      ],
+      [
+        26.63125,
+        92.66875
+      ]
+    ]
+  },
+  "CLIPPED-2500_1s.grd-Converted.tif": {
+    "png_filename": "CLIPPED-2500_1s.grd-Converted.png",
+    "png_url": "/maps/CLIPPED-2500_1s.grd-Converted.png",
+    "bounds": [
+      [
+        20.74375,
+        88.01875000000001
+      ],
+      [
+        26.63125,
+        92.66875
+      ]
+    ]
+  },
+  "CLIPPED-PGA_2500.grd-Converted.tif": {
+    "png_filename": "CLIPPED-PGA_2500.grd-Converted.png",
+    "png_url": "/maps/CLIPPED-PGA_2500.grd-Converted.png",
+    "bounds": [
+      [
+        20.7375,
+        88.00000000000006
+      ],
+      [
+        26.6375,
+        92.67500000000005
+      ]
+    ]
+  },
+  "compressed_BGD_SRTM30_Opentopography_Clipped_to_the_Map-Rendered.tif": {
+    "png_filename": "compressed_BGD_SRTM30_Opentopography_Clipped_to_the_Map-Rendered.png",
+    "png_url": "/maps/compressed_BGD_SRTM30_Opentopography_Clipped_to_the_Map-Rendered.png",
+    "bounds": [
+      [
+        20.590689276,
+        88.00874955
+      ],
+      [
+        26.634305222,
+        92.680142176
+      ]
+    ]
+  },
+  "compressed_BGD_SRTM30_Opentopography_Clipped_to_the_Map.tif": {
+    "png_filename": "compressed_BGD_SRTM30_Opentopography_Clipped_to_the_Map.png",
+    "png_url": "/maps/compressed_BGD_SRTM30_Opentopography_Clipped_to_the_Map.png",
+    "bounds": [
+      [
+        20.590689276,
+        88.00874955
+      ],
+      [
+        26.634305222,
+        92.680142176
+      ]
+    ]
+  }
+}
