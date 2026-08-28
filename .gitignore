@@ -52,6 +52,7 @@ Kvi.txt
 .agents/
 .claude/
 .codex/
+.grok/
 scratch.py
 code-*.py
 skills-lock.json
@@ -72,9 +73,9 @@ DESIGN.md
 # uv.lock
 
 # drive upload
-.tmp.driveupload
+.tmp.driveupload/
 # Geospatial Data (too large for git)
-*.tif
-*.aux.xml
+# *.tif
+# *.aux.xml
 *.db
 
