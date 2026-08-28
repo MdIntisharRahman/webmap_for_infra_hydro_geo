@@ -11,6 +11,12 @@
 const API_BASE_URL =
     window.location.port === "8383" ? "http://localhost:8484/api" : "/api";
 
+window.rasterMetadata = {};
+fetch(`${API_BASE_URL.replace("/api", "")}/maps/raster_metadata.json`)
+    .then(res => res.json())
+    .then(data => { window.rasterMetadata = data; })
+    .catch(e => console.warn("No raster metadata:", e));
+
 const map = L.map("map", {
     zoomControl: false,
     attributionControl: false,
@@ -592,9 +598,8 @@ async function fetchAndRenderLayers() {
                         
                         colorUI.innerHTML = `<div style="width: 12px; height: 12px; border-radius: 50%; background: #cbd5e1; flex-shrink:0;"></div>`;
                     } else if (layerInfo.type && layerInfo.type.toLowerCase() === "raster") {
-                        const displayFilename = layerInfo.rendered_filename || layerInfo.filename;
-                        const url = API_BASE_URL.replace("/api", "") + `/maps/${encodeURIComponent(displayFilename)}`;
-                        const georaster = await parseGeoraster(url);
+                        const rMeta = window.rasterMetadata && window.rasterMetadata[layerInfo.filename];
+                        
                         let rasterOpacity = 0.7;
                         if (layerInfo.transparency !== null) {
                             if (layerInfo.transparency < 0) {
@@ -604,12 +609,16 @@ async function fetchAndRenderLayers() {
                             }
                         }
                         
-                        geoLayer = new GeoRasterLayer({
-                            georaster: georaster,
-                            opacity: rasterOpacity,
-                            resolution: 256,
-                            pane: paneName
-                        });
+                        if (rMeta) {
+                            const imageUrl = API_BASE_URL.replace("/api", "") + rMeta.png_url;
+                            geoLayer = L.imageOverlay(imageUrl, rMeta.bounds, {
+                                opacity: rasterOpacity,
+                                pane: paneName
+                            });
+                        } else {
+                            console.warn("No metadata found for raster:", layerInfo.filename);
+                            geoLayer = L.imageOverlay("", [[0,0],[0,0]], { opacity: 0 }); // dummy
+                        }
                         colorUI.innerHTML = `<div style="width: 12px; height: 12px; border-radius: 50%; background: #9aa5b1; flex-shrink:0;"></div>`;
                     } else {
                         const layerDataRes = await fetch(`${API_BASE_URL}/layers/${layerInfo.table}`);
@@ -1070,7 +1079,7 @@ document.getElementById("coord-btn").addEventListener("click", async () => {
         const popupContent = `
         <div class="est-header" style="display: flex; justify-content: space-between; align-items: center;">
             <span>Point Data Estimator</span>
-            <img class="est-close-btn" src="resources/images/cross-nrm.svg" alt="Close" title="Close Marker" style="cursor: pointer; transition: content 0.2s; height: 10.7px;" onmouseover="this.src='resources/images/cross-cls.svg';" onmouseout="this.src='resources/images/cross-nrm.svg';" onclick="window.closeEstimatorMarker();">
+            <img class="est-close-btn" src="resources/images/cross-nrm.svg" alt="Close" title="Close Marker" style="cursor: pointer; transition: content 0.2s; height: 1.07em;" onmouseover="this.src='resources/images/cross-cls.svg';" onmouseout="this.src='resources/images/cross-nrm.svg';" onclick="window.closeEstimatorMarker();">
         </div>
         ${visibleRows}
         ${seeMoreHTML}

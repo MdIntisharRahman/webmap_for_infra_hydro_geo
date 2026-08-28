@@ -59,7 +59,50 @@ def load_data(db_url, maps_dir, md_filepath):
             continue
             
         if layer_type.lower() == 'raster':
-            console.print(f"[bold blue](i)[/bold blue] Skipping raster ingestion for '[cyan]{filename}[/cyan]' (queried directly via backend).")
+            console.print(f"[bold blue](i)[/bold blue] Generating metadata for raster '[cyan]{filename}[/cyan]'...")
+            try:
+                import rasterio
+                import json
+                
+                # Check for .png version first, fallback to .tif if .png doesn't exist but .tif does
+                raster_path = os.path.join(maps_dir, filename)
+                base, ext = os.path.splitext(filename)
+                png_filename = base + ".png"
+                png_path = os.path.join(maps_dir, png_filename)
+                
+                # Use whichever file exists for bounds extraction (preferably the TIF if it's there)
+                read_path = raster_path if os.path.exists(raster_path) else png_path
+                
+                if os.path.exists(read_path):
+                    with rasterio.open(read_path) as src:
+                        bounds = src.bounds
+                        leaflet_bounds = [
+                            [float(bounds.bottom), float(bounds.left)],
+                            [float(bounds.top), float(bounds.right)]
+                        ]
+                    
+                    # Update metadata JSON
+                    meta_path = os.path.join(maps_dir, "raster_metadata.json")
+                    metadata = {}
+                    if os.path.exists(meta_path):
+                        with open(meta_path, 'r') as f:
+                            metadata = json.load(f)
+                            
+                    metadata[filename] = {
+                        'png_filename': png_filename,
+                        'png_url': f'/maps/{png_filename}',
+                        'bounds': leaflet_bounds
+                    }
+                    
+                    with open(meta_path, 'w') as f:
+                        json.dump(metadata, f, indent=2)
+                        
+                    console.print(f"[bold green]+[/bold green] Wrote metadata for '[cyan]{filename}[/cyan]'.")
+                else:
+                    console.print(f"[bold yellow]Warning:[/bold yellow] Raster file not found for bounds extraction: [cyan]{read_path}[/cyan].")
+                    
+            except Exception as e:
+                console.print(f"[bold red]! Error processing raster metadata for {filename}:[/bold red] {e}")
             continue
             
         filepath = os.path.join(maps_dir, filename)

@@ -9,6 +9,7 @@ dependencies = [
     "fastapi>=0.141.1",
     "geoalchemy2>=0.20.0",
     "geopandas>=1.1.4",
+    "pillow>=12.3.0",
     "psycopg2-binary>=2.9.12",
     "rasterio>=1.5.1",
     "rich>=15.0.0",

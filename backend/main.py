@@ -348,5 +348,9 @@ async def get_estimate(lat: float, lng: float, active_tables: str = "", db: Asyn
 
 
 # Mount static assets at root (placed last so dynamic routes take precedence)
+tiles_dir = os.path.join(os.path.dirname(__file__), "..", "Maps", "tiles")
+os.makedirs(tiles_dir, exist_ok=True)
+app.mount("/tiles", StaticFiles(directory=tiles_dir), name="tiles")
+
 app.mount("/maps", StaticFiles(directory="Maps"), name="maps")
 app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
