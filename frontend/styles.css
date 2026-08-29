@@ -74,11 +74,17 @@ body {
 }
 
 .logo img {
-    height: 56px;
+    height: 55px;
     width: auto;
     object-fit: contain;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
-    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), filter 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    /* filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1)); */
+    /* transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), filter 0.3s cubic-bezier(0.16, 1, 0.3, 1); */
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-drag: none;
+    -moz-user-drag: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
 }
 
 /* .logo img:hover {
