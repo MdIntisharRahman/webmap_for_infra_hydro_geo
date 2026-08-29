@@ -1,6 +1,6 @@
 # Infrastructure and Geo Webmap Application
 
-A high-performance geospatial visualization platform for rendering dynamic geographic data layers, calculating real-time water level estimations, and performing coordinate lookups. This project is built using a modern, scalable architecture featuring a Python/FastAPI backend, a PostGIS geospatial database, and a highly responsive, glassmorphism-styled Vanilla JavaScript frontend.
+A geospatial visualization platform for rendering infrastructure, hydrograhic, geographic and seismographic data layers. The platform features a **POINT DATA ESTIMATOR** tool to calculating elevation, water level, point location geographic, seismic and hydrographic estimations based on the available map data. This project is built using a modern, scalable architecture featuring a Python/FastAPI backend, a PostGIS geospatial database, and a highly responsive, glassmorphism-styled Vanilla JavaScript frontend.
 
 ---
 
@@ -117,25 +117,25 @@ The entire webmap is driven by a central configuration file located at `Maps/lis
 
 ### Examples
 
-**Example 1: The Basics (Easy Difficulty)**
+**Example 1: The Basics**
 *You want to add a simple GeoJSON containing regional boundaries. You want it grouped under "Geo", disabled by default, with no special data estimations.*
 `| regional_bounds.geojson | Regional Boundaries | Geo | No | Vector | | | | No | | |`
-- **Why this is easy:** You only provide the essential file details, name, category, and type. The rest is left blank or `No`.
+-  You only provide the essential file details, name, category, and type. The rest is left blank or `No`.
 
-**Example 2: Adding a Raster Map with Estimations (Moderate Difficulty)**
+**Example 2: Adding a Raster Map with Estimations**
 *You want to add a GeoTIFF temperature map. You want it semi-transparent (40%), and you want the Point Data Estimator to derive the temperature in Celsius.*
 `| temperature_grid.tif | Annual Temp | Geo | No | Raster | 40 | [ , Temperature] | C | Yes | Temp-Credit.html | |`
-- **Why this is moderate:** You specify `Raster` type, set a `Transparency` of 40, and configure the `Derive` column to map the raster pixel value to the label "Temperature" with a unit of "C". You also link a credit page.
+- You specify `Raster` type, set a `Transparency` of 40, and configure the `Derive` column to map the raster pixel value to the label "Temperature" with a unit of "C". You also link a credit page.
 
-**Example 3: Complex Vector with Multiple Derivations (Highest Difficulty)**
+**Example 3: Complex Vector with Multiple Derivations**
 *You have a highly detailed GeoJSON of underground water aquifers. You want the map to automatically show it on load, but you want to extract TWO distinct values (Depth and Salinity) when the user clicks the map, applying different units.*
 `| aquifers_deep.geojson | Deep Aquifers | Hydro | Yes | Vector | | [depth, Depth], [salinity, Salinity Level] | m, ppt | Yes | Hydro-Credit.html | |`
-- **Why this is difficult:** You utilize advanced `Derive` syntax. The backend will perform IDW estimation on both fields concurrently.
+- You utilize advanced `Derive` syntax. The backend will perform IDW estimation on both fields concurrently.
 
 **Example 4: Adding an Online Basemap**
 *You want to add the CyclOSM background map, ensure its radio button is grouped in the Basemap tab, and provide proper attribution link.*
 `| https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png | CycleOSM | Basemap | Yes | Basemap | | | | | https://www.openstreetmap.org/copyright [OSM] | 19 |`
-- **Why this is unique:** The `File Name` acts as a direct internet URL (passing `{x}, {y}, {z}` variables directly to Leaflet). The `Credit Page` dynamically parses `url [Text]` into a clickable hyperlink anchored natively to the map canvas, and `Zoom Level` safely caps zooming at 19.
+- The `File Name` acts as a direct internet URL (passing `{x}, {y}, {z}` variables directly to Leaflet). The `Credit Page` dynamically parses `url [Text]` into a clickable hyperlink anchored natively to the map canvas, and `Zoom Level` safely caps zooming at 19.
 
 ---
 
@@ -158,3 +158,56 @@ Vectors (GeoJSONs) and Rasters (GeoTIFFs) represent your analytical overlays. Th
 - **Raster Display Engine (The PNG Bypass)**: Because rendering massive raw floating-point `.tif` rasters directly in the browser is notoriously slow and causes visual seams, the webmap bypasses the raw `.tif` for visualization. Instead, it looks for a counterpart `.png` image with the exact same base name in the `Maps/` directory. The system automatically reads the true geographic bounds of the dataset using `rasterio` and stretches this lightweight 4-band RGBA PNG seamlessly over the map canvas via Leaflet's `L.imageOverlay`.
 - **Attribution Scope (`Credit Page`)**: Vectors and Rasters look for an `.html` file path in the `frontend/credits/` directory (e.g., `Prosoil.html`). They generate a clickable "Cr" button in the layer list that pops open a modal iframe window to display complex formatting, logos, and licenses. 
 - **Estimator Integration**: Vectors and Rasters exclusively utilize the `Derive`, `Units`, and `Estimate` columns. When a user clicks the map, the backend runs `ST_DWithin` queries against PostGIS for Vectors. For Rasters, the backend bypasses the PNG and directly samples the raw floating-point `.tif` grid using `rasterio.sample` to extract perfectly accurate analytical data, independent of how the map looks.
+
+### Legends & Symbology (Dynamic UI Generation)
+
+The platform features a highly advanced, zero-configuration dynamic legend engine. You do not need to manually write HTML/CSS to build legends for your map layers. The frontend automatically parses the underlying data and generates a highly-polished, responsive `sub-legend-ui` with interactive gradient pie-charts, swatches, and overflow menus (`+X` button).
+
+#### 1. Vector Legends (Automatic Extraction)
+For Vector layers, the backend automatically scans the database for the `f_class_name` and `color` (or `f_class_color`) attributes within the GeoJSON features. The frontend dynamically groups these distinct classes and assigns them their respective colors in the UI.
+
+#### 2. Raster Legends (QGIS Color Map Integration)
+Because raw `.tif` rasters do not contain vector properties, you can explicitly define a raster's legend by dropping a simple text file into the `Maps/` directory.
+- The file must be named identically to the raster file, but suffixed with `-color_map.txt` (e.g., `elevation-color_map.txt`).
+- The syntax exactly matches **QGIS's standard Color Map Export format**.
+- The backend parses this text file on the fly and pipes the RGBA swatches directly into the frontend legend renderer.
+
+#### Examples of Legend Generation
+
+**Example 1: A Standard Vector Classification**
+*You have a vector layer of Roads. In the database, the features contain an `f_class_name` attribute and a `color` attribute.*
+- **Data:** `{"f_class_name": "Highway", "color": "#FF0000"}`
+- **Engine Response:** Automatically builds a red `#FF0000` swatch labeled "Highway" beneath the layer name. If there are 5 classes, the circle icon transforms into a 5-color conic gradient pie chart.
+
+**Example 2: A Raster QGIS Color Map (`-color_map.txt`)**
+*You have an elevation `.tif` raster. You export a QGIS color map and save it as `elevation-color_map.txt` in the `Maps/` directory.*
+```text
+# QGIS Generated Color Map Export File
+INTERPOLATION:DISCRETE
+0,4,14,216,255,-5 - 0 m
+5,32,80,255,255,0 - 5 m
+10,65,150,255,255,5 - 10 m
+```
+- **Engine Response:** The backend ignores the `#` and `INTERPOLATION` lines. It extracts the RGBA values (`4,14,216,255`) and the label (`-5 - 0 m`) for each row, constructing a perfect replica of your QGIS legend directly in the web UI.
+
+**Example 3: Handling Legend Overflow (`+X` Button)**
+*Your landcover raster has 25 different classifications defined in its `-color_map.txt`. It's impossible to fit 25 swatches in the narrow side panel.*
+- **Engine Response:** The frontend actively calculates the physical pixel width of the user's screen. It renders as many swatches as can comfortably fit (e.g., 3 swatches). It then truncates the rest and generates a highly visible `+22` button. Clicking this button dynamically opens the Right-Side Panel, populating a scrollable, full-length list of all 25 legend items.
+
+
+### UI & Responsive Design (Impeccable Standards)
+
+The webmap was completely refactored to align with enterprise-grade responsive design standards, ensuring pixel-perfect scaling from 4K Widescreen monitors down to minimal mobile phones.
+
+#### 1. Fluid Typography & `em`-Based Scaling
+Hardcoded pixel values cause layouts to break across devices. The entire layer control UI (including the custom iOS-style animated checkboxes and legend pie-circles) was rewritten using relative `em` units. 
+The master `.layer-item` container dynamically injects the `font-size` based on the user's device:
+- **Mobile (`pointer: coarse`)**: Bumps font size to `15px` for legibility.
+- **Widescreen (`min-width: 1600px`)**: Uses a fluid `clamp(14px, 0.8vw, 16px)` calculation.
+Because the checkboxes are bound to `1em`, they perfectly and automatically scale in absolute harmony with the text across all devices.
+
+#### 2. Accessible Touch Targets
+Standard 12px checkboxes are an accessibility violation on touch devices. The iOS checkboxes were heavily modified using negative margins and oversized padding (`margin: -10px; padding: 10px;`). This creates a massive, invisible `32px` touch area that easily captures thumb-taps on phones, without disturbing or pushing the visible CSS layout.
+
+#### 3. Fully Offline Local Fonts
+To guarantee the UI never breaks, blocks, or flashes unstyled text in offline environments (or slow field-networks), all typography (Inter and Outfit) was converted to ultra-compressed `.woff2` files via Transfonter and stored directly in `frontend/resources/fonts/`. The `font-display: swap` directive guarantees the browser will render instantly.
