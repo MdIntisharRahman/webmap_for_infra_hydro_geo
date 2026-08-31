@@ -1308,6 +1308,7 @@ body {
     display: none;
 }
 
+
 .iframe-modal-backdrop {
     position: absolute;
     top: 0;
@@ -1329,6 +1330,7 @@ body {
     z-index: 10001;
     overflow: hidden;
     animation: modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    font-family: var(--font-body-special);
 }
 
 .iframe-modal-close {

@@ -12,7 +12,7 @@ const API_BASE_URL =
     window.location.port === "8383" ? "http://localhost:8484/api" : "/api";
 
 window.rasterMetadata = {};
-fetch(`${API_BASE_URL.replace("/api", "")}/maps/raster_metadata.json`)
+fetch(`${API_BASE_URL.replace("/api", "")}/Maps/raster_metadata.json`)
     .then(res => res.json())
     .then(data => { window.rasterMetadata = data; })
     .catch(e => console.warn("No raster metadata:", e));
