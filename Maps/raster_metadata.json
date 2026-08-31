@@ -1,7 +1,7 @@
 {
   "CLIPPED-1000_0.2s.grd-Converted.tif": {
     "png_filename": "CLIPPED-1000_0.2s.grd-Converted.png",
-    "png_url": "/maps/CLIPPED-1000_0.2s.grd-Converted.png",
+    "png_url": "/Maps/CLIPPED-1000_0.2s.grd-Converted.png",
     "bounds": [
       [
         20.74375,
@@ -15,7 +15,7 @@
   },
   "CLIPPED-1000_1s.grd-Converted.tif": {
     "png_filename": "CLIPPED-1000_1s.grd-Converted.png",
-    "png_url": "/maps/CLIPPED-1000_1s.grd-Converted.png",
+    "png_url": "/Maps/CLIPPED-1000_1s.grd-Converted.png",
     "bounds": [
       [
         20.74375,
@@ -29,7 +29,7 @@
   },
   "CLIPPED-1000_PGA.grd-Converted.tif": {
     "png_filename": "CLIPPED-1000_PGA.grd-Converted.png",
-    "png_url": "/maps/CLIPPED-1000_PGA.grd-Converted.png",
+    "png_url": "/Maps/CLIPPED-1000_PGA.grd-Converted.png",
     "bounds": [
       [
         20.7375,
@@ -43,7 +43,7 @@
   },
   "CLIPPED-2500_0.2s.grd-Converted.tif": {
     "png_filename": "CLIPPED-2500_0.2s.grd-Converted.png",
-    "png_url": "/maps/CLIPPED-2500_0.2s.grd-Converted.png",
+    "png_url": "/Maps/CLIPPED-2500_0.2s.grd-Converted.png",
     "bounds": [
       [
         20.74375,
@@ -57,7 +57,7 @@
   },
   "CLIPPED-2500_1s.grd-Converted.tif": {
     "png_filename": "CLIPPED-2500_1s.grd-Converted.png",
-    "png_url": "/maps/CLIPPED-2500_1s.grd-Converted.png",
+    "png_url": "/Maps/CLIPPED-2500_1s.grd-Converted.png",
     "bounds": [
       [
         20.74375,
@@ -71,7 +71,7 @@
   },
   "CLIPPED-PGA_2500.grd-Converted.tif": {
     "png_filename": "CLIPPED-PGA_2500.grd-Converted.png",
-    "png_url": "/maps/CLIPPED-PGA_2500.grd-Converted.png",
+    "png_url": "/Maps/CLIPPED-PGA_2500.grd-Converted.png",
     "bounds": [
       [
         20.7375,
@@ -99,7 +99,7 @@
   },
   "compressed_BGD_SRTM30_Opentopography_Clipped_to_the_Map.tif": {
     "png_filename": "compressed_BGD_SRTM30_Opentopography_Clipped_to_the_Map.png",
-    "png_url": "/maps/compressed_BGD_SRTM30_Opentopography_Clipped_to_the_Map.png",
+    "png_url": "/Maps/compressed_BGD_SRTM30_Opentopography_Clipped_to_the_Map.png",
     "bounds": [
       [
         20.590689276,
