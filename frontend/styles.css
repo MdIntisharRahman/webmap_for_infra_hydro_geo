@@ -206,7 +206,7 @@ body {
 }
 
 .right-panel {
-    border-radius: 10px 0 0 10px !important;
+    /* border-radius: 10px 0 0 10px !important; */
     border-right: none !important;
     border-left: 1px solid var(--panel-border) !important;
     display: flex;

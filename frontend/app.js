@@ -12,7 +12,7 @@ const API_BASE_URL =
     window.location.port === "8383" ? "http://localhost:8484/api" : "/api";
 
 window.rasterMetadata = {};
-fetch(`${API_BASE_URL.replace("/api", "")}/Maps/raster_metadata.json`)
+fetch(`${API_BASE_URL.replace("/api", "")}/maps/raster_metadata.json`)
     .then(res => res.json())
     .then(data => { window.rasterMetadata = data; })
     .catch(e => console.warn("No raster metadata:", e));
@@ -620,11 +620,21 @@ async function fetchAndRenderLayers() {
                         }
                         
                         if (rMeta) {
-                            const imageUrl = API_BASE_URL.replace("/api", "") + rMeta.png_url;
+                            const imageUrl = API_BASE_URL.replace("/api", "") + rMeta.png_url + "?v=" + new Date().getTime();
                             geoLayer = L.imageOverlay(imageUrl, rMeta.bounds, {
                                 opacity: rasterOpacity,
                                 pane: paneName
                             });
+                            
+                            // Because raster images don't download until added to the map, 
+                            // we must manage the spinner independently via Leaflet events
+                            geoLayer.on('add', () => { toggleSwitch.classList.add('loading'); });
+                            geoLayer.on('load', () => { toggleSwitch.classList.remove('loading'); });
+                            geoLayer.on('error', () => { 
+                                toggleSwitch.classList.remove('loading');
+                                console.error("Raster failed to load:", imageUrl);
+                            });
+                            
                         } else {
                             console.warn("No metadata found for raster:", layerInfo.filename);
                             geoLayer = L.imageOverlay("", [[0,0],[0,0]], { opacity: 0 }); // dummy

@@ -315,7 +315,14 @@ async def get_estimate(lat: float, lng: float, active_tables: str = "", db: Asyn
                     if os.path.exists(tif_path):
                         with rasterio.open(tif_path) as src:
                             try:
-                                for v in src.sample([(lng, lat)]):
+                                sample_lon, sample_lat = lng, lat
+                                # If bounds are in meters (e.g. EPSG:3857), convert lat/lng to Web Mercator
+                                if abs(src.bounds.left) > 180 or abs(src.bounds.right) > 180:
+                                    import math
+                                    sample_lon = lng * (math.pi / 180.0) * 6378137.0
+                                    sample_lat = math.log(math.tan((90.0 + lat) * (math.pi / 360.0))) * 6378137.0
+
+                                for v in src.sample([(sample_lon, sample_lat)]):
                                     val = float(v[0])
                                     # For elevation missing values, handle nodata if needed
                                     if val < -9000:
