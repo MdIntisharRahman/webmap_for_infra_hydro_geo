@@ -84,6 +84,11 @@ Run `./first_run.sh` to setup the environment variables, update the maps—basic
 * **Local Development**: Run `./start.sh` to spin up a local Uvicorn backend on port `8484` and a Python HTTP server on `8383`. To add a new layer, insert a row in the `Maps/list_of_maps_for_the_webmap_and_their_names.md` file so that the script knows which GeoJSON files are to be loaded and relates names to their corresponding GeoJSON files. Run `./update_Maps.sh` whenever you add new GeoJSON files. 
 * **Production Deployment**: For execution in the web servers, a complete `docker-compose.yml` is provided. Read **`web-deployment-instructions.md`** for secure production setup instructions.
 
+### Docker Configuration Notes (Nginx & Volumes)
+When deploying via `docker-compose.yml`, the environment utilizes Nginx to serve the frontend and proxy requests to the FastAPI backend. Two critical configurations are implemented to support dynamic map updates:
+1. **Volume Mapping**: The `Maps/` folder is explicitly mounted as a volume (`- ./Maps:/app/Maps`) into the backend container. This allows you to hot-swap `.geojson`, `.png`, and `-color_map.txt` files on your host machine without needing to rebuild the entire Docker image.
+2. **Nginx Proxying**: Nginx is configured in `nginx.conf` to explicitly proxy both `/api/` (for data) and `/maps/` (for static raster `.png` fetching) directly to the backend container. Without the `/maps/` proxy, Nginx would attempt to serve the raster images from its own isolated filesystem and return `404 Not Found`.
+
 ## Data-Driven Tooltip Logic
 
 The web map handles GeoJSON feature properties dynamically, using a `keys` array (e.g. `[[field_id, Label], ...]`) defined in the layer data.
@@ -156,6 +161,9 @@ Vectors (GeoJSONs) and Rasters (GeoTIFFs) represent your analytical overlays. Th
 - **Stackable UI**: Rendered as independent checkboxes. Users can overlay infinite combinations of vectors and rasters simultaneously on top of the active Basemap.
 - **File Name Routing**: The `File Name` expects a physical file residing in the `Maps/` folder, which triggers ingestion by `update_maps.sh` / `import_local_maps.py`.
 - **Raster Display Engine (The PNG Bypass)**: Because rendering massive raw floating-point `.tif` rasters directly in the browser is notoriously slow and causes visual seams, the webmap bypasses the raw `.tif` for visualization. Instead, it looks for a counterpart `.png` image with the exact same base name in the `Maps/` directory. The system automatically reads the true geographic bounds of the dataset using `rasterio` and stretches this lightweight 4-band RGBA PNG seamlessly over the map canvas via Leaflet's `L.imageOverlay`.
+- **Projection Requirements (CRITICAL)**: 
+  - **Vector Layers (GeoJSON)** MUST remain in `EPSG:4326 (WGS 84)`. Leaflet projects their coordinates dynamically in the browser.
+  - **Raster Layers (.tif / .png)** MUST be exported in `EPSG:3857 (Web Mercator)`. Because Leaflet performs a linear image stretch, dropping a flat EPSG:4326 raster image onto a non-linear Web Mercator map causes severe vertical shifting. Exporting the Raster in EPSG:3857 in QGIS bakes the stretch into the pixels for perfect millimeter-accurate alignment. The backend script will automatically handle the complex mathematical conversions needed to properly pin the image corners.
 - **Attribution Scope (`Credit Page`)**: Vectors and Rasters look for an `.html` file path in the `frontend/credits/` directory (e.g., `Prosoil.html`). They generate a clickable "Cr" button in the layer list that pops open a modal iframe window to display complex formatting, logos, and licenses. 
 - **Estimator Integration**: Vectors and Rasters exclusively utilize the `Derive`, `Units`, and `Estimate` columns. When a user clicks the map, the backend runs `ST_DWithin` queries against PostGIS for Vectors. For Rasters, the backend bypasses the PNG and directly samples the raw floating-point `.tif` grid using `rasterio.sample` to extract perfectly accurate analytical data, independent of how the map looks.
 
