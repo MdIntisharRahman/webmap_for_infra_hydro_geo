@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Borelog Entry Form</title>
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-body: #F4F4F5;
+            --bg-surface: #FFFFFF;
+            --text-main: #09090B;
+            --text-muted: #71717A;
+            --border-color: #E4E4E7;
+            --primary: #18181B;
+            --primary-hover: #27272A;
+            --accent: #2563EB;
+            --accent-hover: #1D4ED8;
+            --danger: #EF4444;
+            --danger-bg: #FEF2F2;
+            --font-body-special: 'SmartGothic', 'Poppins', sans-serif;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            background: var(--bg-body);
+            color: var(--text-main);
+            padding: 40px 20px;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            max-width: 1024px;
+            margin: 0 auto;
+            background: var(--bg-surface);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+
+        .header {
+            padding: 48px 40px;
+            border-bottom: 1px solid var(--border-color);
+            background: linear-gradient(rgba(24, 24, 27, 0.6), rgba(24, 24, 27, 0.8)), url('resources/images/banner_bg.jpg') center/cover no-repeat;
+            color: white;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .header h1 {
+            font-family: var(--font-display);
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: white;
+        }
+
+        .header p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 15px;
+            margin-top: 8px;
+            max-width: inherit;
+        }
+
+        form { padding: 40px; }
+
+        .section {
+            margin-bottom: 48px;
+            padding: 24px;
+            border-radius: 8px;
+            background: linear-gradient(rgba(255, 255, 255, 0.93), rgba(255, 255, 255, 0.97)), url('resources/images/CPT-cut.jpg') center/cover repeat;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .section-header {
+            margin-bottom: 24px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-image: url(resources/images/section_bg.jpg);
+            padding: 11px 11px 12px 9px;
+            border-radius: 9px 9px 0px 0px;
+        }
+
+        .section-header h2 {
+            font-family: var(--font-display);
+            font-size: 18px;
+            font-weight: 600;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.89);
+        }
+
+        .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 24px;
+        }
+
+        label {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-main);
+            margin-bottom: 8px;
+        }
+
+        input[type="text"], input[type="number"], input[type="date"], textarea {
+            padding: 10px 12px;
+            font-size: 14px;
+            font-family: inherit;
+            border: 1px solid var(--border-color);
+            border-radius: 0px;
+            background: #FFFFFF;
+            transition: all 0.2s ease;
+            color: var(--text-main);
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        /* Tables */
+        .table-container {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow-x: auto;
+            margin-bottom: 16px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            background: #FAFAFA;
+            padding: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        td {
+            padding: 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        tr:last-child td { border-bottom: none; }
+
+        td input {
+            width: 100%;
+            border: none;
+            border-radius: 0;
+            padding: 12px;
+            background: transparent;
+        }
+
+        td input:focus {
+            box-shadow: inset 0 0 0 2px var(--accent);
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Buttons - Swipe Style from button-0 */
+        .btn {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            padding: 10px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            border: 1px solid currentColor;
+            background: transparent;
+            cursor: pointer;
+            z-index: 1;
+            transition: color 0.5s ease-in-out;
+            font-family: inherit;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+
+        .btn:before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            transform: translateX(-100%);
+            transition: transform 0.5s ease-in-out;
+            z-index: -1;
+        }
+
+        .btn:hover:before {
+            transform: translateX(0);
+        }
+
+        .btn-outline {
+            color: var(--accent);
+        }
+        
+        .btn-outline:before {
+            background-color: var(--accent);
+        }
+        
+        .btn-outline:hover {
+            color: #FFFFFF;
+        }
+
+        .btn-submit {
+            width: 100%;
+            margin-top: 24px;
+            padding: 14px;
+            font-size: 16px;
+            color: #16a34a; /* Greenish */
+        }
+        
+        .btn-submit:before {
+            background-color: #16a34a;
+            transform: translateY(100%);
+        }
+        
+        .btn-submit:hover {
+            color: #FFFFFF;
+        }
+        
+        .btn-submit:hover:before {
+            transform: translateY(0);
+        }
+
+        .btn-submit:disabled {
+            color: #9CA3AF;
+            border-color: #9CA3AF;
+            cursor: not-allowed;
+        }
+        .btn-submit:disabled:before {
+            display: none;
+        }
+
+        .del-btn {
+            background: transparent;
+            color: var(--text-muted);
+            border: none;
+            padding: 12px;
+            cursor: pointer;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s;
+        }
+
+        .del-btn:hover {
+            color: var(--danger);
+            background: var(--danger-bg);
+        }
+
+        /* Status Toast */
+        #status-toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            padding: 16px 24px;
+            border-radius: 8px;
+            background: var(--primary);s
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 1000;
+        }
+
+        #status-toast.visible {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .help-text {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+    
+        .btn-outline[id="preview-btn"] {
+            border-color: #f59e0b;
+            color: #f59e0b;
+        }
+        
+        .btn-outline[id="preview-btn"]:before {
+            background-color: #f59e0b;
+        }
+        
+        .btn-outline[id="preview-btn"]:hover {
+            color: #FFFFFF !important;
+        }
+
+    </style>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Geotechnical Borelog</h1>
+            <p>Enter the field data and laboratory test results to generate a standard borelog record.</p>
+        </div>
+
+        <form id="borelogForm">
+
+            <div class="section" style="padding: 15px; margin-bottom: 24px; border-color: rgba(37, 99, 235, 0.2);  border-radius: 0px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div style="font-size: 17px; font-weight: 600; font-family: var(--font-body-special);">Fast Entry</div>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="file" id="upload-json" accept=".json" style="display: none;">
+                        <button type="button" class="btn btn-outline" onclick="document.getElementById('upload-json').click()">Upload JSON</button>
+                        
+                        <input type="file" id="upload-xlsx" accept=".xlsx, .xls" style="display: none;">
+                        <button type="button" class="btn btn-outline" onclick="document.getElementById('upload-xlsx').click()">Upload XLSX</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Basic Information -->
+            <div class="section">
+                <div class="section-header">
+                    <h2>Metadata</h2>
+                </div>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label>Borehole ID</label>
+                        <input type="text" id="borehole_id" required placeholder="e.g. PL-07">
+                    </div>
+                    <div class="form-group">
+                        <label>Location (Coordinates)</label>
+                        <input type="text" id="coordinates" required placeholder="Latitude, Longitude (e.g. 23.827, 90.432)">
+                        <span class="help-text">Input latitude and longitude separated by a comma.</span>
+                    </div>
+                </div>
+                <div class="grid-3">
+                    <div class="form-group"><label>Client</label><input type="text" id="client" placeholder="Client Name"></div>
+                    <div class="form-group"><label>Project</label><input type="text" id="project" placeholder="Project Name"></div>
+                    <div class="form-group"><label>Location Name</label><input type="text" id="location" placeholder="e.g. Modon"></div>
+                    
+                    <div class="form-group"><label>Drilling Team</label><input type="text" id="drilling_team"></div>
+                    <div class="form-group"><label>Supervisor</label><input type="text" id="supervisor"></div>
+                    <div class="form-group"><label>Drill Rig</label><input type="text" id="drill_rig" placeholder="Hydraulic Rotary Drilling"></div>
+                    
+                    <div class="form-group"><label>Date of Starting the Boring</label><input type="date" id="date_of_starting_boring"></div>
+                    <div class="form-group"><label>Date of Ending the Boring</label><input type="date" id="date_of_ending_boring"></div>
+                    <div class="form-group"><label>Reduced Level (RL, m)</label><input type="number" step="0.01" id="rl_m"></div>
+                    <div class="form-group"><label>Total Depth (m)</label><input type="number" step="0.01" id="depth_m"></div>
+                    
+                    <div class="form-group"><label>Water Table Depth (m)</label><input type="number" step="0.01" id="water_table_m"></div>
+                    <div class="form-group"><label>TBM No.</label><input type="text" id="tbm_no"></div>
+                </div>
+            </div>
+
+            <!-- Strata -->
+            <div class="section">
+                <div class="section-header">
+                    <h2>Stratigraphy</h2>
+                    <button type="button" class="btn btn-outline" onclick="addRow('strata-body')">+ Add Layer</button>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Top (m)</th>
+                                <th>Bottom (m)</th>
+                                <th>Class (USCS)</th>
+                                <th>Description</th>
+                                <th style="width:50px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="strata-body" data-type="strata"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- SPT Records -->
+            <div class="section">
+                <div class="section-header">
+                    <h2>Standard Penetration Test (SPT)</h2>
+                    <button type="button" class="btn btn-outline" onclick="addRow('spt-body')">+ Add Test</button>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Depth (m)</th>
+                                <th>Blows (0-150)</th>
+                                <th>Blows (150-300)</th>
+                                <th>Blows (300-450)</th>
+                                <th>N-Value</th>
+                                <th style="width:50px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="spt-body" data-type="spt"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Atterberg Limits -->
+            <div class="section">
+                <div class="section-header">
+                    <h2>Atterberg Limits</h2>
+                    <button type="button" class="btn btn-outline" onclick="addRow('atterberg-body')">+ Add Sample</button>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Depth (m)</th>
+                                <th>WL (%)</th>
+                                <th>WP (%)</th>
+                                <th>IP (%)</th>
+                                <th>LI</th>
+                                <th style="width:50px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="atterberg-body" data-type="atterberg"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Direct Shear Test -->
+            <div class="section">
+                <div class="section-header">
+                    <h2>Direct Shear Test</h2>
+                    <button type="button" class="btn btn-outline" onclick="addRow('shear-body')">+ Add Sample</button>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Depth (m)</th>
+                                <th>Normal Stress (kPa)</th>
+                                <th>Shear Stress (kPa)</th>
+                                <th>Cohesion (kPa)</th>
+                                <th>Fric. Angle (deg)</th>
+                                <th style="width:50px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="shear-body" data-type="shear"></tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Consolidation Test -->
+            <div class="section">
+                <div class="section-header">
+                    <h2>Consolidation Test</h2>
+                    <button type="button" class="btn btn-outline" onclick="addRow('consolidation-body')">+ Add Sample</button>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Depth (m)</th>
+                                <th>Void Ratio</th>
+                                <th>Coeff. Cons. (m²/yr)</th>
+                                <th style="width:50px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="consolidation-body" data-type="consolidation"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Odeometric Test -->
+            <div class="section">
+                <div class="section-header">
+                    <h2>Odeometric Test</h2>
+                    <button type="button" class="btn btn-outline" onclick="addRow('odeometric-body')">+ Add Sample</button>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Depth (m)</th>
+                                <th>Initial Void Ratio</th>
+                                <th>Final Void Ratio</th>
+                                <th>Compression Index</th>
+                                <th style="width:50px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="odeometric-body" data-type="odeometric"></tbody>
+                    </table>
+                </div>
+            </div>
+
+
+            <!-- CPT Test -->
+            <div class="section">
+                <div class="section-header">
+                    <h2>Cone Penetration Test (CPT)</h2>
+                    <button type="button" class="btn btn-outline" onclick="addRow('cpt-body')">+ Add Reading</button>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Depth (m)</th>
+                                <th>Cone Resistance, qc (MPa)</th>
+                                <th>Sleeve Friction, fs (kPa)</th>
+                                <th>Friction Ratio, Rf (%)</th>
+                                <th>Pore Pressure, u2 (kPa)</th>
+                                <th style="width:50px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="cpt-body" data-type="cpt"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Comments -->
+            <div class="section">
+                <div class="section-header">
+                    <h2>Comments / Summary</h2>
+                </div>
+                <div class="form-group" style="margin-bottom:0;">
+                    <textarea id="comments" placeholder="Write any engineering notes, soil profile summary, or operational comments here..."></textarea>
+                </div>
+            </div>
+
+            
+            <div style="display: flex; gap: 16px; margin-top: 24px;">
+                <button type="button" id="preview-btn" class="btn btn-outline" style="flex: 1; text-align: center; justify-content: center; font-size: 16px; border-radius: 4px;">
+                    Preview Borelog
+                </button>
+                <button type="submit" id="submit-btn" class="btn btn-submit" style="flex: 2; margin-top: 0;">
+                    Submit Borelog for Approval
+                </button>
+            </div>
+
+        </form>
+    </div>
+
+    <div id="status-toast"></div>
+
+    
+    <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+    <script src="resources/MultiTab_XLSX_Export_Engine.js"></script>
+    <script src="resources/BorelogVisualizer.js"></script>
+    <script src="borelog-form.js"></script>
+
+
+    <!-- Preview Modal -->
+    <div id="preview-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center;">
+        <div style="background: white; width: 90%; max-width: 1000px; max-height: 90vh; border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+            <div style="padding: 16px 24px; border-bottom: 1px solid #e4e4e7; display: flex; justify-content: space-between; align-items: center; background: #fafafa;">
+                <h3 style="margin: 0; font-size: 18px; font-weight: 600;">Borelog Preview</h3>
+                <button onclick="document.getElementById('preview-modal').style.display='none'" style="background: transparent; border: none; font-size: 24px; cursor: pointer; color: #71717a;">&times;</button>
+            </div>
+            <div id="preview-content" style="padding: 24px; overflow-y: auto; flex: 1;">
+                <div id="borelog-plotly-chart" style="width: 100%; height: 600px;"></div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

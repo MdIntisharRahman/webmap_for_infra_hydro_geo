@@ -1,0 +1,1 @@
+{"type": "FeatureCollection", "features": [{"type": "Feature", "geometry": {"type": "Point", "coordinates": [90.4125, 23.8103]}, "properties": {"borehole_id": "DUMMY", "project": "Initial", "client": "RHD", "f_file": ""}}]}

@@ -1,0 +1,100 @@
+{
+  "type": "Feature",
+  "geometry": {
+    "type": "Point",
+    "coordinates": [238480.0, 2637483.0]
+  },
+  "properties": {
+    "borehole_id": "PL-07",
+    "client": "NKDOS Consortium",
+    "project": "Dhaka Mass Rapid Transit Development Project (MRT Line 1)",
+    "drilling_team": "TOHO_21",
+    "supervisor": "Rubel (Senior)",
+    "location": "Purbachal",
+    "drill_rig": "Hydraulic Rotary Drilling",
+    "tbm_no": "SOB 6037",
+    "date_of_boring": "20-06-2019 to 24-06-2019",
+    "rl_m": 8.503,
+    "depth_m": 51.29,
+    "water_table_m": 8.1,
+    "strata": [
+      {"stratum": 1, "top_m": 0.0, "bottom_m": 8.5, "class": "SM", "description": "Gray, loose to medium dense, Silty Sand, SM."},
+      {"stratum": 2, "top_m": 8.5, "bottom_m": 9.5, "class": "CH", "description": "Gray, medium stiff, Fat Clay, CH."},
+      {"stratum": 3, "top_m": 9.5, "bottom_m": 10.2, "class": "OH", "description": "Dark Gray, medium stiff, High Plastic Organic Clay, OH."},
+      {"stratum": 4, "top_m": 10.2, "bottom_m": 12.5, "class": "CH", "description": "Gray, soft to stiff, Fat Clay, CH."},
+      {"stratum": 5, "top_m": 12.5, "bottom_m": 16.2, "class": "CL", "description": "Gray to Yellowish Gray, medium stiff to stiff, Lean Clay, CL."},
+      {"stratum": 6, "top_m": 16.2, "bottom_m": 17.5, "class": "ML", "description": "Yellowish Gray, medium dense, Sandy Silt, ML."},
+      {"stratum": 7, "top_m": 17.5, "bottom_m": 25.2, "class": "CH", "description": "Gray, very stiff to hard, Fat Clay, CH."},
+      {"stratum": 8, "top_m": 25.2, "bottom_m": 28.0, "class": "SM", "description": "Gray, medium dense, Silty Sand, SM."},
+      {"stratum": 9, "top_m": 28.0, "bottom_m": 39.0, "class": "CL", "description": "Gray to Reddish Brown, very stiff to hard, Lean Clay, CL."},
+      {"stratum": 10, "top_m": 39.0, "bottom_m": 45.0, "class": "SM", "description": "Reddish Brown, very dense, Silty Sand, SM."},
+      {"stratum": 11, "top_m": 45.0, "bottom_m": 46.5, "class": "ML", "description": "Reddish Brown, very dense, Sandy Silt, ML."},
+      {"stratum": 12, "top_m": 46.5, "bottom_m": 51.29, "class": "SM", "description": "Reddish Brown, very dense, Silty Sand, SM."}
+    ],
+    "spt_records": [
+      {"depth_m": 1.5, "blows_150": 3, "blows_300": 5, "blows_450": 8, "n_value": "13"},
+      {"depth_m": 3.0, "blows_150": 2, "blows_300": 4, "blows_450": 6, "n_value": "10"},
+      {"depth_m": 4.5, "blows_150": 2, "blows_300": 2, "blows_450": 3, "n_value": "5"},
+      {"depth_m": 6.0, "blows_150": 2, "blows_300": 3, "blows_450": 3, "n_value": "6"},
+      {"depth_m": 7.5, "blows_150": 3, "blows_300": 3, "blows_450": 3, "n_value": "6"},
+      {"depth_m": 9.0, "blows_150": 2, "blows_300": 2, "blows_450": 3, "n_value": "5"},
+      {"depth_m": 10.5, "blows_150": 1, "blows_300": 2, "blows_450": 2, "n_value": "4"},
+      {"depth_m": 12.0, "blows_150": 3, "blows_300": 4, "blows_450": 5, "n_value": "9"},
+      {"depth_m": 13.5, "blows_150": 3, "blows_300": 4, "blows_450": 4, "n_value": "8"},
+      {"depth_m": 15.0, "blows_150": 4, "blows_300": 4, "blows_450": 6, "n_value": "10"},
+      {"depth_m": 16.5, "blows_150": 8, "blows_300": 13, "blows_450": 15, "n_value": "28"},
+      {"depth_m": 18.0, "blows_150": 8, "blows_300": 15, "blows_450": 19, "n_value": "34"},
+      {"depth_m": 19.5, "blows_150": 9, "blows_300": 14, "blows_450": 18, "n_value": "32"},
+      {"depth_m": 21.0, "blows_150": 6, "blows_300": 9, "blows_450": 11, "n_value": "20"},
+      {"depth_m": 22.5, "blows_150": 15, "blows_300": 8, "blows_450": 10, "n_value": "18"},
+      {"depth_m": 24.0, "blows_150": 6, "blows_300": 10, "blows_450": 12, "n_value": "22"},
+      {"depth_m": 25.5, "blows_150": 5, "blows_300": 7, "blows_450": 10, "n_value": "17"},
+      {"depth_m": 27.0, "blows_150": 7, "blows_300": 8, "blows_450": 11, "n_value": "19"},
+      {"depth_m": 28.5, "blows_150": 7, "blows_300": 12, "blows_450": 13, "n_value": "25"},
+      {"depth_m": 30.0, "blows_150": 8, "blows_300": 12, "blows_450": 15, "n_value": "27"},
+      {"depth_m": 31.5, "blows_150": 7, "blows_300": 11, "blows_450": 14, "n_value": "25"},
+      {"depth_m": 33.0, "blows_150": 8, "blows_300": 10, "blows_450": 14, "n_value": "24"},
+      {"depth_m": 34.5, "blows_150": 7, "blows_300": 11, "blows_450": 15, "n_value": "26"},
+      {"depth_m": 36.0, "blows_150": 6, "blows_300": 8, "blows_450": 11, "n_value": "19"},
+      {"depth_m": 37.5, "blows_150": 13, "blows_300": 18, "blows_450": 25, "n_value": "43"},
+      {"depth_m": 39.0, "blows_150": 12, "blows_300": 23, "blows_450": 27, "n_value": "50/290"},
+      {"depth_m": 40.5, "blows_150": 13, "blows_300": 26, "blows_450": 24, "n_value": "50/250"},
+      {"depth_m": 42.0, "blows_150": 17, "blows_300": 33, "blows_450": 17, "n_value": "50/190"},
+      {"depth_m": 43.5, "blows_150": 15, "blows_300": 30, "blows_450": 20, "n_value": "50/200"},
+      {"depth_m": 45.0, "blows_150": 26, "blows_300": 50, "blows_450": 50, "n_value": "50/150"},
+      {"depth_m": 46.5, "blows_150": 17, "blows_300": 35, "blows_450": 15, "n_value": "50/180"},
+      {"depth_m": 48.0, "blows_150": 20, "blows_300": 46, "blows_450": 4, "n_value": "50/160"},
+      {"depth_m": 49.5, "blows_150": 23, "blows_300": 40, "blows_450": 10, "n_value": "50/170"},
+      {"depth_m": 51.0, "blows_150": 30, "blows_300": 50, "blows_450": 50, "n_value": "50/140"}
+    ] ,
+    "atterberg_test_data":[
+      {"depth_m": 15.5, "wl": 35.0, "wp": 20.0, "ip": 15.0, "li": 0.43},
+      {"depth_m": 17.5, "wl": 38.0, "wp": 22.0, "ip": 16.0, "li": 0.42},
+      {"depth_m": 19.5, "wl": 40.0, "wp": 24.0, "ip": 16.0, "li": 0.40},
+      {"depth_m": 21.5, "wl": 42.0, "wp": 26.0, "ip": 16.0, "li": 0.38},
+      {"depth_m": 23.5, "wl": 44.0, "wp": 28.0, "ip": 16.0, "li": 0.36}
+    ],
+    "direct_shear_test_data":[
+      {"depth_m": 15.5, "normal_stress_kpa": 100, "shear_stress_kpa": 25, "cohesion_kpa": 10, "friction_angle_deg": 20},
+      {"depth_m": 17.5, "normal_stress_kpa": 150, "shear_stress_kpa": 40, "cohesion_kpa": 12, "friction_angle_deg": 22},
+      {"depth_m": 19.5, "normal_stress_kpa": 200, "shear_stress_kpa": 55, "cohesion_kpa": 15, "friction_angle_deg": 25},
+      {"depth_m": 21.5, "normal_stress_kpa": 250, "shear_stress_kpa": 70, "cohesion_kpa": 18, "friction_angle_deg": 28},
+      {"depth_m": 23.5, "normal_stress_kpa": 300, "shear_stress_kpa": 85, "cohesion_kpa": 20, "friction_angle_deg": 30}
+    ],
+    "consolidation_test_data":[
+      {"depth_m": 15.5, "void_ratio": 0.8, "coefficient_of_consolidation_m2_per_year": 0.02},
+      {"depth_m": 17.5, "void_ratio": 0.75, "coefficient_of_consolidation_m2_per_year": 0.025},
+      {"depth_m": 19.5, "void_ratio": 0.7, "coefficient_of_consolidation_m2_per_year": 0.03},
+      {"depth_m": 21.5, "void_ratio": 0.65, "coefficient_of_consolidation_m2_per_year": 0.035},
+      {"depth_m": 23.5, "void_ratio": 0.6, "coefficient_of_consolidation_m2_per_year": 0.04}
+    ],
+    "odeometric_test_data":[
+      {"depth_m": 15.5, "initial_void_ratio": 0.8, "final_void_ratio": 0.6, "compression_index": 0.2},
+      {"depth_m": 17.5, "initial_void_ratio": 0.75, "final_void_ratio": 0.55, "compression_index": 0.2},
+      {"depth_m": 19.5, "initial_void_ratio": 0.7, "final_void_ratio": 0.5, "compression_index": 0.2},
+      {"depth_m": 21.5, "initial_void_ratio": 0.65, "final_void_ratio": 0.45, "compression_index": 0.2},
+      {"depth_m": 23.5, "initial_void_ratio": 0.6, "final_void_ratio": 0.4, "compression_index": 0.2}
+    ],
+    "comments": "The borehole PL-07 was drilled to a depth of 51.29 meters at the Purbachal site for the Dhaka Mass Rapid Transit Development Project (MRT Line 1). The soil profile consists of various strata including silty sand, fat clay, high plastic organic clay, lean clay, and sandy silt. The SPT records indicate varying N-values throughout the depth, reflecting changes in soil density and consistency. Laboratory tests such as Atterberg limits, direct shear tests, and consolidation tests were conducted to determine the engineering properties of the soils encountered."
+  }
+}

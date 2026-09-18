@@ -1,12 +1,16 @@
 import asyncio
 import json
 import os
+import string
+import random
+import json
+
 import re
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 import rasterio
 
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
@@ -123,7 +127,8 @@ async def get_layers():
                 tab_name = parts[2] if len(parts) >= 3 and parts[2] else "Uncategorized"
                 show_first = (parts[3].strip().lower() in ["yes", "y"]) if len(parts) >= 4 else False
                 layer_type = parts[4].strip() if len(parts) >= 5 else "Vector"
-                transparency_str = parts[5].strip() if len(parts) >= 6 else ""
+                datapoint_type = parts[5].strip() if len(parts) >= 6 else ""
+                transparency_str = parts[6].strip() if len(parts) >= 7 else ""
                 transparency = None
                 if transparency_str:
                     try:
@@ -131,11 +136,11 @@ async def get_layers():
                     except ValueError:
                         pass
                 
-                derive = parts[6].strip() if len(parts) >= 7 else ""
-                units = parts[7].strip() if len(parts) >= 8 else ""
-                estimate = (parts[8].strip().lower() in ["yes", "y"]) if len(parts) >= 9 else False
-                credit_page = parts[9].strip() if len(parts) >= 10 else ""
-                zoom_level = parts[10].strip() if len(parts) >= 11 else ""
+                derive = parts[7].strip() if len(parts) >= 8 else ""
+                units = parts[8].strip() if len(parts) >= 9 else ""
+                estimate = (parts[9].strip().lower() in ["yes", "y"]) if len(parts) >= 10 else False
+                credit_page = parts[10].strip() if len(parts) >= 11 else ""
+                zoom_level = parts[11].strip() if len(parts) >= 12 else ""
                 
                 filename = parts[0]
                 rendered_filename = None
@@ -183,6 +188,7 @@ async def get_layers():
                     "tab": tab_name, 
                     "show_first": show_first,
                     "type": layer_type,
+                    "datapoint_type": datapoint_type,
                     "transparency": transparency,
                     "derive": derive,
                     "units": units,
@@ -384,5 +390,157 @@ tiles_dir = os.path.join(os.path.dirname(__file__), "..", "Maps", "tiles")
 os.makedirs(tiles_dir, exist_ok=True)
 app.mount("/tiles", StaticFiles(directory=tiles_dir), name="tiles")
 
-app.mount("/maps", StaticFiles(directory="Maps"), name="maps")
+
+app.mount("/maps", StaticFiles(directory=os.path.join(os.path.dirname(__file__), "..", "Maps")), name="maps")
+app.mount("/borelogs", StaticFiles(directory=os.path.join(os.path.dirname(__file__), "..", "Maps", "borelogs", "published")), name="borelogs")
+
+
+import base64
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
+import shutil
+
+security = HTTPBasic()
+
+def check_admin(credentials: HTTPBasicCredentials = Depends(security)):
+    env_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".env"))
+    expected_user = os.getenv("WEBMASTER_USERNAME")
+    expected_pass = os.getenv("WEBMASTER_PASSWORD")
+    
+    try:
+        if os.path.exists(env_path):
+            with open(env_path, "r", encoding="utf-8") as ef:
+                for line in ef:
+                    line = line.strip()
+                    if not line or line.startswith("#"): continue
+                    if "=" in line:
+                        k, v = line.split("=", 1)
+                        k = k.strip().upper()
+                        v = v.strip().strip("'").strip('"')
+                        if k == "WEBMASTER_USERNAME": expected_user = v
+                        elif k == "WEBMASTER_PASSWORD": expected_pass = v
+    except Exception:
+        pass
+        
+    if not expected_user or not expected_pass:
+        raise HTTPException(status_code=401, detail="Invalid credentials (not configured)")
+        
+    if credentials.username != expected_user or credentials.password != expected_pass:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    return credentials.username
+
+def generate_borelog_id():
+    return "".join(random.choices(string.ascii_uppercase + string.digits, k=8))
+
+@app.post("/api/borelog/stage")
+async def stage_borelog(request: Request, db: AsyncSession = Depends(get_db)):
+    payload = await request.json()
+    
+    b_id = generate_borelog_id()
+    f_file = f"{b_id}.JSON"
+    
+    staged_dir = os.path.join(os.path.dirname(__file__), "..", "Maps", "borelogs", "staged")
+    os.makedirs(staged_dir, exist_ok=True)
+    
+    file_path = os.path.join(staged_dir, f_file)
+    with open(file_path, "w", encoding="utf-8") as f:
+        json.dump(payload, f, indent=2)
+        
+    coords = payload.get("geometry", {}).get("coordinates", [0, 0])
+    lon, lat = coords[0], coords[1]
+    
+    props = payload.get("properties", {})
+    borehole_id = props.get("borehole_id", "UNKNOWN")
+    project = props.get("project", "")
+    client = props.get("client", "")
+    
+    query = text("""
+        INSERT INTO awaiting_borelogs (geom, borehole_id, project, client, f_file)
+        VALUES (
+            ST_SetSRID(ST_MakePoint(:lon, :lat), 4326),
+            :borehole_id, :project, :client, :f_file
+        )
+    """)
+    await db.execute(query, {
+        "lon": lon,
+        "lat": lat,
+        "borehole_id": borehole_id,
+        "project": project,
+        "client": client,
+        "f_file": f_file
+    })
+    await db.commit()
+    
+    return {"status": "success", "id": b_id, "file": f_file}
+
+
+
+@app.get("/api/borelog/auth")
+async def check_auth(username: str = Depends(check_admin)):
+    return {"status": "ok"}
+
+@app.get("/api/borelog/staged_list")
+async def get_staged_borelogs(username: str = Depends(check_admin)):
+    staged_dir = os.path.join(os.path.dirname(__file__), "..", "Maps", "borelogs", "staged")
+    files = []
+    if os.path.exists(staged_dir):
+        for f in os.listdir(staged_dir):
+            if f.endswith(".JSON"):
+                try:
+                    with open(os.path.join(staged_dir, f), "r", encoding="utf-8") as jf:
+                        data = json.load(jf)
+                        files.append({"f_file": f, "properties": data.get("properties", {})})
+                except: pass
+    return {"files": files}
+
+@app.post("/api/borelog/approve/{f_file}")
+async def approve_staged_borelog(f_file: str, db: AsyncSession = Depends(get_db), username: str = Depends(check_admin)):
+    staged_dir = os.path.join(os.path.dirname(__file__), "..", "Maps", "borelogs", "staged")
+    published_dir = os.path.join(os.path.dirname(__file__), "..", "Maps", "borelogs", "published")
+    file_path = os.path.join(staged_dir, f_file)
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="File not found")
+        
+    with open(file_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+        
+    props = data.get("properties", {})
+    borehole_id = props.get("borehole_id", "Unknown")
+    project = props.get("project", "")
+    client = props.get("client", "")
+    coords = data.get("geometry", {}).get("coordinates", [0, 0])
+    lon, lat = coords[0], coords[1]
+    
+    # move
+    shutil.move(file_path, os.path.join(published_dir, f_file))
+    
+    # update db
+    await db.execute(text("DELETE FROM awaiting_borelogs WHERE f_file = :f_file"), {"f_file": f_file})
+    query = text("""
+        INSERT INTO appended_borelogs (geom, borehole_id, project, client, f_file)
+        VALUES (
+            ST_SetSRID(ST_MakePoint(:lon, :lat), 4326),
+            :borehole_id, :project, :client, :f_file
+        )
+    """)
+    await db.execute(query, {
+        "lon": lon,
+        "lat": lat,
+        "borehole_id": borehole_id,
+        "project": project,
+        "client": client,
+        "f_file": f_file
+    })
+    await db.commit()
+    return {"status": "success"}
+
+@app.post("/api/borelog/reject/{f_file}")
+async def reject_staged_borelog(f_file: str, db: AsyncSession = Depends(get_db), username: str = Depends(check_admin)):
+    staged_dir = os.path.join(os.path.dirname(__file__), "..", "Maps", "borelogs", "staged")
+    file_path = os.path.join(staged_dir, f_file)
+    if os.path.exists(file_path):
+        os.remove(file_path)
+    
+    await db.execute(text("DELETE FROM awaiting_borelogs WHERE f_file = :f_file"), {"f_file": f_file})
+    await db.commit()
+    return {"status": "success"}
 app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")

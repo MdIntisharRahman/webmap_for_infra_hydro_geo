@@ -7,6 +7,9 @@
     <link rel="stylesheet" href="resources/leaflet.css" />
     <link rel="stylesheet" href="resources/fonts.css" />
     <link rel="stylesheet" href="styles.css?v=70">
+
+    <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 </head>
 <body>
     <div id="map"></div>
@@ -81,6 +84,20 @@
         </div>
     </div>
     
+    
+    <div id="borelog-modal" class="iframe-modal hidden" style="z-index: 10000;">
+        <div class="iframe-modal-backdrop" onclick="document.getElementById('borelog-modal').classList.add('hidden')"></div>
+        <div class="iframe-modal-content" style="width: 90vw; height: 90vh; overflow-y: auto; background: white; padding: 20px;">
+            <button class="iframe-modal-close" onclick="document.getElementById('borelog-modal').classList.add('hidden')" style="z-index: 10001; color: black; background: #eee; border-radius: 50%;">
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+            <div id="borelog-react-root"></div>
+        </div>
+    </div>
+
     <!-- Iframe Modal -->
     <div id="iframe-modal" class="iframe-modal hidden">
         <div class="iframe-modal-backdrop" id="iframe-modal-backdrop"></div>
@@ -115,5 +132,9 @@
 <!-- impeccable-live-start -->
 <script src="http://localhost:8400/live.js?token=124d1af6-b914-4cb8-b54e-50f309aab01d"></script>
 <!-- impeccable-live-end -->
+
+    <script src="resources/pastel_generator.js"></script>
+    <script src="resources/MultiTab_XLSX_Export_Engine.js"></script>
+    <script src="resources/BorelogVisualizer.js"></script>
 </body>
 </html>

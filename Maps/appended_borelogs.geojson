@@ -1,0 +1,7 @@
+{
+"type": "FeatureCollection",
+"name": "appended_borelogs",
+"features": [
+{ "type": "Feature", "properties": { "borehole_id": "DUMMY", "project": "Initial", "client": "RHD", "f_file": "pl07sq23.json", "Name": "Borelog-07A", "xcoord": 90.4327915, "ycoord": 23.8273776, "keys": "[Name, Place], [xcoord, Easting], [ycoord, Northing], [f_file, See Details] \n", "f_class_color": "#3b82f6" }, "geometry": { "type": "Point", "coordinates": [ 90.43279151, 23.82737758 ] } }
+]
+}
