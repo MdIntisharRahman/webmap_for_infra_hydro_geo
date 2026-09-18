@@ -174,7 +174,7 @@ const getHighlightStyle = (feature, color) => {
 // TOOLTIP RENDERING
 // ============================================================================
 
-const renderTooltipProps = (props, displayKeys) => {
+const renderTooltipProps = (props, displayKeys, layerInfo) => {
     tooltipDetails.innerHTML = "";
 
     const otherPropsContainer = document.createElement("div");
@@ -188,14 +188,22 @@ const renderTooltipProps = (props, displayKeys) => {
 
     let count = 0;
 
-    const formatValue = (keyLabel, value) => {
+            const formatValue = (keyLabel, value) => {
         if (typeof value === "string") {
             const trimmed = value.trim();
             if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
                 const linkText = (keyLabel && keyLabel.toLowerCase().includes("see more"))
-                    ? "Open Link ↗"
-                    : "See More ↗";
+                    ? "Open Link ➔"
+                    : "See More ➔";
                 return `<a href="${trimmed}" target="_blank" rel="noopener noreferrer" class="detail-link" title="${trimmed}">${linkText}</a>`;
+            }
+            const isBorelogLayer = layerInfo && (
+                (layerInfo.datapoint_type && layerInfo.datapoint_type.trim().toLowerCase() === 'borelogs') ||
+                (layerInfo.table && layerInfo.table.toLowerCase().includes('borelog')) ||
+                (layerInfo.name && layerInfo.name.toLowerCase().includes('borelog'))
+            );
+            if (isBorelogLayer && trimmed.toLowerCase().endsWith('.json')) {
+                return `<a href="javascript:void(0)" onclick="if(window.openBorelogVisualizer) { window.openBorelogVisualizer('${trimmed}') } else { alert('Visualizer not loaded.') }" style="color:#2563eb; font-weight:normal; text-decoration:underline; font-size:inherit;">[borelog]</a>`;
             }
         }
         return value;
@@ -365,9 +373,10 @@ async function fetchAndRenderLayers() {
         window.allLayerConfigs = layers;
 
         // Build Tabs
-        const uniqueTabs = [
+        let uniqueTabs = [
             ...new Set(layers.map((l) => l.tab || "Uncategorized")),
         ];
+        uniqueTabs.push("Control Tools");
         uniqueTabs.push("About Us");
 
         tabsContainerEl.innerHTML = "";
@@ -475,6 +484,22 @@ async function fetchAndRenderLayers() {
                 });
         }
 
+        
+        if (tabContentWrappers["Control Tools"]) {
+            tabContentWrappers["Control Tools"].innerHTML = `
+                <div style="padding: 15px; font-family: var(--font-body-special);">
+                    <h3 style="margin-top:0; color:#1e293b; font-size:14px;">Borelog Management</h3>
+                    <p style="color:#475569; font-size:12px; margin-bottom:15px;">Submit and review geotechnical borelog records.</p>
+                    <button onclick="window.open('borelog-entry.html', '_blank')" style="display:block; width:100%; padding:10px; margin-bottom:10px; background:#2563eb; color:white; border:none; border-radius:0px; cursor:pointer; font-weight:bold;">
+                        Submit Borelog
+                    </button>
+                    <button onclick="openApprovalLogin()" style="display:block; width:100%; padding:10px; background:#e45d28; color:white; border:none; border-radius:0px; cursor:pointer; font-weight:bold;">
+                        Approve Borelogs
+                    </button>
+                </div>
+            `;
+        }
+
         for (let i = 0; i < layers.length; i++) {
             const layerInfo = layers[i];
             const color = engineeringColors[i % engineeringColors.length];
@@ -498,7 +523,7 @@ async function fetchAndRenderLayers() {
             const isBasemap = layerInfo.type && layerInfo.type.toLowerCase() === 'basemap';
             
             let creditBtnUI = "";
-            if (layerInfo.credit_page && !isBasemap) {
+            if (layerInfo.credit_page && layerInfo.credit_page.trim() !== '' && !isBasemap) {
                 creditBtnUI = `<div class="credit-btn" data-url="credits/${layerInfo.credit_page}" title="View Credits">Cr</div>`;
             }
 
@@ -826,6 +851,9 @@ async function fetchAndRenderLayers() {
                             onEachFeature: (feature, layer) => {
                                 const populateTooltip = (e) => {
                                     const props = feature.properties;
+                                    
+
+                                    
                                     let headerValue = " ";
                                     let displayKeys = null;
                                     if (props.keys) {
@@ -875,7 +903,7 @@ async function fetchAndRenderLayers() {
                                     if(tooltipName) tooltipName.textContent = headerValue;
                                     if(tooltipLayer) tooltipLayer.textContent = layerInfo.name;
                                     if(tooltipRef) tooltipRef.style.display = "none";
-                                    renderTooltipProps(props, displayKeys);
+                                    renderTooltipProps(props, displayKeys, layerInfo);
                                     if(tooltip) tooltip.classList.add("visible");
                                 };
                                 layer.on({
@@ -1236,3 +1264,151 @@ if (iframeModal) {
     iframeClose.addEventListener('click', closeModal);
     iframeBackdrop.addEventListener('click', closeModal);
 }
+
+
+
+
+
+window.openBorelogVisualizer = async (f_file) => {
+    document.getElementById('borelog-modal').classList.remove('hidden');
+    const rootNode = document.getElementById('borelog-react-root');
+    rootNode.innerHTML = "<div style='padding: 20px;'>Loading borelog data...</div>";
+    
+    try {
+        const res = await fetch(`${API_BASE_URL.replace("/api", "")}/borelogs/${f_file}`);
+        if (!res.ok) throw new Error("Could not fetch " + f_file);
+        const data = await res.json();
+        
+        rootNode.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #ccc;">
+                <h2 style="margin:0; font-size: 20px; font-weight: bold; color: #1e293b;">Borelog: ${data.properties.borehole_id || f_file}</h2>
+                <button id="export-xlsx-btn" style="padding: 8px 16px; background: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
+                    Export XLSX
+                </button>
+            </div>
+            <div id="borelog-plotly-chart" style="width: 100%; height: 75vh;"></div>
+        `;
+        
+        document.getElementById("export-xlsx-btn").onclick = () => {
+            if (window.exportBorelogToXLSX) window.exportBorelogToXLSX(data);
+            else alert("Export engine not loaded.");
+        };
+        
+        if (window.renderBorelogChart) {
+            window.renderBorelogChart("borelog-plotly-chart", data.properties);
+        } else {
+            document.getElementById("borelog-plotly-chart").innerHTML = "<p style='color:red;'>Chart renderer not loaded.</p>";
+        }
+        
+    } catch (e) {
+        console.error(e);
+        rootNode.innerHTML = "<p style='color:red;'>Error loading borelog data.</p>";
+    }
+};
+
+window.adminCredentials = null;
+
+window.openApprovalLogin = () => {
+    document.getElementById('borelog-modal').classList.remove('hidden');
+    const rootNode = document.getElementById('borelog-react-root');
+    rootNode.innerHTML = `
+        <div style="max-width: 380px; margin: 60px auto; font-family: 'Outfit', sans-serif; background: #ffffff; padding: 40px; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.05); border: 1px solid #eaeaea;">
+            <h2 style="margin: 0; color: #111; font-size: 32px; font-weight: 700;">Webmaster Login</h2>
+            <p style="margin: 5px 0 35px 0; color: #555; font-size: 16px; font-family: 'SmartGothic', sans-serif;">to access the approval system</p>
+            
+            <div style="margin-bottom: 20px;">
+                <input type="text" id="admin-user" placeholder="Username" style="width: 100%; box-sizing: border-box; padding: 16px; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 15px; font-family: 'SmartGothic', sans-serif; outline: none; transition: border 0.2s;" onfocus="this.style.borderColor='#001ecc'" onblur="this.style.borderColor='#e2e8f0'">
+            </div>
+            <div style="margin-bottom: 30px;">
+                <input type="password" id="admin-pass" placeholder="Password" style="width: 100%; box-sizing: border-box; padding: 16px; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 15px; font-family: 'SmartGothic', sans-serif; outline: none; transition: border 0.2s;" onfocus="this.style.borderColor='#001ecc'" onblur="this.style.borderColor='#e2e8f0'">
+            </div>
+            
+            <button id="admin-login-btn" style="width: 100%; padding: 16px; background: #001ecc; color: #ffffff; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; font-family: 'Outfit', sans-serif; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#0019a8'" onmouseout="this.style.background='#001ecc'">Continue</button>
+            
+            <p id="admin-error" style="color: #ef4444; margin-top: 15px; text-align: center; font-family: 'SmartGothic', sans-serif; font-size: 14px;"></p>
+        </div>
+    `;
+    
+    document.getElementById('admin-login-btn').onclick = async () => {
+        const u = document.getElementById('admin-user').value;
+        const p = document.getElementById('admin-pass').value;
+        const hash = btoa(u + ":" + p);
+        try {
+            const res = await fetch(`${API_BASE_URL}/borelog/auth`, { headers: { 'Authorization': 'Basic ' + hash } });
+            if (res.ok) {
+                window.adminCredentials = hash;
+                renderAdminDashboard();
+            } else {
+                document.getElementById('admin-error').innerText = "Invalid credentials.";
+            }
+        } catch (e) {
+            document.getElementById('admin-error').innerText = "Network error.";
+        }
+    };
+};
+
+window.renderAdminDashboard = async () => {
+    const rootNode = document.getElementById('borelog-react-root');
+    rootNode.innerHTML = "<div style='padding:20px;'>Loading staged borelogs...</div>";
+    try {
+        const res = await fetch(`${API_BASE_URL}/borelog/staged_list`, { headers: { 'Authorization': 'Basic ' + window.adminCredentials } });
+        if (!res.ok) throw new Error("Failed to fetch list");
+        const data = await res.json();
+        const files = data.files;
+        
+        if (files.length === 0) {
+            rootNode.innerHTML = "<div style='padding:20px; font-size:18px;'><b>No borelogs awaiting approval.</b></div>";
+            return;
+        }
+        
+        let html = `
+            <div style="padding:20px; font-family: sans-serif;">
+                <h2>Awaiting Approval</h2>
+                <table style="width:100%; border-collapse:collapse; text-align:left;">
+                    <tr style="background:#f1f5f9;">
+                        <th style="padding:10px; border:1px solid #ccc;">File</th>
+                        <th style="padding:10px; border:1px solid #ccc;">Borehole ID</th>
+                        <th style="padding:10px; border:1px solid #ccc;">Project</th>
+                        <th style="padding:10px; border:1px solid #ccc;">Actions</th>
+                    </tr>
+        `;
+        
+        files.forEach((f, i) => {
+            html += `
+                <tr>
+                    <td style="padding:10px; border:1px solid #ccc;">${f.f_file}</td>
+                    <td style="padding:10px; border:1px solid #ccc;">${f.properties.borehole_id || 'N/A'}</td>
+                    <td style="padding:10px; border:1px solid #ccc;">${f.properties.project || 'N/A'}</td>
+                    <td style="padding:10px; border:1px solid #ccc;">
+                        <button onclick="adminAction('${f.f_file}', 'approve')" style="padding:5px 10px; background:#10b981; color:white; border:none; border-radius:4px; cursor:pointer;">Approve</button>
+                        <button onclick="adminAction('${f.f_file}', 'reject')" style="padding:5px 10px; background:#ef4444; color:white; border:none; border-radius:4px; cursor:pointer;">Reject</button>
+                    </td>
+                </tr>
+            `;
+        });
+        
+        html += "</table></div>";
+        rootNode.innerHTML = html;
+        
+    } catch(e) {
+        rootNode.innerHTML = "<div style='padding:20px; color:red;'>Error loading dashboard.</div>";
+    }
+};
+
+window.adminAction = async (f_file, action) => {
+    if (!confirm(`Are you sure you want to ${action} ${f_file}?`)) return;
+    try {
+        const res = await fetch(`${API_BASE_URL}/borelog/${action}/${f_file}`, {
+            method: 'POST',
+            headers: { 'Authorization': 'Basic ' + window.adminCredentials }
+        });
+        if (res.ok) {
+            alert(`Successfully ${action}d ${f_file}`);
+            renderAdminDashboard(); // refresh
+        } else {
+            alert(`Failed to ${action} ${f_file}`);
+        }
+    } catch(e) {
+        alert("Network error.");
+    }
+};
