@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 
 const INITIAL_META = {
-  borehole_id: "",
+  borelog_id: "",
   project: "",
   client: "",
   crs: "EPSG:32646",
@@ -89,7 +89,7 @@ window.BorelogForm = function BorelogForm() {
           ]
         },
         properties: {
-          borehole_id: meta.borehole_id,
+          borelog_id: meta.borelog_id,
           project: meta.project,
           client: meta.client,
           crs: meta.crs,
@@ -142,7 +142,7 @@ window.BorelogForm = function BorelogForm() {
       const coords = parsed.geometry?.coordinates || ["", ""];
       
       setMeta({
-        borehole_id: p.borehole_id || "",
+        borelog_id: p.borelog_id || "",
         project: p.project || "",
         client: p.client || "",
         crs: p.crs || "EPSG:32646",
@@ -305,7 +305,7 @@ window.BorelogForm = function BorelogForm() {
           <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
             <h2 className="text-lg font-bold text-slate-800 mb-4 border-b border-slate-100 pb-2">Project Metadata</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <InputField label="Borehole ID" name="borehole_id" value={meta.borehole_id} onChange={handleMetaChange} />
+              <InputField label="Borelog ID" name="borelog_id" value={meta.borelog_id} onChange={handleMetaChange} />
               <InputField label="Client" name="client" value={meta.client} onChange={handleMetaChange} />
               <div className="sm:col-span-2">
                 <InputField label="Project Name" name="project" value={meta.project} onChange={handleMetaChange} />

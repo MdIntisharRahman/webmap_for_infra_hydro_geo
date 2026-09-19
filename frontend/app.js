@@ -489,11 +489,11 @@ async function fetchAndRenderLayers() {
             tabContentWrappers["Control Tools"].innerHTML = `
                 <div style="padding: 15px; font-family: var(--font-body-special);">
                     <h3 style="margin-top:0; color:#1e293b; font-size:14px;">Borelog Management</h3>
-                    <p style="color:#475569; font-size:12px; margin-bottom:15px;">Submit and review geotechnical borelog records.</p>
-                    <button onclick="window.open('borelog-entry.html', '_blank')" style="display:block; width:100%; padding:10px; margin-bottom:10px; background:#2563eb; color:white; border:none; border-radius:0px; cursor:pointer; font-weight:bold;">
+                    <p style="color:#475569; font-size:12px; margin:11px 0px 11px 0px;">Submit and review geotechnical borelog records.</p>
+                    <button onclick="window.open('borelog-entry.html', '_blank')" class="management-btn submit-btn" style="display:block; width:100%; padding:10px; margin-bottom:10px; color:white; border:none; border-radius:0px; cursor:pointer; font-weight:bold; transition: background 0.2s;">
                         Submit Borelog
                     </button>
-                    <button onclick="openApprovalLogin()" style="display:block; width:100%; padding:10px; background:#e45d28; color:white; border:none; border-radius:0px; cursor:pointer; font-weight:bold;">
+                    <button onclick="openApprovalLogin()" class="management-btn approve-btn" style="display:block; width:100%; padding:10px; color:white; border:none; border-radius:0px; cursor:pointer; font-weight:bold; transition: background 0.2s;">
                         Approve Borelogs
                     </button>
                 </div>
@@ -1159,6 +1159,7 @@ document.getElementById("coord-btn").addEventListener("click", async () => {
             `${API_BASE_URL}/estimate_water_levels?lat=${lat}&lng=${lng}&active_tables=${activeTables}`,
         );
         const data = await res.json();
+        const uid = f_file.replace(/\.json$/i, "");
 
         let allRows = [];
         
@@ -1278,24 +1279,59 @@ window.openBorelogVisualizer = async (f_file) => {
         const res = await fetch(`${API_BASE_URL.replace("/api", "")}/borelogs/${f_file}`);
         if (!res.ok) throw new Error("Could not fetch " + f_file);
         const data = await res.json();
+        const uid = f_file.replace(/\.json$/i, "");
         
         rootNode.innerHTML = `
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #ccc;">
-                <h2 style="margin:0; font-size: 20px; font-weight: bold; color: #1e293b;">Borelog: ${data.properties.borehole_id || f_file}</h2>
-                <button id="export-xlsx-btn" style="padding: 8px 16px; background: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
-                    Export XLSX
-                </button>
+            <div style="display: flex; justify-content: space-evenly; align-items: center; margin-bottom: 15px; padding-bottom: 10px; padding-right: 32px; border-bottom: 1px solid #ccc;">
+                <h2 style="margin:0; font-size: 20px; font-weight: bold; color: #1e293b;"></h2>
+                <div style="display: flex; gap: 8px;">
+                    <button id="export-graphic-btn" style="padding: 8px 16px; background: #6366f1; color: white; border: none;  cursor: pointer; font-weight: bold;">
+                        Export Graphic
+                    </button>
+                    <button id="export-xlsx-btn" style="padding: 8px 16px; background: #10b981; color: white; border: none; cursor: pointer; font-weight: bold;">
+                        Export XLSX
+                    </button>
+                </div>
             </div>
-            <div id="borelog-plotly-chart" style="width: 100%; height: 75vh;"></div>
+            <style>
+.leaflet-popup-content-wrapper { padding: 0 !important; border-radius: 8px !important; overflow: hidden !important; }
+.leaflet-popup-content { 
+    overflow: hidden !important; 
+    margin: 0 !important; 
+    width: 80vw !important; 
+    max-width: 1200px !important; 
+    height: 85vh !important; 
+    display: flex !important; 
+    flex-direction: column !important; 
+    padding: 24px !important; 
+    box-sizing: border-box !important;
+}
+.leaflet-popup-content > #borelog-plotly-chart {
+    flex: 1 !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+</style>
+              <div id="borelog-plotly-chart" style="width: 100%; flex: 1; min-height: 0;"></div>
         `;
         
         document.getElementById("export-xlsx-btn").onclick = () => {
-            if (window.exportBorelogToXLSX) window.exportBorelogToXLSX(data);
+            if (window.exportBorelogToXLSX) window.exportBorelogToXLSX(data, uid);
             else alert("Export engine not loaded.");
         };
         
+        document.getElementById("export-graphic-btn").onclick = () => {
+            if (window.downloadBorelogSVG) {
+                window.downloadBorelogSVG(data, uid);
+            } else {
+                alert("SVG exporter not loaded.");
+            }
+        };
+        
         if (window.renderBorelogChart) {
-            window.renderBorelogChart("borelog-plotly-chart", data.properties);
+            window.renderBorelogChart("borelog-plotly-chart", data);
         } else {
             document.getElementById("borelog-plotly-chart").innerHTML = "<p style='color:red;'>Chart renderer not loaded.</p>";
         }
@@ -1354,40 +1390,78 @@ window.renderAdminDashboard = async () => {
         const res = await fetch(`${API_BASE_URL}/borelog/staged_list`, { headers: { 'Authorization': 'Basic ' + window.adminCredentials } });
         if (!res.ok) throw new Error("Failed to fetch list");
         const data = await res.json();
+        const uid = f_file.replace(/\.json$/i, "");
         const files = data.files;
         
         if (files.length === 0) {
-            rootNode.innerHTML = "<div style='padding:20px; font-size:18px;'><b>No borelogs awaiting approval.</b></div>";
+            rootNode.innerHTML = `
+                <div style="padding: 60px 20px; text-align: center; font-family: 'Inter', sans-serif;">
+                    <div style="width: 64px; height: 64px; border-radius: 50%; background: #fdfbf7; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px auto; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2d5e7c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline>
+                        </svg>
+                    </div>
+                    <h3 style="font-family: 'Outfit', sans-serif; font-size: 24px; font-weight: 700; color: #0d2838; margin: 0 0 12px 0; letter-spacing: -0.5px;">All Caught Up</h3>
+                    <p style="color: #69707a; font-size: 15px; max-width: 400px; margin: 0 auto; line-height: 1.5;">There are currently no borelogs awaiting your authorization. You can close this panel and return to the map.</p>
+                </div>
+            `;
             return;
         }
         
         let html = `
-            <div style="padding:20px; font-family: sans-serif;">
-                <h2>Awaiting Approval</h2>
-                <table style="width:100%; border-collapse:collapse; text-align:left;">
-                    <tr style="background:#f1f5f9;">
-                        <th style="padding:10px; border:1px solid #ccc;">File</th>
-                        <th style="padding:10px; border:1px solid #ccc;">Borehole ID</th>
-                        <th style="padding:10px; border:1px solid #ccc;">Project</th>
-                        <th style="padding:10px; border:1px solid #ccc;">Actions</th>
-                    </tr>
+            <div style="padding: 10px 20px; font-family: 'Inter', sans-serif; color: #313845;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 30px; border-bottom: 2px solid #fdfbf7; padding-bottom: 16px;">
+                    <div>
+                        <h2 style="font-family: 'Outfit', sans-serif; font-size: 28px; font-weight: 700; color: #0d2838; margin: 0 0 8px 0; letter-spacing: -0.5px;">Pending Approvals</h2>
+                        <p style="margin: 0; color: #69707a; font-size: 14px;">Review and authorize submitted geotechnical borelog records.</p>
+                    </div>
+                    <div style="background: rgba(144, 205, 244, 0.15); color: #2d5e7c; padding: 6px 12px; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600; border: 1px solid rgba(144, 205, 244, 0.4);">
+                        ${files.length} AWAITING
+                    </div>
+                </div>
+                
+                <div class="approval-table-container" style="border: 1px solid #e2e8f0; border-radius: 8px; overflow-x: auto; -webkit-overflow-scrolling: touch; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);">
+                    <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                        <thead>
+                            <tr style="background: #fdfbf7; border-bottom: 1px solid #e2e8f0;">
+                                <th style="padding: 16px 24px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #69707a; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Borelog ID</th>
+                                <th style="padding: 16px 24px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #69707a; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Project</th>
+                                <th style="padding: 16px 24px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #69707a; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">File Reference</th>
+                                <th style="padding: 16px 24px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #69707a; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; text-align: right;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
         `;
         
         files.forEach((f, i) => {
+            const bg = i % 2 === 0 ? '#ffffff' : '#fafafa';
             html += `
-                <tr>
-                    <td style="padding:10px; border:1px solid #ccc;">${f.f_file}</td>
-                    <td style="padding:10px; border:1px solid #ccc;">${f.properties.borehole_id || 'N/A'}</td>
-                    <td style="padding:10px; border:1px solid #ccc;">${f.properties.project || 'N/A'}</td>
-                    <td style="padding:10px; border:1px solid #ccc;">
-                        <button onclick="adminAction('${f.f_file}', 'approve')" style="padding:5px 10px; background:#10b981; color:white; border:none; border-radius:4px; cursor:pointer;">Approve</button>
-                        <button onclick="adminAction('${f.f_file}', 'reject')" style="padding:5px 10px; background:#ef4444; color:white; border:none; border-radius:4px; cursor:pointer;">Reject</button>
+                <tr style="background: ${bg}; border-bottom: 1px solid #f1f5f9; transition: background 0.2s;" onmouseover="this.style.backgroundColor='#f1f5f9'" onmouseout="this.style.backgroundColor='${bg}'">
+                    <td style="padding: 16px 24px; font-weight: 600; color: #0d2838; font-size: 15px;">
+                        ${f.properties.borelog_id || 'N/A'}
+                    </td>
+                    <td style="padding: 16px 24px; color: #475569; font-size: 14px;">
+                        ${f.properties.project || 'N/A'}
+                    </td>
+                    <td style="padding: 16px 24px; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #69707a;">
+                        ${f.f_file}
+                    </td>
+                    <td style="padding: 16px 24px; text-align: right;">
+                        <div style="display: inline-flex; gap: 8px;">
+                            <button onclick="adminAction('${f.f_file}', 'reject')" style="padding: 8px 16px; background: transparent; color: #ef4444; border: 1px solid #fca5a5; border-radius: 4px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.backgroundColor='#fef2f2'; this.style.borderColor='#ef4444'" onmouseout="this.style.backgroundColor='transparent'; this.style.borderColor='#fca5a5'">Reject</button>
+                            <button onclick="adminAction('${f.f_file}', 'approve')" style="padding: 8px 16px; background: #0d2838; color: white; border: none; border-radius: 4px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.1);" onmouseover="this.style.backgroundColor='#2d5e7c'" onmouseout="this.style.backgroundColor='#0d2838'">Authorize</button>
+                        </div>
                     </td>
                 </tr>
             `;
         });
         
-        html += "</table></div>";
+        html += `
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
         rootNode.innerHTML = html;
         
     } catch(e) {

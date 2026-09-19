@@ -135,10 +135,12 @@
 
         /* Tables */
         .table-container {
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
+            /* border: 1px solid var(--border-color); */
+            /* border-radius: 8px; */
             overflow-x: auto;
-            margin-bottom: 16px;
+            /* margin-bottom: 16px; */
+            /* padding: 0px 3px 0px 3px; */
+            padding: 0px;
         }
 
         table {
@@ -224,13 +226,25 @@
         .btn-outline:hover {
             color: #FFFFFF;
         }
+        
+        .btn-outline[id="preview-btn"] {
+            border-color: #0b0ff5;
+            color: #0b0ff5;
+            /* text-align: center; 
+            justify-content: center;  */
+            font-size: 14px; 
+            border-radius: 0px;
+            padding: 9px;
+            margin-top: 24px;
+        }
 
         .btn-submit {
             width: 100%;
             margin-top: 24px;
-            padding: 14px;
-            font-size: 16px;
+            padding: 9px;
+            font-size: 14px;
             color: #16a34a; /* Greenish */
+            border-radius: 0px;
         }
         
         .btn-submit:before {
@@ -259,13 +273,15 @@
             background: transparent;
             color: var(--text-muted);
             border: none;
-            padding: 12px;
-            cursor: pointer;
-            width: 100%;
+            padding: 9px;
+            cursor: pointer;  
+            width: inherit;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: color 0.2s;
+            height: inherit;
+            margin-left: 11px;
         }
 
         .del-btn:hover {
@@ -301,18 +317,66 @@
             color: var(--text-muted);
             margin-top: 4px;
         }
-    
-        .btn-outline[id="preview-btn"] {
-            border-color: #f59e0b;
-            color: #f59e0b;
-        }
         
         .btn-outline[id="preview-btn"]:before {
-            background-color: #f59e0b;
+            background-color: #0b0ff5;
         }
         
         .btn-outline[id="preview-btn"]:hover {
             color: #FFFFFF !important;
+        }
+
+
+    
+        /* Responsive Adaptations */
+        @media (max-width: 768px) {
+            .container {
+                margin: 12px;
+                border-radius: 8px;
+            }
+            .header-container {
+                padding: 24px;
+            }
+            .header-container h1 {
+                font-size: 24px;
+            }
+            .grid-2, .grid-3, .grid-4 {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            .section {
+                padding: 20px;
+            }
+            .btn {
+                padding: 12px 16px; /* Larger touch targets */
+            }
+            .del-btn {
+                min-height: 44px;
+                margin-left: 0;
+                margin-top: 8px;
+                background: var(--danger-bg);
+            }
+            .spt-row, .dynamic-row {
+                display: flex;
+                flex-direction: column;
+                border: 1px solid var(--border-color);
+                padding: 16px;
+                border-radius: 8px;
+                margin-bottom: 12px;
+                background: #fdfdfd;
+            }
+            .form-group {
+                margin-bottom: 16px;
+            }
+        }
+        @media (max-width: 480px) {
+            .container {
+                margin: 0;
+                border-radius: 0;
+            }
+            body {
+                background: var(--bg-surface);
+            }
         }
 
     </style>
@@ -321,7 +385,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>Geotechnical Borelog</h1>
+            <h1>Geotechnical Borelog Record Entry</h1>
             <p>Enter the field data and laboratory test results to generate a standard borelog record.</p>
         </div>
 
@@ -347,8 +411,8 @@
                 </div>
                 <div class="grid-2">
                     <div class="form-group">
-                        <label>Borehole ID</label>
-                        <input type="text" id="borehole_id" required placeholder="e.g. PL-07">
+                        <label>Borelog ID</label>
+                        <input type="text" id="borelog_id" required placeholder="e.g. PL-07">
                     </div>
                     <div class="form-group">
                         <label>Location (Coordinates)</label>
@@ -367,7 +431,7 @@
                     
                     <div class="form-group"><label>Date of Starting the Boring</label><input type="date" id="date_of_starting_boring"></div>
                     <div class="form-group"><label>Date of Ending the Boring</label><input type="date" id="date_of_ending_boring"></div>
-                    <div class="form-group"><label>Reduced Level (RL, m)</label><input type="number" step="0.01" id="rl_m"></div>
+                    <div class="form-group"><label>Reduced Level (RL, m)</label><input type="number" step="0.00001" max="99999.99999" min="-99999.99999" id="rl_m"></div>
                     <div class="form-group"><label>Total Depth (m)</label><input type="number" step="0.01" id="depth_m"></div>
                     
                     <div class="form-group"><label>Water Table Depth (m)</label><input type="number" step="0.01" id="water_table_m"></div>
@@ -546,10 +610,10 @@
 
             
             <div style="display: flex; gap: 16px; margin-top: 24px;">
-                <button type="button" id="preview-btn" class="btn btn-outline" style="flex: 1; text-align: center; justify-content: center; font-size: 16px; border-radius: 4px;">
+                <button type="button" id="preview-btn" class="btn btn-outline" style="flex: 1;">
                     Preview Borelog
                 </button>
-                <button type="submit" id="submit-btn" class="btn btn-submit" style="flex: 2; margin-top: 0;">
+                <button type="submit" id="submit-btn" class="btn btn-submit" style="flex: 2;">
                     Submit Borelog for Approval
                 </button>
             </div>
@@ -563,7 +627,7 @@
     <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
     <script src="resources/MultiTab_XLSX_Export_Engine.js"></script>
     <script src="resources/BorelogVisualizer.js"></script>
-    <script src="borelog-form.js"></script>
+    <script src="borelog-form.js?v=3"></script>
 
 
     <!-- Preview Modal -->
@@ -571,10 +635,14 @@
         <div style="background: white; width: 90%; max-width: 1000px; max-height: 90vh; border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
             <div style="padding: 16px 24px; border-bottom: 1px solid #e4e4e7; display: flex; justify-content: space-between; align-items: center; background: #fafafa;">
                 <h3 style="margin: 0; font-size: 18px; font-weight: 600;">Borelog Preview</h3>
-                <button onclick="document.getElementById('preview-modal').style.display='none'" style="background: transparent; border: none; font-size: 24px; cursor: pointer; color: #71717a;">&times;</button>
+                <div style="display: flex; gap: 12px; align-items: center;">
+                    <button id="modal-export-graphic" style="padding: 6px 12px; background: #6366f1; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 14px;">Export Graphic</button>
+                    <button id="modal-export-xlsx" style="padding: 6px 12px; background: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 14px;">Export XLSX</button>
+                    <button onclick="document.getElementById('preview-modal').style.display='none'" style="background: transparent; border: none; font-size: 24px; cursor: pointer; color: #71717a; margin-left: 8px;">&times;</button>
+                </div>
             </div>
-            <div id="preview-content" style="padding: 24px; overflow-y: auto; flex: 1;">
-                <div id="borelog-plotly-chart" style="width: 100%; height: 600px;"></div>
+            <div id="preview-content" style="padding: 24px; overflow: hidden; flex: 1; display: flex; flex-direction: column;">
+                <div id="borelog-plotly-chart" style="width: 100%; flex: 1; min-height: 0;"></div>
             </div>
         </div>
     </div>

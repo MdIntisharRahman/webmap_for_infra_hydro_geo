@@ -1,1 +1,7 @@
-{"type": "FeatureCollection", "features": [{"type": "Feature", "geometry": {"type": "Point", "coordinates": [90.4125, 23.8103]}, "properties": {"borehole_id": "DUMMY", "project": "Initial", "client": "RHD", "f_file": ""}}]}
+{
+"type": "FeatureCollection",
+"name": "awaiting_borelogs",
+"features": [
+{ "type": "Feature", "properties": { "borelog_id": "DUMMY", "project": "Initial", "client": "RHD", "Name": "", "xcoord": 0.0, "ycoord": 0.0, "keys": "", "f_class_color": "", "f_file": "" }, "geometry": { "type": "Point", "coordinates": [ 90.4125, 23.8103 ] } }
+]
+}

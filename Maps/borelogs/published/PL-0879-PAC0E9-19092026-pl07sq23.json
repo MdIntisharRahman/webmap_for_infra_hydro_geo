@@ -31,7 +31,7 @@
       {"stratum": 11, "top_m": 45.0, "bottom_m": 46.5, "class": "ML", "description": "Reddish Brown, very dense, Sandy Silt, ML."},
       {"stratum": 12, "top_m": 46.5, "bottom_m": 51.29, "class": "SM", "description": "Reddish Brown, very dense, Silty Sand, SM."}
     ],
-    "spt_records": [
+    "spt_data": [
       {"depth_m": 1.5, "blows_150": 3, "blows_300": 5, "blows_450": 8, "n_value": "13"},
       {"depth_m": 3.0, "blows_150": 2, "blows_300": 4, "blows_450": 6, "n_value": "10"},
       {"depth_m": 4.5, "blows_150": 2, "blows_300": 2, "blows_450": 3, "n_value": "5"},

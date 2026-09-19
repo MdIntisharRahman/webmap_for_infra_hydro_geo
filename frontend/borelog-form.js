@@ -76,6 +76,7 @@ window.addRow = (tbodyId) => {
     const tr = document.createElement('tr');
     tr.innerHTML = getRowHTML(type);
     tbody.appendChild(tr);
+    return tr;
 };
 
 window.deleteRow = (btn) => {
@@ -120,10 +121,10 @@ function gatherBorelogData() {
         type: "Feature",
         geometry: {
             type: "Point",
-            coordinates: [lng, lat]
+            coordinates: [lat, lng]
         },
         properties: {
-                borehole_id: document.getElementById('borehole_id').value,
+                borelog_id: document.getElementById('borelog_id').value,
                 client: document.getElementById('client').value,
                 project: document.getElementById('project').value,
                 location: document.getElementById('location').value,
@@ -202,7 +203,7 @@ document.getElementById('borelogForm').addEventListener('submit', async (e) => {
 
     try {
         const payload = gatherBorelogData();
-        const response = await fetch('/api/borelog/stage', {
+        const response = await fetch('http://127.0.0.1:8000/api/borelog/stage', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -233,9 +234,30 @@ document.getElementById('preview-btn').addEventListener('click', () => {
     const data = gatherBorelogData();
     document.getElementById('preview-modal').style.display = 'flex';
     if (window.renderBorelogChart) {
-        window.renderBorelogChart('borelog-plotly-chart', data.properties);
+        window.renderBorelogChart('borelog-plotly-chart', data);
     } else {
         alert("Borelog visualizer engine is not loaded.");
+    }
+    
+    // Wire up modal export buttons
+    const btnXlsx = document.getElementById('modal-export-xlsx');
+    const btnGraphic = document.getElementById('modal-export-graphic');
+    
+    if (btnXlsx) {
+        btnXlsx.onclick = () => {
+            if (window.exportBorelogToXLSX) window.exportBorelogToXLSX(data);
+            else alert("Export engine not loaded.");
+        };
+    }
+    
+    if (btnGraphic) {
+        btnGraphic.onclick = () => {
+            if (window.downloadBorelogSVG) {
+                window.downloadBorelogSVG(data);
+            } else {
+                alert("SVG exporter not loaded.");
+            }
+        };
     }
 });
 
@@ -262,8 +284,17 @@ function populateFormFromJson(geoJson) {
     
     const setVal = (id, val) => { if(document.getElementById(id)) document.getElementById(id).value = val || ''; };
     
-    setVal('borehole_id', props.borehole_id);
-    setVal('coordinates', `${coords[1]}, ${coords[0]}`); // Lat, Lng
+    setVal('borelog_id', props.borelog_id);
+    let lat = coords[0];
+    let lng = coords[1];
+    
+    // Safety fallback: if an older JSON with standard [Lng, Lat] is uploaded,
+    // we swap them back based on Bangladesh coordinate norms (Lat ~23, Lng ~90)
+    if (lat > lng) {
+        lat = coords[1];
+        lng = coords[0];
+    }
+    setVal('coordinates', `${lat}, ${lng}`);
     setVal('client', props.client);
     setVal('project', props.project);
     setVal('location', props.location);
@@ -284,42 +315,45 @@ function populateFormFromJson(geoJson) {
     });
     
     // Fill tables
-    if (props.stratigraphy) {
-        props.stratigraphy.forEach(s => {
+    const strataData = props.strata || props.stratigraphy;
+    if (strataData) {
+        strataData.forEach(s => {
             const tr = addRow('strata-body');
             const inputs = tr.querySelectorAll('input');
-            inputs[0].value = s.top_m || '';
-            inputs[1].value = s.bottom_m || '';
-            inputs[2].value = s.uscs_class || '';
-            inputs[3].value = s.description || '';
+            inputs[0].value = s.stratum !== undefined ? s.stratum : '';
+            inputs[1].value = s.top_m !== undefined ? s.top_m : '';
+            inputs[2].value = s.bottom_m !== undefined ? s.bottom_m : '';
+            inputs[3].value = s.class || s.uscs_class || '';
+            inputs[4].value = s.description || '';
         });
     }
     
-    if (props.spt_data) {
-        props.spt_data.forEach(s => {
+    const sptDataList = props.spt_data || props.spt_records;
+    if (sptDataList) {
+        sptDataList.forEach(s => {
             const tr = addRow('spt-body');
             const inputs = tr.querySelectorAll('input');
-            inputs[0].value = s.depth_m || '';
-            inputs[1].value = s.blows_0_150 || '';
-            inputs[2].value = s.blows_150_300 || '';
-            inputs[3].value = s.blows_300_450 || '';
-            inputs[4].value = s.n_value || '';
+            inputs[0].value = s.depth_m !== undefined ? s.depth_m : '';
+            inputs[1].value = s.blows_0_150 !== undefined ? s.blows_0_150 : (s.blows_150 !== undefined ? s.blows_150 : '');
+            inputs[2].value = s.blows_150_300 !== undefined ? s.blows_150_300 : (s.blows_300 !== undefined ? s.blows_300 : '');
+            inputs[3].value = s.blows_300_450 !== undefined ? s.blows_300_450 : (s.blows_450 !== undefined ? s.blows_450 : '');
+            inputs[4].value = s.n_value !== undefined ? s.n_value : '';
         });
     }
     
-    if (props.atterberg_limits) {
-        props.atterberg_limits.forEach(s => {
+    const atterbergData = props.atterberg_test_data || props.atterberg_limits;
+    if (atterbergData) {
+        atterbergData.forEach(s => {
             const tr = addRow('atterberg-body');
             const inputs = tr.querySelectorAll('input');
-            inputs[0].value = s.depth_m || '';
-            inputs[1].value = s.liquid_limit || '';
-            inputs[2].value = s.plastic_limit || '';
-            inputs[3].value = s.plasticity_index || '';
-            inputs[4].value = s.liquidity_index || '';
+            inputs[0].value = s.depth_m !== undefined ? s.depth_m : '';
+            inputs[1].value = s.wl !== undefined ? s.wl : (s.liquid_limit !== undefined ? s.liquid_limit : '');
+            inputs[2].value = s.wp !== undefined ? s.wp : (s.plastic_limit !== undefined ? s.plastic_limit : '');
+            inputs[3].value = s.ip !== undefined ? s.ip : (s.plasticity_index !== undefined ? s.plasticity_index : '');
+            inputs[4].value = s.li !== undefined ? s.li : (s.liquidity_index !== undefined ? s.liquidity_index : '');
         });
     }
     
-
     if (props.cpt_data) {
         props.cpt_data.forEach(s => {
             const tr = addRow('cpt-body');
@@ -390,7 +424,7 @@ document.getElementById('upload-xlsx').addEventListener('change', (e) => {
                 // A very rough mapping, assuming column names match our props roughly
                 // For a real production app, we would map exact templates
                 const row = metaJson[0];
-                const geoJsonStub = { properties: row, geometry: { coordinates: [row.Longitude || 0, row.Latitude || 0] } };
+                const geoJsonStub = { properties: row, geometry: { coordinates: [row.Latitude || 0, row.Longitude || 0] } };
                 
                 // If there are other sheets, map them to tables
                 workbook.SheetNames.forEach(sheetName => {

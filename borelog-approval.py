@@ -41,19 +41,46 @@ async def approve_borelogs():
                 data = json.load(f)
             
             props = data.get("properties", {})
-            borehole_id = props.get("borehole_id", "Unknown")
+            borelog_id = props.get("borelog_id", "Unknown")
             project = props.get("project", "Unknown")
             coords = data.get("geometry", {}).get("coordinates", [0, 0])
-            lon, lat = coords[0], coords[1]
+            lat, lon = coords[0], coords[1]
             
-            console.print(f"\n[cyan]Borelog ID:[/cyan] {borehole_id}")
+            console.print(f"\n[cyan]Borelog ID:[/cyan] {borelog_id}")
             console.print(f"[cyan]Project:[/cyan] {project}")
             console.print(f"[cyan]File:[/cyan] {f_name}")
             console.print(f"[cyan]Coordinates:[/cyan] {lon}, {lat}")
             
+            # Compute Defaults
+            uid = f_name.replace(".JSON", "")
+            
+            # The keys format
+            keys_default = "[Name, Place], [xcoord, Easting], [ycoord, Northing], [f_file, See Details]"
+            color_default = "#3b82f6"
+            
             ans = input("Approve and publish? (y/n/skip): ").strip().lower()
             
             if ans == 'y':
+                console.print("\n[yellow]--- Finalization Prompts ---[/yellow]")
+                final_x = input(f"Confirm xcoord (Longitude) [{lon}]: ").strip()
+                if not final_x: final_x = str(lon)
+                
+                final_y = input(f"Confirm ycoord (Latitude) [{lat}]: ").strip()
+                if not final_y: final_y = str(lat)
+                
+                final_keys = input(f"Confirm keys attribute [{keys_default}]: ").strip()
+                if not final_keys: final_keys = keys_default
+                
+                final_color = input(f"Confirm f_class_color [{color_default}]: ").strip()
+                if not final_color: final_color = color_default
+                
+                try:
+                    final_x = float(final_x)
+                    final_y = float(final_y)
+                except ValueError:
+                    console.print("[red]Invalid coordinates provided. Aborting approval for this log.[/red]")
+                    continue
+
                 # 1. Move file to published
                 shutil.move(file_path, os.path.join(published_dir, f_name))
                 
@@ -61,20 +88,23 @@ async def approve_borelogs():
                 await session.execute(text("DELETE FROM awaiting_borelogs WHERE f_file = :f_file"), {"f_file": f_name})
                 
                 # 3. Insert into appended_borelogs
-                query = text(\"\"\"
-                    INSERT INTO appended_borelogs (geom, borehole_id, project, client, f_file)
+                query = text("""
+                    INSERT INTO appended_borelogs (geom, borelog_id, project, client, f_file, "Name", "keys", "f_class_color", "xcoord", "ycoord")
                     VALUES (
                         ST_SetSRID(ST_MakePoint(:lon, :lat), 4326),
-                        :borehole_id, :project, :client, :f_file
+                        :borelog_id, :project, :client, :f_file, :name, :keys, :f_class_color, :lon, :lat
                     )
-                \"\"\")
+                """)
                 await session.execute(query, {
-                    "lon": lon,
-                    "lat": lat,
-                    "borehole_id": borehole_id,
+                    "lon": final_x,
+                    "lat": final_y,
+                    "borelog_id": borelog_id,
                     "project": project,
                     "client": props.get("client", ""),
-                    "f_file": f_name
+                    "f_file": f_name,
+                    "name": uid,
+                    "keys": final_keys,
+                    "f_class_color": final_color
                 })
                 await session.commit()
                 console.print(f"[green]✔ Published {f_name} successfully.[/green]")

@@ -2,6 +2,7 @@
 "type": "FeatureCollection",
 "name": "appended_borelogs",
 "features": [
-{ "type": "Feature", "properties": { "borehole_id": "DUMMY", "project": "Initial", "client": "RHD", "f_file": "pl07sq23.json", "Name": "Borelog-07A", "xcoord": 90.4327915, "ycoord": 23.8273776, "keys": "[Name, Place], [xcoord, Easting], [ycoord, Northing], [f_file, See Details] \n", "f_class_color": "#3b82f6" }, "geometry": { "type": "Point", "coordinates": [ 90.43279151, 23.82737758 ] } }
+{ "type": "Feature", "properties": { "borelog_id": "PL-0879", "project": "Initial", "client": "RHD", "Name": "PL-0879-PAC0E9", "xcoord": 90.4327915, "ycoord": 23.8273776, "keys": "[Name, Place], [xcoord, Easting], [ycoord, Northing], [f_file, See Details]", "f_class_color": "#3b82f6", "UID": "PL-0879-PAC0E9-19092026-pl07sq23", "f_file": "PL-0879-PAC0E9-19092026-pl07sq23.json" }, "geometry": { "type": "Point", "coordinates": [ 90.43279151, 23.82737758 ] } },
+{ "type": "Feature", "properties": { "borelog_id": "PL-09PS", "project": "DFFMRT", "client": "RHD", "Name": "PL-09-SPSGXPC9", "xcoord": 90.436514, "ycoord": 23.828162, "keys": "[Name, Place], [xcoord, Easting], [ycoord, Northing], [f_file, See Details]", "f_class_color": "#3b82f6", "UID": "PL-09-SPSGXPC9-20092026-b2vzHZKf", "f_file": "PL-09-SPSGXPC9-20092026-b2vzHZKf.json" }, "geometry": { "type": "Point", "coordinates": [ 90.436514, 23.828162 ] } }
 ]
 }

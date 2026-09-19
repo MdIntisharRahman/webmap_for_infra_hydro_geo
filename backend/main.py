@@ -3,6 +3,7 @@ import json
 import os
 import string
 import random
+from datetime import datetime
 import json
 
 import re
@@ -429,14 +430,31 @@ def check_admin(credentials: HTTPBasicCredentials = Depends(security)):
     return credentials.username
 
 def generate_borelog_id():
-    return "".join(random.choices(string.ascii_uppercase + string.digits, k=8))
+    return "".join(random.choices(string.ascii_letters + string.digits, k=8))
 
 @app.post("/api/borelog/stage")
 async def stage_borelog(request: Request, db: AsyncSession = Depends(get_db)):
     payload = await request.json()
     
-    b_id = generate_borelog_id()
-    f_file = f"{b_id}.JSON"
+    props = payload.get("properties", {})
+    borelog_id = str(props.get("borelog_id", "UNKNOWN"))
+    
+    # 1. Parse Name
+    b_name = borelog_id
+    if len(b_name) > 14:
+        b_name = b_name[:14]
+    else:
+        b_name = b_name.ljust(14, 'x')
+        
+    # 2. Date in ddMMyyyy
+    date_str = datetime.now().strftime("%d%m%Y")
+    
+    # 3. Random 8 chars
+    rand_str = generate_borelog_id()
+    
+    # 4. UID and f_file
+    uid = f"{b_name}-{date_str}-{rand_str}"
+    f_file = f"{uid}.JSON"
     
     staged_dir = os.path.join(os.path.dirname(__file__), "..", "Maps", "borelogs", "staged")
     os.makedirs(staged_dir, exist_ok=True)
@@ -446,37 +464,39 @@ async def stage_borelog(request: Request, db: AsyncSession = Depends(get_db)):
         json.dump(payload, f, indent=2)
         
     coords = payload.get("geometry", {}).get("coordinates", [0, 0])
-    lon, lat = coords[0], coords[1]
+    lat, lon = coords[0], coords[1]
     
-    props = payload.get("properties", {})
-    borehole_id = props.get("borehole_id", "UNKNOWN")
     project = props.get("project", "")
     client = props.get("client", "")
     
+    # Static Keys Convention
+    keys_str = "[Name, Place], [xcoord, Easting], [ycoord, Northing], [f_file, See Details]"
+    f_class_color = "#3b82f6"
+    
     query = text("""
-        INSERT INTO awaiting_borelogs (geom, borehole_id, project, client, f_file)
+        INSERT INTO awaiting_borelogs (geom, borelog_id, project, client, f_file, "Name", "keys", "f_class_color", "xcoord", "ycoord")
         VALUES (
             ST_SetSRID(ST_MakePoint(:lon, :lat), 4326),
-            :borehole_id, :project, :client, :f_file
+            :borelog_id, :project, :client, :f_file, :name, :keys, :f_class_color, :lon, :lat
         )
     """)
     await db.execute(query, {
         "lon": lon,
         "lat": lat,
-        "borehole_id": borehole_id,
+        "borelog_id": borelog_id,
         "project": project,
         "client": client,
-        "f_file": f_file
+        "f_file": f_file,
+        "name": uid,
+        "keys": keys_str,
+        "f_class_color": f_class_color
     })
     await db.commit()
-    
-    return {"status": "success", "id": b_id, "file": f_file}
-
-
+    return {"status": "ok", "f_file": f_file, "uid": uid}
 
 @app.get("/api/borelog/auth")
-async def check_auth(username: str = Depends(check_admin)):
-    return {"status": "ok"}
+async def verify_auth(username: str = Depends(check_admin)):
+    return {"status": "success"}
 
 @app.get("/api/borelog/staged_list")
 async def get_staged_borelogs(username: str = Depends(check_admin)):
@@ -504,31 +524,39 @@ async def approve_staged_borelog(f_file: str, db: AsyncSession = Depends(get_db)
         data = json.load(f)
         
     props = data.get("properties", {})
-    borehole_id = props.get("borehole_id", "Unknown")
+    borelog_id = props.get("borelog_id", "Unknown")
     project = props.get("project", "")
     client = props.get("client", "")
     coords = data.get("geometry", {}).get("coordinates", [0, 0])
-    lon, lat = coords[0], coords[1]
+    lat, lon = coords[0], coords[1]
     
     # move
     shutil.move(file_path, os.path.join(published_dir, f_file))
     
+    # Extract attributes
+    uid = f_file.replace(".JSON", "")
+    keys_str = "[Name, Place], [xcoord, Easting], [ycoord, Northing], [f_file, See Details]"
+    f_class_color = "#3b82f6"
+
     # update db
     await db.execute(text("DELETE FROM awaiting_borelogs WHERE f_file = :f_file"), {"f_file": f_file})
     query = text("""
-        INSERT INTO appended_borelogs (geom, borehole_id, project, client, f_file)
+        INSERT INTO appended_borelogs (geom, borelog_id, project, client, f_file, "Name", "keys", "f_class_color", "xcoord", "ycoord")
         VALUES (
             ST_SetSRID(ST_MakePoint(:lon, :lat), 4326),
-            :borehole_id, :project, :client, :f_file
+            :borelog_id, :project, :client, :f_file, :name, :keys, :f_class_color, :lon, :lat
         )
     """)
     await db.execute(query, {
         "lon": lon,
         "lat": lat,
-        "borehole_id": borehole_id,
+        "borelog_id": borelog_id,
         "project": project,
         "client": client,
-        "f_file": f_file
+        "f_file": f_file,
+        "name": uid,
+        "keys": keys_str,
+        "f_class_color": f_class_color
     })
     await db.commit()
     return {"status": "success"}
