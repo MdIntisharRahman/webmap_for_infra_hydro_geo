@@ -1,6 +1,6 @@
 
 
-window.exportBorelogToXLSX = function(feature) {
+window.exportBorelogToXLSX = function(feature, uid) {
   const properties = feature.properties || feature;
   const coords = feature.geometry && feature.geometry.coordinates ? feature.geometry.coordinates : [0, 0];
   const wb = XLSX.utils.book_new();
@@ -13,7 +13,7 @@ window.exportBorelogToXLSX = function(feature) {
 
   // TAB 1: Project Metadata & SPT
   const metadata = [
-    ["Borehole ID", properties.borehole_id],
+    ["Borelog ID", properties.borelog_id],
     ["Project", properties.project],
     ["Client", properties.client],
     ["Coordinates (EPSG:4326)", `${coords[1]}, ${coords[0]}`], // EPSG:4326 standard
@@ -33,6 +33,18 @@ window.exportBorelogToXLSX = function(feature) {
   
   const ws1 = XLSX.utils.aoa_to_sheet(metadata);
   XLSX.utils.book_append_sheet(wb, ws1, "Metadata");
+  
+  if (properties.stratigraphy && properties.stratigraphy.length > 0) {
+    const stratData = properties.stratigraphy.map(s => ({
+      "Top Depth (m)": s.top_m,
+      "Bottom Depth (m)": s.bottom_m,
+      "Soil Class": s.class,
+      "USCS Type": s.type_uscs,
+      "Description": s.description
+    }));
+    const wsStrat = XLSX.utils.json_to_sheet(stratData);
+    XLSX.utils.book_append_sheet(wb, wsStrat, "Stratigraphy");
+  }
   
   const ws2 = XLSX.utils.json_to_sheet(sptData);
   XLSX.utils.book_append_sheet(wb, ws2, "SPT_Records");
@@ -75,5 +87,5 @@ window.exportBorelogToXLSX = function(feature) {
   }
 
   // Generate and Trigger Download
-  XLSX.writeFile(wb, `${properties.borehole_id}_Borelog_Data.xlsx`);
+  XLSX.writeFile(wb, `${properties.borelog_id}_Borelog_Data.xlsx`);
 };
