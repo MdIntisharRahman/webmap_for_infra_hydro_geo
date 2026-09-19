@@ -1842,3 +1842,69 @@ body {
 .ios-checkbox input:checked+.checkbox-wrapper {
     animation: bounceCheckbox 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+/* Modal Adaptations */
+.approval-modal-content {
+    width: 90vw !important; 
+    height: 90vh !important;
+    max-width: 1000px !important;
+    overflow-y: auto !important; 
+    background: white !important; 
+    padding: 20px !important;
+}
+
+.custom-close-btn {
+    z-index: 10001; 
+    color: #475569; 
+    background: #f1f5f9; 
+    border-radius: 50%;
+    transition: all 0.2s;
+}
+.custom-close-btn:hover {
+    background: #e2e8f0;
+    color: #0f172a;
+}
+
+@media (max-width: 768px) {
+    .approval-modal-content {
+        width: 100vw !important;
+        height: 100vh !important;
+        max-width: 100vw !important;
+        border-radius: 0 !important;
+        padding: 10px !important;
+    }
+    .custom-close-btn {
+        top: 10px;
+        right: 10px;
+    }
+}
+
+
+@media (max-width: 768px) {
+    .iframe-modal-content {
+        width: 100% !important;
+        height: 100% !important;
+        max-width: 100vw !important;
+        border-radius: 0 !important;
+    }
+    .iframe-modal-close {
+        top: 10px !important;
+        right: 10px !important;
+    }
+}
+
+
+/* Borelog Management Buttons */
+.management-btn.submit-btn {
+    background: var(--accent-blue) !important;
+}
+.management-btn.submit-btn:hover {
+    background: #63b3ed !important;
+}
+
+.management-btn.approve-btn {
+    background: #e45d28 !important;
+}
+.management-btn.approve-btn:hover {
+    background: #f97316 !important;
+}
