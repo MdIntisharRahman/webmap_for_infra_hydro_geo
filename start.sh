@@ -11,7 +11,7 @@ echo "Starting Webmap Environment..."
 
 # 3. Start the Backend API server in the background
 echo "--> Starting FastAPI Backend on port 8484..."
-uv run --env-file .env uvicorn backend.main:app --port 8484 --reload &
+uv run --env-file .env python -m uvicorn backend.main:app --port 8484 --reload &
 BACKEND_PID=$!
 
 # 4. Start the Frontend Web server in the background
