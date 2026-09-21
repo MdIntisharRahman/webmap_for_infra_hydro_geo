@@ -12,10 +12,6 @@ const API_BASE_URL =
     window.location.port === "8383" ? "http://localhost:8484/api" : "/api";
 
 window.rasterMetadata = {};
-fetch(`${API_BASE_URL.replace("/api", "")}/maps/raster_metadata.json`)
-    .then(res => res.json())
-    .then(data => { window.rasterMetadata = data; })
-    .catch(e => console.warn("No raster metadata:", e));
 
 const map = L.map("map", {
     zoomControl: false,
@@ -368,6 +364,16 @@ map.on('move', () => {
 
 async function fetchAndRenderLayers() {
     try {
+        // Fix Race Condition: Wait for raster metadata before processing layers
+        try {
+            const rMetaRes = await fetch(`${API_BASE_URL.replace("/api", "")}/maps/raster_metadata.json`);
+            if (rMetaRes.ok) {
+                window.rasterMetadata = await rMetaRes.json();
+            }
+        } catch(e) {
+            console.warn("No raster metadata:", e);
+        }
+
         const response = await fetch(`${API_BASE_URL}/layers`);
         const layers = await response.json();
         window.allLayerConfigs = layers;
@@ -1056,7 +1062,12 @@ async function fetchAndRenderLayers() {
         }
     } catch (error) {
         console.error("Error fetching layers data:", error);
-        layerListEl.innerHTML = `<div class="loading-state" style="color: #ffb3ba">Error connecting to server.</div>`;
+        if (typeof tabContentAreaEl !== 'undefined' && tabContentAreaEl) {
+            tabContentAreaEl.innerHTML = `<div class="loading-state" style="color: #ef4444; padding: 20px; font-family: sans-serif;">
+                <b>Critical Error:</b> Cannot connect to the Backend API (localhost:8484).<br><br>
+                It looks like the FastAPI server failed to start or crashed. Please check your terminal logs for errors in uvicorn or backend.main.
+            </div>`;
+        }
     }
 }
 
@@ -1159,7 +1170,6 @@ document.getElementById("coord-btn").addEventListener("click", async () => {
             `${API_BASE_URL}/estimate_water_levels?lat=${lat}&lng=${lng}&active_tables=${activeTables}`,
         );
         const data = await res.json();
-        const uid = f_file.replace(/\.json$/i, "");
 
         let allRows = [];
         
@@ -1390,7 +1400,6 @@ window.renderAdminDashboard = async () => {
         const res = await fetch(`${API_BASE_URL}/borelog/staged_list`, { headers: { 'Authorization': 'Basic ' + window.adminCredentials } });
         if (!res.ok) throw new Error("Failed to fetch list");
         const data = await res.json();
-        const uid = f_file.replace(/\.json$/i, "");
         const files = data.files;
         
         if (files.length === 0) {
