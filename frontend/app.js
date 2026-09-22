@@ -100,6 +100,7 @@ const getFeatureStyle = (feature, defaultColor, layerTransparency = null) => {
         }
     }
 
+    if (!feature.geometry) return {}; // Handle features with null geometry
     const geomType = feature.geometry.type;
     const isPolygon = geomType.includes("Polygon");
     const isPoint = geomType.includes("Point");

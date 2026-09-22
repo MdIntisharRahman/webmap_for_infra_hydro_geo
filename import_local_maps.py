@@ -51,6 +51,15 @@ def load_data(db_url, maps_dir, md_filepath):
     print(f"Connecting to database: {db_url}")
     engine = create_engine(db_url)
 
+    # Ensure PostGIS extension is enabled (Critical for Render.com and cloud DBs)
+    try:
+        from sqlalchemy import text
+        with engine.begin() as conn:
+            conn.execute(text("CREATE EXTENSION IF NOT EXISTS postgis;"))
+            print("Verified PostGIS extension is enabled.")
+    except Exception as e:
+        print(f"Warning: Could not enable PostGIS extension (you may not have superuser rights, or it's already enabled). Error: {e}")
+
     maps = parse_markdown_table(md_filepath)
     print(f"Found {len(maps)} maps to process in {md_filepath}\n")
 
