@@ -1,4 +1,6 @@
 #!/bin/bash
+set -e
+
 # Wait for PostGIS to be ready (a simple wait is usually enough for a fast start)
 echo "Waiting 10 seconds for PostGIS to initialize..."
 sleep 10
