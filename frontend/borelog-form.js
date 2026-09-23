@@ -86,8 +86,16 @@ window.deleteRow = (btn) => {
 const showToast = (message, isError = false) => {
     const toast = document.getElementById('status-toast');
     toast.textContent = message;
-    toast.style.background = isError ? "var(--danger)" : "var(--primary)";
+    
+    // Reset classes
+    toast.className = '';
+    
+    // Apply correct theme class
+    toast.classList.add(isError ? 'toast-error' : 'toast-success');
+    
+    // Trigger animation
     toast.classList.add('visible');
+    
     setTimeout(() => {
         toast.classList.remove('visible');
     }, 4000);
@@ -203,14 +211,15 @@ document.getElementById('borelogForm').addEventListener('submit', async (e) => {
 
     try {
         const payload = gatherBorelogData();
-        const response = await fetch('http://127.0.0.1:8000/api/borelog/stage', {
+        const API_BASE_URL = window.location.port === "8383" ? "http://localhost:8484/api" : "/api";
+        const response = await fetch(`${API_BASE_URL}/borelog/stage`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
 
         if (response.ok) {
-            showToast('✅ Borelog successfully staged for approval!');
+            showToast(' ✔ Borelog successfully staged for approval!');
             document.getElementById('borelogForm').reset();
             // Clear arrays
             document.querySelectorAll('tbody').forEach(tbody => tbody.innerHTML = '');
@@ -219,10 +228,10 @@ document.getElementById('borelogForm').addEventListener('submit', async (e) => {
             addRow('cpt-body');
         } else {
             const errorText = await response.text();
-            showToast(`❌ Error: ${errorText}`, true);
+            showToast(` ✘ Error: ${errorText}`, true);
         }
     } catch (error) {
-        showToast(`❌ Validation Error: ${error.message}`, true);
+        showToast(` ✘ Validation Error: ${error.message}`, true);
     } finally {
         btn.disabled = false;
         btn.textContent = "Submit Borelog for Approval";
@@ -270,12 +279,42 @@ document.getElementById('upload-json').addEventListener('change', (e) => {
         try {
             const data = JSON.parse(ev.target.result);
             populateFormFromJson(data);
-            showToast("JSON loaded successfully!", "success");
+            showToast(" ✔ JSON loaded successfully!", "success");
         } catch(err) {
             alert("Error parsing JSON: " + err.message);
         }
     };
     reader.readAsText(file);
+});
+
+// Auto-load staged JSON if provided in URL
+window.addEventListener('DOMContentLoaded', async () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const viewStaged = urlParams.get('view_staged');
+    if (viewStaged) {
+        try {
+            const API_BASE_URL_FOR_MAPS = window.location.port === "8383" ? "http://localhost:8484" : "";
+            const response = await fetch(`${API_BASE_URL_FOR_MAPS}/maps/borelogs/staged/${viewStaged}`);
+            if (response.ok) {
+                const data = await response.json();
+                populateFormFromJson(data);
+                showToast("View mode: Loaded " + viewStaged, false);
+                
+                // Disable submit button in view mode
+                const submitBtn = document.getElementById('submit-btn');
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = "View Mode (Read Only)";
+                    submitBtn.style.opacity = "0.5";
+                }
+            } else {
+                showToast("Failed to load requested borelog.", true);
+            }
+        } catch(e) {
+            console.error(e);
+            showToast("Network error loading borelog.", true);
+        }
+    }
 });
 
 function populateFormFromJson(geoJson) {
@@ -437,7 +476,7 @@ document.getElementById('upload-xlsx').addEventListener('change', (e) => {
                 });
                 
                 populateFormFromJson(geoJsonStub);
-                showToast("XLSX loaded successfully!", "success");
+                showToast(" ✔ XLSX loaded successfully!", "success");
             }
         } catch(err) {
             alert("Error parsing XLSX: " + err.message);

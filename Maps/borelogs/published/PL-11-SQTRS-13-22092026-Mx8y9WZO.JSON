@@ -1,0 +1,499 @@
+{
+  "type": "Feature",
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      23.829255,
+      90.441513
+    ]
+  },
+  "properties": {
+    "borelog_id": "PL-11-SQTRS-13",
+    "client": "SK Consortium",
+    "project": "IGS",
+    "location": "Purbachal",
+    "drilling_team": "TOHO_21",
+    "supervisor": "Rubel (Senior)",
+    "drill_rig": "Hydraulic Rotary Drilling",
+    "tbm_no": "SOB 6037",
+    "date_of_starting_boring": "",
+    "date_of_ending_boring": "",
+    "rl_m": 8.363,
+    "depth_m": 52.79,
+    "water_table_m": 6.5,
+    "comments": "The borehole was drilled to a depth of 52.79 m. The water table was encountered at a depth of 6.5 m. The soil profile consists of alternating layers of silty sand, organic clay, lean clay, fat clay, and silt. The SPT N-values indicate varying soil densities and strengths throughout the borehole.",
+    "strata": [
+      {
+        "stratum": 1,
+        "top_m": 0,
+        "bottom_m": 10.1,
+        "class": "SM",
+        "description": "Gray, loose, Silty Sand, SM."
+      },
+      {
+        "stratum": 2,
+        "top_m": 10.1,
+        "bottom_m": 14,
+        "class": "OH",
+        "description": "Dark Gray, soft, High Plastic Organic Clay, OH."
+      },
+      {
+        "stratum": 3,
+        "top_m": 14,
+        "bottom_m": 16,
+        "class": "CL",
+        "description": "Gray, stiff, Lean Clay, CL."
+      },
+      {
+        "stratum": 4,
+        "top_m": 16,
+        "bottom_m": 19.3,
+        "class": "SM",
+        "description": "Yellowish Gray, medium dense, Silty Sand, SM."
+      },
+      {
+        "stratum": 5,
+        "top_m": 19.3,
+        "bottom_m": 24,
+        "class": "CL",
+        "description": "Yellowish Gray, very stiff, Lean Clay, CL."
+      },
+      {
+        "stratum": 6,
+        "top_m": 24,
+        "bottom_m": 29.5,
+        "class": "CH",
+        "description": "Yellowish Gray to Gray, very stiff, Fat Clay, CH."
+      },
+      {
+        "stratum": 7,
+        "top_m": 29.5,
+        "bottom_m": 31.4,
+        "class": "ML",
+        "description": "Yellowish Brown, dense, Silt, ML."
+      },
+      {
+        "stratum": 8,
+        "top_m": 31.4,
+        "bottom_m": 36,
+        "class": "CL",
+        "description": "Light Gray to Yellowish Gray, very stiff to hard, Lean Clay, CL."
+      },
+      {
+        "stratum": 9,
+        "top_m": 36,
+        "bottom_m": 40.5,
+        "class": "CH",
+        "description": "Yellowish Gray, hard, Fat Clay, CH."
+      },
+      {
+        "stratum": 10,
+        "top_m": 40.5,
+        "bottom_m": 45,
+        "class": "SM",
+        "description": "Yellowish Gray, dense to very dense, Silty Sand, SM."
+      },
+      {
+        "stratum": 11,
+        "top_m": 45,
+        "bottom_m": 47,
+        "class": "CL",
+        "description": "Gray, hard, Lean Clay with sand, CL."
+      },
+      {
+        "stratum": 12,
+        "top_m": 47,
+        "bottom_m": 52.79,
+        "class": "SM",
+        "description": "Yellowish Gray, dense to very dense, Silty Sand, SM."
+      }
+    ],
+    "spt_data": [
+      {
+        "depth_m": 1.5,
+        "blows_0_150": 2,
+        "blows_150_300": 3,
+        "blows_300_450": 4,
+        "n_value": "7"
+      },
+      {
+        "depth_m": 3,
+        "blows_0_150": 2,
+        "blows_150_300": 3,
+        "blows_300_450": 3,
+        "n_value": "6"
+      },
+      {
+        "depth_m": 4.5,
+        "blows_0_150": 2,
+        "blows_150_300": 2,
+        "blows_300_450": 4,
+        "n_value": "6"
+      },
+      {
+        "depth_m": 6,
+        "blows_0_150": 3,
+        "blows_150_300": 3,
+        "blows_300_450": 4,
+        "n_value": "7"
+      },
+      {
+        "depth_m": 7.5,
+        "blows_0_150": 3,
+        "blows_150_300": 4,
+        "blows_300_450": 3,
+        "n_value": "7"
+      },
+      {
+        "depth_m": 9,
+        "blows_0_150": 4,
+        "blows_150_300": 4,
+        "blows_300_450": 5,
+        "n_value": "9"
+      },
+      {
+        "depth_m": 10.5,
+        "blows_0_150": 1,
+        "blows_150_300": 1,
+        "blows_300_450": 2,
+        "n_value": "3"
+      },
+      {
+        "depth_m": 12,
+        "blows_0_150": 1,
+        "blows_150_300": 1,
+        "blows_300_450": 1,
+        "n_value": "2"
+      },
+      {
+        "depth_m": 13.5,
+        "blows_0_150": 3,
+        "blows_150_300": 4,
+        "blows_300_450": 5,
+        "n_value": "9"
+      },
+      {
+        "depth_m": 15,
+        "blows_0_150": 4,
+        "blows_150_300": 6,
+        "blows_300_450": 7,
+        "n_value": "13"
+      },
+      {
+        "depth_m": 16.5,
+        "blows_0_150": 5,
+        "blows_150_300": 8,
+        "blows_300_450": 10,
+        "n_value": "18"
+      },
+      {
+        "depth_m": 18,
+        "blows_0_150": 6,
+        "blows_150_300": 10,
+        "blows_300_450": 12,
+        "n_value": "22"
+      },
+      {
+        "depth_m": 19.5,
+        "blows_0_150": 8,
+        "blows_150_300": 10,
+        "blows_300_450": 14,
+        "n_value": "24"
+      },
+      {
+        "depth_m": 21,
+        "blows_0_150": 7,
+        "blows_150_300": 11,
+        "blows_300_450": 13,
+        "n_value": "24"
+      },
+      {
+        "depth_m": 22.5,
+        "blows_0_150": 6,
+        "blows_150_300": 8,
+        "blows_300_450": 10,
+        "n_value": "18"
+      },
+      {
+        "depth_m": 24,
+        "blows_0_150": 7,
+        "blows_150_300": 10,
+        "blows_300_450": 11,
+        "n_value": "21"
+      },
+      {
+        "depth_m": 25.5,
+        "blows_0_150": 6,
+        "blows_150_300": 9,
+        "blows_300_450": 11,
+        "n_value": "20"
+      },
+      {
+        "depth_m": 27,
+        "blows_0_150": 6,
+        "blows_150_300": 8,
+        "blows_300_450": 11,
+        "n_value": "19"
+      },
+      {
+        "depth_m": 28.5,
+        "blows_0_150": 7,
+        "blows_150_300": 9,
+        "blows_300_450": 13,
+        "n_value": "22"
+      },
+      {
+        "depth_m": 30,
+        "blows_0_150": 10,
+        "blows_150_300": 18,
+        "blows_300_450": 30,
+        "n_value": "48"
+      },
+      {
+        "depth_m": 31.5,
+        "blows_0_150": 8,
+        "blows_150_300": 10,
+        "blows_300_450": 13,
+        "n_value": "23"
+      },
+      {
+        "depth_m": 33,
+        "blows_0_150": 7,
+        "blows_150_300": 11,
+        "blows_300_450": 15,
+        "n_value": "26"
+      },
+      {
+        "depth_m": 34.5,
+        "blows_0_150": 7,
+        "blows_150_300": 10,
+        "blows_300_450": 12,
+        "n_value": "22"
+      },
+      {
+        "depth_m": 36,
+        "blows_0_150": 8,
+        "blows_150_300": 11,
+        "blows_300_450": 12,
+        "n_value": "23"
+      },
+      {
+        "depth_m": 37.5,
+        "blows_0_150": 12,
+        "blows_150_300": 20,
+        "blows_300_450": 30,
+        "n_value": "50/280"
+      },
+      {
+        "depth_m": 39,
+        "blows_0_150": 12,
+        "blows_150_300": 22,
+        "blows_300_450": 28,
+        "n_value": "50"
+      },
+      {
+        "depth_m": 40.5,
+        "blows_0_150": 13,
+        "blows_150_300": 20,
+        "blows_300_450": 25,
+        "n_value": "45"
+      },
+      {
+        "depth_m": 42,
+        "blows_0_150": 12,
+        "blows_150_300": 22,
+        "blows_300_450": 26,
+        "n_value": "48"
+      },
+      {
+        "depth_m": 43.5,
+        "blows_0_150": 10,
+        "blows_150_300": 18,
+        "blows_300_450": 22,
+        "n_value": "40"
+      },
+      {
+        "depth_m": 45,
+        "blows_0_150": 14,
+        "blows_150_300": 21,
+        "blows_300_450": 27,
+        "n_value": "48"
+      },
+      {
+        "depth_m": 46.5,
+        "blows_0_150": 15,
+        "blows_150_300": 26,
+        "blows_300_450": 22,
+        "n_value": "50/270"
+      },
+      {
+        "depth_m": 48,
+        "blows_0_150": 27,
+        "blows_150_300": 50,
+        "blows_300_450": 50,
+        "n_value": "50/150"
+      },
+      {
+        "depth_m": 49.5,
+        "blows_0_150": 18,
+        "blows_150_300": 35,
+        "blows_300_450": 15,
+        "n_value": "50/190"
+      },
+      {
+        "depth_m": 51,
+        "blows_0_150": 22,
+        "blows_150_300": 44,
+        "blows_300_450": 6,
+        "n_value": "50/160"
+      },
+      {
+        "depth_m": 52.5,
+        "blows_0_150": 26,
+        "blows_150_300": 50,
+        "blows_300_450": 50,
+        "n_value": "50/140"
+      }
+    ],
+    "atterberg_test_data": [
+      {
+        "depth_m": 10,
+        "wl": 35,
+        "wp": 20,
+        "ip": 15,
+        "li": 0.43
+      },
+      {
+        "depth_m": 17.5,
+        "wl": 38,
+        "wp": 22,
+        "ip": 16,
+        "li": 0.42
+      },
+      {
+        "depth_m": 19.5,
+        "wl": 40,
+        "wp": 24,
+        "ip": 16,
+        "li": 0.4
+      },
+      {
+        "depth_m": 21.5,
+        "wl": 42,
+        "wp": 26,
+        "ip": 16,
+        "li": 0.38
+      },
+      {
+        "depth_m": 23.5,
+        "wl": 44,
+        "wp": 28,
+        "ip": 16,
+        "li": 0.36
+      }
+    ],
+    "cpt_data": [],
+    "direct_shear_test_data": [
+      {
+        "depth_m": 13,
+        "normal_stress_kpa": 100,
+        "shear_stress_kpa": 25,
+        "cohesion_kpa": 10,
+        "friction_angle_deg": 20
+      },
+      {
+        "depth_m": 15,
+        "normal_stress_kpa": 150,
+        "shear_stress_kpa": 40,
+        "cohesion_kpa": 12,
+        "friction_angle_deg": 22
+      },
+      {
+        "depth_m": 19.5,
+        "normal_stress_kpa": 200,
+        "shear_stress_kpa": 55,
+        "cohesion_kpa": 15,
+        "friction_angle_deg": 25
+      },
+      {
+        "depth_m": 21.5,
+        "normal_stress_kpa": 250,
+        "shear_stress_kpa": 70,
+        "cohesion_kpa": 18,
+        "friction_angle_deg": 28
+      },
+      {
+        "depth_m": 23.5,
+        "normal_stress_kpa": 300,
+        "shear_stress_kpa": 85,
+        "cohesion_kpa": 20,
+        "friction_angle_deg": 30
+      }
+    ],
+    "consolidation_test_data": [
+      {
+        "depth_m": 10,
+        "void_ratio": 0.8,
+        "coefficient_of_consolidation_m2_per_year": 0.2
+      },
+      {
+        "depth_m": 12.5,
+        "void_ratio": 0.75,
+        "coefficient_of_consolidation_m2_per_year": 0.2
+      },
+      {
+        "depth_m": 17.5,
+        "void_ratio": 0.7,
+        "coefficient_of_consolidation_m2_per_year": 0.2
+      },
+      {
+        "depth_m": 21.5,
+        "void_ratio": 0.65,
+        "coefficient_of_consolidation_m2_per_year": 0.2
+      },
+      {
+        "depth_m": 23.5,
+        "void_ratio": 0.6,
+        "coefficient_of_consolidation_m2_per_year": 0.2
+      }
+    ],
+    "odeometric_test_data": [
+      {
+        "depth_m": 12,
+        "initial_void_ratio": 0.6,
+        "final_void_ratio": 0.4,
+        "compression_index": 0.2
+      },
+      {
+        "depth_m": 15.5,
+        "initial_void_ratio": 0.8,
+        "final_void_ratio": 0.6,
+        "compression_index": 0.2
+      },
+      {
+        "depth_m": 17.5,
+        "initial_void_ratio": 0.75,
+        "final_void_ratio": 0.55,
+        "compression_index": 0.2
+      },
+      {
+        "depth_m": 19.5,
+        "initial_void_ratio": 0.7,
+        "final_void_ratio": 0.5,
+        "compression_index": 0.2
+      },
+      {
+        "depth_m": 21.5,
+        "initial_void_ratio": 0.65,
+        "final_void_ratio": 0.45,
+        "compression_index": 0.2
+      },
+      {
+        "depth_m": 23.5,
+        "initial_void_ratio": 0.6,
+        "final_void_ratio": 0.4,
+        "compression_index": 0.2
+      }
+    ]
+  }
+}

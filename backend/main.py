@@ -492,6 +492,39 @@ async def stage_borelog(request: Request, db: AsyncSession = Depends(get_db)):
         "f_class_color": f_class_color
     })
     await db.commit()
+
+    # Sync with awaiting_borelogs.geojson
+    awaiting_path = os.path.join(os.path.dirname(__file__), "..", "Maps", "awaiting_borelogs.geojson")
+    if os.path.exists(awaiting_path):
+        try:
+            with open(awaiting_path, "r", encoding="utf-8") as f:
+                awaiting_data = json.load(f)
+                
+            awaiting_data.setdefault("features", []).append({
+                "type": "Feature",
+                "properties": {
+                    "borelog_id": borelog_id,
+                    "project": project,
+                    "client": client,
+                    "Name": uid,
+                    "xcoord": lon,
+                    "ycoord": lat,
+                    "keys": keys_str,
+                    "f_class_color": f_class_color,
+                    "UID": uid,
+                    "f_file": f_file
+                },
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [lon, lat]
+                }
+            })
+            
+            with open(awaiting_path, "w", encoding="utf-8") as f:
+                json.dump(awaiting_data, f, indent=2)
+        except Exception as e:
+            print(f"Warning: Failed to sync awaiting_borelogs.geojson: {e}")
+
     return {"status": "ok", "f_file": f_file, "uid": uid}
 
 @app.get("/api/borelog/auth")
@@ -559,6 +592,51 @@ async def approve_staged_borelog(f_file: str, db: AsyncSession = Depends(get_db)
         "f_class_color": f_class_color
     })
     await db.commit()
+
+    # 1. Remove from awaiting_borelogs.geojson
+    awaiting_path = os.path.join(os.path.dirname(__file__), "..", "Maps", "awaiting_borelogs.geojson")
+    if os.path.exists(awaiting_path):
+        try:
+            with open(awaiting_path, "r", encoding="utf-8") as f:
+                awaiting_data = json.load(f)
+            awaiting_data["features"] = [feat for feat in awaiting_data.get("features", []) 
+                                         if feat.get("properties", {}).get("f_file") != f_file]
+            with open(awaiting_path, "w", encoding="utf-8") as f:
+                json.dump(awaiting_data, f, indent=2)
+        except Exception as e:
+            print(f"Warning: Failed to sync awaiting_borelogs.geojson: {e}")
+
+    # 2. Add to appended_borelogs.geojson
+    appended_path = os.path.join(os.path.dirname(__file__), "..", "Maps", "appended_borelogs.geojson")
+    if os.path.exists(appended_path):
+        try:
+            with open(appended_path, "r", encoding="utf-8") as f:
+                appended_data = json.load(f)
+                
+            appended_data.setdefault("features", []).append({
+                "type": "Feature",
+                "properties": {
+                    "borelog_id": borelog_id,
+                    "project": project,
+                    "client": client,
+                    "Name": uid,
+                    "xcoord": lon,
+                    "ycoord": lat,
+                    "keys": keys_str,
+                    "f_class_color": f_class_color,
+                    "UID": uid,
+                    "f_file": f_file
+                },
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [lon, lat]
+                }
+            })
+            with open(appended_path, "w", encoding="utf-8") as f:
+                json.dump(appended_data, f, indent=2)
+        except Exception as e:
+            print(f"Warning: Failed to sync appended_borelogs.geojson: {e}")
+
     return {"status": "success"}
 
 @app.post("/api/borelog/reject/{f_file}")
@@ -570,5 +648,41 @@ async def reject_staged_borelog(f_file: str, db: AsyncSession = Depends(get_db),
     
     await db.execute(text("DELETE FROM awaiting_borelogs WHERE f_file = :f_file"), {"f_file": f_file})
     await db.commit()
+
+    # Sync: Remove from awaiting_borelogs.geojson
+    awaiting_path = os.path.join(os.path.dirname(__file__), "..", "Maps", "awaiting_borelogs.geojson")
+    if os.path.exists(awaiting_path):
+        try:
+            with open(awaiting_path, "r", encoding="utf-8") as f:
+                awaiting_data = json.load(f)
+            awaiting_data["features"] = [feat for feat in awaiting_data.get("features", []) 
+                                         if feat.get("properties", {}).get("f_file") != f_file]
+            with open(awaiting_path, "w", encoding="utf-8") as f:
+                json.dump(awaiting_data, f, indent=2)
+        except Exception as e:
+            print(f"Warning: Failed to sync awaiting_borelogs.geojson on reject: {e}")
+
     return {"status": "success"}
 app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
+
+import subprocess
+import asyncio
+from fastapi.responses import StreamingResponse
+
+@app.post("/api/maps/update")
+async def update_maps(username: str = Depends(check_admin)):
+    async def log_generator():
+        process = await asyncio.create_subprocess_exec(
+            "uv", "run", "python", "import_local_maps.py",
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.STDOUT
+        )
+        while True:
+            line = await process.stdout.readline()
+            if not line:
+                break
+            yield line.decode('utf-8')
+        await process.wait()
+        yield f"\n[Process exited with code {process.returncode}]\n"
+        
+    return StreamingResponse(log_generator(), media_type="text/plain")
