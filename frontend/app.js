@@ -503,6 +503,20 @@ async function fetchAndRenderLayers() {
                     <button onclick="openApprovalLogin()" class="management-btn approve-btn" style="display:block; width:100%; padding:10px; color:white; border:none; border-radius:0px; cursor:pointer; font-weight:bold; transition: background 0.2s;">
                         Approve Borelogs
                     </button>
+                    
+                    <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;">
+                    
+                    <h3 style="margin-top:0; color:#1e293b; font-size:14px;">Map Management</h3>
+                    <p style="color:#475569; font-size:12px; margin:11px 0px 11px 0px;">Submit map layers and trigger server database builds.</p>
+                    <button disabled class="management-btn" style="display:block; width:100%; padding:10px; margin-bottom:10px; background:#94a3b8; color:white; border:none; border-radius:0px; cursor:not-allowed; font-weight:bold;">
+                        Submit Feature
+                    </button>
+                    <button disabled class="management-btn" style="display:block; width:100%; padding:10px; margin-bottom:10px; background:#94a3b8; color:white; border:none; border-radius:0px; cursor:not-allowed; font-weight:bold;">
+                        Approve Features
+                    </button>
+                    <button onclick="openUpdateMapsLogin()" class="management-btn approve-btn" style="display:block; width:100%; padding:10px; color:white; border:none; border-radius:0px; cursor:pointer; font-weight:bold; transition: background 0.2s;">
+                        Update Maps
+                    </button>
                 </div>
             `;
         }
@@ -1418,6 +1432,7 @@ window.renderAdminDashboard = async () => {
             return;
         }
         
+        /* background: rgba(144, 205, 244, 0.15); */
         let html = `
             <div style="padding: 10px 20px; font-family: 'Inter', sans-serif; color: #313845;">
                 <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 30px; border-bottom: 2px solid #fdfbf7; padding-bottom: 16px;">
@@ -1425,7 +1440,7 @@ window.renderAdminDashboard = async () => {
                         <h2 style="font-family: 'Outfit', sans-serif; font-size: 28px; font-weight: 700; color: #0d2838; margin: 0 0 8px 0; letter-spacing: -0.5px;">Pending Approvals</h2>
                         <p style="margin: 0; color: #69707a; font-size: 14px;">Review and authorize submitted geotechnical borelog records.</p>
                     </div>
-                    <div style="background: rgba(144, 205, 244, 0.15); color: #2d5e7c; padding: 6px 12px; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600; border: 1px solid rgba(144, 205, 244, 0.4);">
+                    <div style="color: #078915; padding: 6px 12px; border-radius: 0px; font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600; border: 1px solid rgba(0, 0, 0, 0.57);">
                         ${files.length} AWAITING
                     </div>
                 </div>
@@ -1433,7 +1448,7 @@ window.renderAdminDashboard = async () => {
                 <div class="approval-table-container" style="border: 1px solid #e2e8f0; border-radius: 8px; overflow-x: auto; -webkit-overflow-scrolling: touch; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);">
                     <table style="width: 100%; border-collapse: collapse; text-align: left;">
                         <thead>
-                            <tr style="background: #fdfbf7; border-bottom: 1px solid #e2e8f0;">
+                            <tr style="background: #f1fffe; border-bottom: 1px solid #e2e8f0;">
                                 <th style="padding: 16px 24px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #69707a; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Borelog ID</th>
                                 <th style="padding: 16px 24px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #69707a; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Project</th>
                                 <th style="padding: 16px 24px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #69707a; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">File Reference</th>
@@ -1449,6 +1464,10 @@ window.renderAdminDashboard = async () => {
                 <tr style="background: ${bg}; border-bottom: 1px solid #f1f5f9; transition: background 0.2s;" onmouseover="this.style.backgroundColor='#f1f5f9'" onmouseout="this.style.backgroundColor='${bg}'">
                     <td style="padding: 16px 24px; font-weight: 600; color: #0d2838; font-size: 15px;">
                         ${f.properties.borelog_id || 'N/A'}
+                        <div style="margin-top: 8px; display: flex; gap: 8px;">
+                            <button onclick="adminAction('${f.f_file}', 'reject')" style="padding: 6px 12px; background: transparent; color: #ef4444; border: 1px solid #fca5a5; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.backgroundColor='#fef2f2'; this.style.borderColor='#ef4444'" onmouseout="this.style.backgroundColor='transparent'; this.style.borderColor='#fca5a5'">Reject</button>
+                            <button onclick="adminAction('${f.f_file}', 'approve')" style="padding: 6px 12px; background: #0d2838; color: white; border: none; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: pointer; transition: background 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.1);" onmouseover="this.style.backgroundColor='#2d5e7c'" onmouseout="this.style.backgroundColor='#0d2838'">Approve</button>
+                        </div>
                     </td>
                     <td style="padding: 16px 24px; color: #475569; font-size: 14px;">
                         ${f.properties.project || 'N/A'}
@@ -1458,8 +1477,8 @@ window.renderAdminDashboard = async () => {
                     </td>
                     <td style="padding: 16px 24px; text-align: right;">
                         <div style="display: inline-flex; gap: 8px;">
-                            <button onclick="adminAction('${f.f_file}', 'reject')" style="padding: 8px 16px; background: transparent; color: #ef4444; border: 1px solid #fca5a5; border-radius: 4px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.backgroundColor='#fef2f2'; this.style.borderColor='#ef4444'" onmouseout="this.style.backgroundColor='transparent'; this.style.borderColor='#fca5a5'">Reject</button>
-                            <button onclick="adminAction('${f.f_file}', 'approve')" style="padding: 8px 16px; background: #0d2838; color: white; border: none; border-radius: 4px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.1);" onmouseover="this.style.backgroundColor='#2d5e7c'" onmouseout="this.style.backgroundColor='#0d2838'">Authorize</button>
+                            <button onclick="window.open('/maps/borelogs/staged/${f.f_file}', '_blank')" style="padding: 8px 16px; background: #f8fafc; color: #0f172a; border: 1px solid #cbd5e1; border-radius: 0px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.backgroundColor='#e2e8f0'" onmouseout="this.style.backgroundColor='#f8fafc'">JSON</button>
+                            <button onclick="window.open('borelog-entry.html?view_staged=${f.f_file}', '_blank')" style="padding: 8px 16px; background: #2563eb; color: white; border: none; border-radius: 0px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.1);" onmouseover="this.style.backgroundColor='#1d4ed8'" onmouseout="this.style.backgroundColor='#2563eb'">View</button>
                         </div>
                     </td>
                 </tr>
@@ -1495,4 +1514,135 @@ window.adminAction = async (f_file, action) => {
     } catch(e) {
         alert("Network error.");
     }
+};
+
+window.updateAllMaps = async () => {
+    const btn = document.getElementById("update-maps-btn");
+    if (btn) {
+        btn.disabled = true;
+        btn.textContent = "Updating...";
+    }
+    
+    try {
+        const res = await fetch(`${API_BASE_URL}/maps/update`, {
+            method: 'POST',
+            headers: { 'Authorization': 'Basic ' + window.adminCredentials }
+        });
+        if (res.ok) {
+            alert("Map update has been started in the background. It may take a few moments to finish processing.");
+        } else {
+            alert("Failed to start map update. Check server logs.");
+        }
+    } catch(e) {
+        alert("Network error while trying to update maps.");
+    }
+    
+    if (btn) {
+        btn.disabled = false;
+        btn.textContent = "Update All Maps";
+    }
+};
+
+window.openUpdateMapsLogin = () => {
+    document.getElementById('borelog-modal').classList.remove('hidden');
+    const rootNode = document.getElementById('borelog-react-root');
+    rootNode.innerHTML = `
+        <div style="max-width: 380px; margin: 60px auto; font-family: 'Outfit', sans-serif; background: #ffffff; padding: 40px; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.05); border: 1px solid #eaeaea;">
+            <h2 style="margin: 0; color: #111; font-size: 32px; font-weight: 700;">Webmaster Login</h2>
+            <p style="margin: 5px 0 35px 0; color: #555; font-size: 16px; font-family: 'SmartGothic', sans-serif;">to update static maps</p>
+            
+            <div style="margin-bottom: 20px;">
+                <input type="text" id="admin-user-map" placeholder="Username" style="width: 100%; box-sizing: border-box; padding: 16px; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 15px; font-family: 'SmartGothic', sans-serif; outline: none; transition: border 0.2s;" onfocus="this.style.borderColor='#001ecc'" onblur="this.style.borderColor='#e2e8f0'">
+            </div>
+            <div style="margin-bottom: 30px;">
+                <input type="password" id="admin-pass-map" placeholder="Password" style="width: 100%; box-sizing: border-box; padding: 16px; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 15px; font-family: 'SmartGothic', sans-serif; outline: none; transition: border 0.2s;" onfocus="this.style.borderColor='#001ecc'" onblur="this.style.borderColor='#e2e8f0'">
+            </div>
+            
+            <button id="admin-login-btn-map" style="width: 100%; padding: 16px; background: #001ecc; color: #ffffff; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; font-family: 'Outfit', sans-serif; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#0019a8'" onmouseout="this.style.background='#001ecc'">Continue</button>
+            
+            <p id="admin-error-map" style="color: #ef4444; margin-top: 15px; text-align: center; font-family: 'SmartGothic', sans-serif; font-size: 14px;"></p>
+        </div>
+    `;
+    
+    document.getElementById('admin-login-btn-map').onclick = async () => {
+        const u = document.getElementById('admin-user-map').value;
+        const p = document.getElementById('admin-pass-map').value;
+        const hash = btoa(u + ":" + p);
+        try {
+            const res = await fetch(`${API_BASE_URL}/borelog/auth`, { headers: { 'Authorization': 'Basic ' + hash } });
+            if (res.ok) {
+                window.adminCredentials = hash;
+                openUpdateMapsLogWindow();
+            } else {
+                document.getElementById('admin-error-map').innerText = "Invalid credentials.";
+            }
+        } catch (e) {
+            document.getElementById('admin-error-map').innerText = "Network error.";
+        }
+    };
+};
+
+window.openUpdateMapsLogWindow = async () => {
+    const rootNode = document.getElementById('borelog-react-root');
+    rootNode.innerHTML = `
+        <div style="max-width: 800px; margin: 40px auto; background: #0f172a; padding: 20px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid #334155; padding-bottom: 12px;">
+                <h2 style="margin: 0; color: #f8fafc; font-size: 18px; font-family: 'JetBrains Mono', monospace;">import_local_maps.py Logs</h2>
+                <div id="update-status" style="color: #38bdf8; font-size: 14px; font-weight: bold; font-family: 'JetBrains Mono', monospace;">Running...</div>
+            </div>
+            <pre id="update-logs-container" style="background: #020617; color: #a5b4fc; padding: 16px; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 13px; height: 400px; overflow-y: auto; white-space: pre-wrap; margin: 0;"></pre>
+            <div style="margin-top: 16px; display: flex; justify-content: flex-end;">
+                <button id="close-logs-btn" style="padding: 10px 20px; background: #334155; color: white; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: not-allowed; opacity: 0.5; font-family: 'Outfit', sans-serif;">Close</button>
+            </div>
+        </div>
+    `;
+
+    const logsContainer = document.getElementById('update-logs-container');
+    const closeBtn = document.getElementById('close-logs-btn');
+    const statusText = document.getElementById('update-status');
+
+    closeBtn.onclick = () => {
+        if (!closeBtn.disabled) {
+            document.getElementById('borelog-modal').classList.add('hidden');
+        }
+    };
+    closeBtn.disabled = true;
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/maps/update`, {
+            method: 'POST',
+            headers: { 'Authorization': 'Basic ' + window.adminCredentials }
+        });
+
+        if (!response.ok) {
+            logsContainer.textContent += "\\nError: HTTP " + response.status;
+            statusText.textContent = "Failed";
+            statusText.style.color = "#ef4444";
+        } else {
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder('utf-8');
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                
+                const chunk = decoder.decode(value, { stream: true });
+                logsContainer.textContent += chunk;
+                logsContainer.scrollTop = logsContainer.scrollHeight;
+            }
+            statusText.textContent = "Completed";
+            statusText.style.color = "#10b981";
+        }
+    } catch (e) {
+        logsContainer.textContent += "\\n\\nNetwork error: " + e.message;
+        statusText.textContent = "Error";
+        statusText.style.color = "#ef4444";
+    }
+
+    closeBtn.disabled = false;
+    closeBtn.style.cursor = "pointer";
+    closeBtn.style.opacity = "1";
+    closeBtn.style.background = "#2563eb";
+    closeBtn.onmouseover = () => closeBtn.style.background = "#1d4ed8";
+    closeBtn.onmouseout = () => closeBtn.style.background = "#2563eb";
 };
