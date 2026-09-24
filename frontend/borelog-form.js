@@ -12,7 +12,7 @@ const getRowHTML = (type) => {
                 <td><input type="number" step="0.01" class="f-bottom" required></td>
                 <td><input type="text" class="f-class" placeholder="e.g. SM" required></td>
                 <td><input type="text" class="f-desc" placeholder="Soil description" required></td>
-                <td><button type="button" class="del-btn" onclick="deleteRow(this)" title="Delete Row">✕</button></td>
+                <td><button type="button" class="del-btn" onclick="deleteRow(this)" title="Delete Row">𐩃</button></td>
             `;
         case 'spt':
             return `
@@ -21,49 +21,49 @@ const getRowHTML = (type) => {
                 <td><input type="number" class="f-b300" required></td>
                 <td><input type="number" class="f-b450" required></td>
                 <td><input type="text" class="f-nval" required></td>
-                <td><button type="button" class="del-btn" onclick="deleteRow(this)" title="Delete Row">✕</button></td>
+                <td><button type="button" class="del-btn" onclick="deleteRow(this)" title="Delete Row">𐩃</button></td>
             `;
         case 'atterberg':
             return `
-                <td><input type="number" step="0.01" class="f-depth" required></td>
-                <td><input type="number" step="0.01" class="f-wl" required></td>
-                <td><input type="number" step="0.01" class="f-wp" required></td>
-                <td><input type="number" step="0.01" class="f-ip" required></td>
-                <td><input type="number" step="0.01" class="f-li" required></td>
-                <td><button type="button" class="del-btn" onclick="deleteRow(this)" title="Delete Row">✕</button></td>
+                <td><input type="number" step="0.001" class="f-depth" required></td>
+                <td><input type="number" step="0.001" class="f-wl" required></td>
+                <td><input type="number" step="0.001" class="f-wp" required></td>
+                <td><input type="number" step="0.001" class="f-ip" required></td>
+                <td><input type="number" step="0.001" class="f-li" required></td>
+                <td><button type="button" class="del-btn" onclick="deleteRow(this)" title="Delete Row">𐩃</button></td>
             `;
         case 'cpt':
             return `
-                <td><input type="number" step="0.01" class="f-depth" required></td>
-                <td><input type="number" step="0.01" class="f-qc" required></td>
-                <td><input type="number" step="0.01" class="f-fs" required></td>
-                <td><input type="number" step="0.01" class="f-rf" required></td>
-                <td><input type="number" step="0.01" class="f-u2"></td>
-                <td><button type="button" class="del-btn" onclick="deleteRow(this)" title="Delete Row">×</button></td>
+                <td><input type="number" step="0.001" class="f-depth" required></td>
+                <td><input type="number" step="0.001" class="f-qc" required></td>
+                <td><input type="number" step="0.001" class="f-fs" required></td>
+                <td><input type="number" step="0.001" class="f-rf" required></td>
+                <td><input type="number" step="0.001" class="f-u2"></td>
+                <td><button type="button" class="del-btn" onclick="deleteRow(this)" title="Delete Row">𐩃</button></td>
             `;
         case 'shear':
             return `
-                <td><input type="number" step="0.01" class="f-depth" required></td>
-                <td><input type="number" step="0.01" class="f-normal" required></td>
-                <td><input type="number" step="0.01" class="f-shear" required></td>
-                <td><input type="number" step="0.01" class="f-cohesion" required></td>
-                <td><input type="number" step="0.01" class="f-friction" required></td>
-                <td><button type="button" class="del-btn" onclick="deleteRow(this)" title="Delete Row">✕</button></td>
+                <td><input type="number" step="0.001" class="f-depth" required></td>
+                <td><input type="number" step="0.001" class="f-normal" required></td>
+                <td><input type="number" step="0.001" class="f-shear" required></td>
+                <td><input type="number" step="0.001" class="f-cohesion" required></td>
+                <td><input type="number" step="0.001" class="f-friction" required></td>
+                <td><button type="button" class="del-btn" onclick="deleteRow(this)" title="Delete Row">𐩃</button></td>
             `;
         case 'consolidation':
             return `
-                <td><input type="number" step="0.01" class="f-depth" required></td>
-                <td><input type="number" step="0.01" class="f-void" required></td>
-                <td><input type="number" step="0.01" class="f-coeff" required></td>
-                <td><button type="button" class="del-btn" onclick="deleteRow(this)" title="Delete Row">✕</button></td>
+                <td><input type="number" step="0.001" class="f-depth" required></td>
+                <td><input type="number" step="0.001" class="f-void" required></td>
+                <td><input type="number" step="0.001" class="f-coeff" required></td>
+                <td><button type="button" class="del-btn" onclick="deleteRow(this)" title="Delete Row">𐩃</button></td>
             `;
         case 'odeometric':
             return `
-                <td><input type="number" step="0.01" class="f-depth" required></td>
-                <td><input type="number" step="0.01" class="f-ivoid" required></td>
-                <td><input type="number" step="0.01" class="f-fvoid" required></td>
-                <td><input type="number" step="0.01" class="f-comp" required></td>
-                <td><button type="button" class="del-btn" onclick="deleteRow(this)" title="Delete Row">✕</button></td>
+                <td><input type="number" step="0.001" class="f-depth" required></td>
+                <td><input type="number" step="0.001" class="f-ivoid" required></td>
+                <td><input type="number" step="0.001" class="f-fvoid" required></td>
+                <td><input type="number" step="0.001" class="f-comp" required></td>
+                <td><button type="button" class="del-btn" onclick="deleteRow(this)" title="Delete Row">𐩃</button></td>
             `;
         default:
             return '';
@@ -243,7 +243,7 @@ document.getElementById('preview-btn').addEventListener('click', () => {
     const data = gatherBorelogData();
     document.getElementById('preview-modal').style.display = 'flex';
     if (window.renderBorelogChart) {
-        window.renderBorelogChart('borelog-plotly-chart', data);
+        window.renderBorelogChart('borelog-visualizer-container', data);
     } else {
         alert("Borelog visualizer engine is not loaded.");
     }

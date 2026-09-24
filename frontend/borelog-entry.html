@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Borelog Entry Form</title>
-    <!-- Inter Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!--Fonts -->
+    <link rel="stylesheet" href="resources/fonts.css" />
+    <link rel="stylesheet" href="resources/leaflet.css" />
+    <link rel="stylesheet" href="styles.css?v=71">
     <style>
         :root {
             --bg-body: #F4F4F5;
@@ -26,12 +28,13 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
         
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            font-family: 'SmartGothic', 'ITC Stone Sans','Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
             background: var(--bg-body);
             color: var(--text-main);
             padding: 40px 20px;
-            line-height: 1.5;
+            line-height: 1.5; /* can be adjusted for better readability */
             -webkit-font-smoothing: antialiased;
+            overflow: scroll;
         }
 
         .container {
@@ -93,7 +96,7 @@
             font-family: var(--font-display);
             font-size: 18px;
             font-weight: 600;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.89);
+            text-shadow: 0 1px 1px rgba(0, 0, 0, 0.69);
         }
 
         .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
@@ -113,8 +116,8 @@
         }
 
         input[type="text"], input[type="number"], input[type="date"], textarea {
-            padding: 10px 12px;
-            font-size: 14px;
+            padding: 11px 13px;
+            font-size: 13px;
             font-family: inherit;
             border: 1px solid var(--border-color);
             border-radius: 0px;
@@ -158,12 +161,12 @@
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            border-bottom: 1px solid var(--border-color);
+            /* border-bottom: 1px solid var(--border-color); */
         }
 
         td {
             padding: 0;
-            border-bottom: 1px solid var(--border-color);
+            /* border-bottom: 1px solid var(--border-color); */
         }
 
         tr:last-child td { border-bottom: none; }
@@ -172,94 +175,87 @@
             width: 100%;
             border: none;
             border-radius: 0;
-            padding: 12px;
+            padding: 11px;
             background: transparent;
         }
 
         td input:focus {
             box-shadow: inset 0 0 0 2px var(--accent);
             position: relative;
-            z-index: 10;
+            z-index: 11;
         }
 
-        /* Buttons - Swipe Style from button-0 */
         .btn {
             position: relative;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             overflow: hidden;
-            padding: 10px 16px;
+            padding: 11px 17px;
             font-size: 14px;
-            font-weight: 600;
+            font-weight: bolder;
             text-transform: uppercase;
             border: 1px solid currentColor;
             background: transparent;
             cursor: pointer;
             z-index: 1;
-            transition: color 0.5s ease-in-out;
+            /* transition: color 0.5s ease-in-out; */
             font-family: inherit;
             text-decoration: none;
-            border-radius: 4px;
+            /* border-radius: 4px; */
         }
 
-        .btn:before {
-            content: "";
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            transform: translateX(-100%);
-            transition: transform 0.5s ease-in-out;
-            z-index: -1;
-        }
-
-        .btn:hover:before {
-            transform: translateX(0);
-        }
-
-        .btn-outline {
-            color: var(--accent);
-        }
-        
-        .btn-outline:before {
-            background-color: var(--accent);
-        }
-        
-        .btn-outline:hover {
+        .btn:hover {
             color: #FFFFFF;
+            background-color: #524b44bf;
         }
         
-        .btn-outline[id="preview-btn"] {
+        #submit-btn.btn:hover {
+            background-color: var(--accent-blue);
+        }
+        
+        #preview-btn.btn:hover {
+            background-color: var(--accent-blue);
+        }
+
+        /* .btn-outline[id="preview-btn"] {
             border-color: #0b0ff5;
-            color: #0b0ff5;
+            /* color: #0b0ff5; */
             /* text-align: center; 
-            justify-content: center;  */
+            justify-content: center;  
             font-size: 14px; 
             border-radius: 0px;
             padding: 9px;
             margin-top: 24px;
         }
+        */
 
+        /*
         .btn-submit {
             width: 100%;
             margin-top: 24px;
             padding: 9px;
             font-size: 14px;
-            color: #16a34a; /* Greenish */
+            color: #16a34a;  Greenish 
             border-radius: 0px;
-        }
+        } */
         
+        /*         
         .btn-submit:before {
             background-color: #16a34a;
             transform: translateY(100%);
-        }
+        } */
         
+        /*         
         .btn-submit:hover {
             color: #FFFFFF;
-        }
+            background-color: var(--accent);
+        } */
         
+        /* 
         .btn-submit:hover:before {
             transform: translateY(0);
-        }
+        } */
 
         .btn-submit:disabled {
             color: #9CA3AF;
@@ -274,7 +270,7 @@
             background: transparent;
             color: var(--text-muted);
             border: none;
-            padding: 9px;
+            /* padding: 9px; */
             cursor: pointer;  
             width: inherit;
             display: flex;
@@ -282,12 +278,13 @@
             justify-content: center;
             transition: color 0.2s;
             height: inherit;
-            margin-left: 11px;
+            margin-left: 11px;  
+            font-size-adjust: 1.15;
         }
 
         .del-btn:hover {
             color: var(--danger);
-            background: var(--danger-bg);
+            /* background: var(--danger-bg); */
         }
 
         /* Upgraded Status Toast */
@@ -296,10 +293,11 @@
             bottom: 32px;
             right: 32px;
             padding: 16px 24px;
-            border-radius: 10px;
+            background: var(--panel-bg);
+            border: 0.5px solid var(--panel-border);
+            /* border-radius: 10px; */
             font-size: 15px;
             font-weight: 600;
-            color: white;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
             transform: translateY(150px) scale(0.9);
             opacity: 0;
@@ -315,11 +313,11 @@
 
         /* Modifier classes applied via JS */
         #status-toast.toast-success {
-            background: #10B981;
+            color: #16a34a; /* Greenish */
         }
 
         #status-toast.toast-error {
-            background: var(--danger);
+            color: var(--danger); /* Reddish */
         }
         
         .help-text {
@@ -328,11 +326,8 @@
             margin-top: 4px;
         }
         
-        .btn-outline[id="preview-btn"]:before {
-            background-color: #0b0ff5;
-        }
         
-        .btn-outline[id="preview-btn"]:hover {
+        .btn[id="preview-btn"]:hover {
             color: #FFFFFF !important;
         }
 
@@ -405,6 +400,9 @@
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div style="font-size: 17px; font-weight: 600; font-family: var(--font-body-special);">Fast Entry</div>
                     <div style="display: flex; gap: 10px;">
+                        <button type="button" class="btn btn-outline" onclick="window.location.href = (window.location.port === '8383' ? 'http://localhost:8484' : '') + '/maps/borelogs/sample/sample_files.zip'">Samples</button>
+                        <!-- <button type="button" class="btn btn-outline" onclick="window.location.href = (window.location.port === '8383' ? 'http://localhost:8484' : '') + '/resources/sample/sample_files.zip'">Samples</button> -->
+
                         <input type="file" id="upload-json" accept=".json" style="display: none;">
                         <button type="button" class="btn btn-outline" onclick="document.getElementById('upload-json').click()">Upload JSON</button>
                         
@@ -619,11 +617,11 @@
             </div>
 
             
-            <div style="display: flex; gap: 16px; margin-top: 24px;">
-                <button type="button" id="preview-btn" class="btn btn-outline" style="flex: 1;">
+            <div style="display: flex; gap: 11px; margin-top: 24px; justify-content: center;">
+                <button type="button" id="preview-btn" class="btn">
                     Preview Borelog
                 </button>
-                <button type="submit" id="submit-btn" class="btn btn-submit" style="flex: 2;">
+                <button type="submit" id="submit-btn" class="btn">
                     Submit Borelog for Approval
                 </button>
             </div>
@@ -642,20 +640,28 @@
 
     <!-- Preview Modal -->
     <div id="preview-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center;">
-        <div style="background: white; width: 90%; max-width: 1000px; max-height: 90vh; border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
-            <div style="padding: 16px 24px; border-bottom: 1px solid #e4e4e7; display: flex; justify-content: space-between; align-items: center; background: #fafafa;">
-                <h3 style="margin: 0; font-size: 18px; font-weight: 600;">Borelog Preview</h3>
-                <div style="display: flex; gap: 12px; align-items: center;">
-                    <button id="modal-export-graphic" style="padding: 6px 12px; background: #6366f1; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 14px;">Export Graphic</button>
-                    <button id="modal-export-xlsx" style="padding: 6px 12px; background: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 14px;">Export XLSX</button>
-                    <button onclick="document.getElementById('preview-modal').style.display='none'" style="background: transparent; border: none; font-size: 24px; cursor: pointer; color: #71717a; margin-left: 8px;">&times;</button>
+        <div style="background: white; width: 90vw; max-width: 1200px; height: 90vh; border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.2); position: relative;">
+            <div style="padding: 24px; display: flex; flex-direction: column; height: 100%; box-sizing: border-box;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px;">
+                    <h2 style="margin:0; font-size: 20px; font-weight: bold; color: #1e293b;">Borelog Preview</h2>
+                    <div style="display: flex; gap: 9px;">
+                        <button id="export-graphic-btn" class="blue_button export-graphic-btn-class">
+                            Export Graphic
+                        </button>
+                        <button id="export-xlsx-btn" class="teal_button export-xlsx-btn-class">
+                            Export XLSX
+                        </button>
+                    </div>
+                    <button class="iframe-modal-close" onclick="document.getElementById('preview-modal').style.display='none'" aria-label="Close"></button>
                 </div>
-            </div>
-            <div id="preview-content" style="padding: 24px; overflow: hidden; flex: 1; display: flex; flex-direction: column;">
-                <div id="borelog-plotly-chart" style="width: 100%; flex: 1; min-height: 0;"></div>
+                
+                <div id="borelog-visualizer-container" style="width: 100%; height: 81vh; max-height: 87vh; overflow: hidden; display: flex; flex: 1 1 0%; min-height: 0; flex-direction: column; padding: 3px;"></div>
             </div>
         </div>
     </div>
-
 </body>
 </html>
+
+
+
+
