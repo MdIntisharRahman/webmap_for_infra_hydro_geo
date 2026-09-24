@@ -497,10 +497,10 @@ async function fetchAndRenderLayers() {
                 <div style="padding: 15px; font-family: var(--font-body-special);">
                     <h3 style="margin-top:0; color:#1e293b; font-size:14px;">Borelog Management</h3>
                     <p style="color:#475569; font-size:12px; margin:11px 0px 11px 0px;">Submit and review geotechnical borelog records.</p>
-                    <button onclick="window.open('borelog-entry.html', '_blank')" class="management-btn submit-btn" style="display:block; width:100%; padding:10px; margin-bottom:10px; color:white; border:none; border-radius:0px; cursor:pointer; font-weight:bold; transition: background 0.2s;">
+                    <button onclick="window.open('borelog-entry.html', '_blank')" class="management-btn submit-btn blue_button">
                         Submit Borelog
                     </button>
-                    <button onclick="openApprovalLogin()" class="management-btn approve-btn" style="display:block; width:100%; padding:10px; color:white; border:none; border-radius:0px; cursor:pointer; font-weight:bold; transition: background 0.2s;">
+                    <button onclick="openApprovalLogin()" class="management-btn approve-btn orange_button">
                         Approve Borelogs
                     </button>
                     
@@ -508,13 +508,13 @@ async function fetchAndRenderLayers() {
                     
                     <h3 style="margin-top:0; color:#1e293b; font-size:14px;">Map Management</h3>
                     <p style="color:#475569; font-size:12px; margin:11px 0px 11px 0px;">Submit map layers and trigger server database builds.</p>
-                    <button disabled class="management-btn" style="display:block; width:100%; padding:10px; margin-bottom:10px; background:#94a3b8; color:white; border:none; border-radius:0px; cursor:not-allowed; font-weight:bold;">
+                    <button disabled="true" class="management-btn submit-btn blue_button">
                         Submit Feature
                     </button>
-                    <button disabled class="management-btn" style="display:block; width:100%; padding:10px; margin-bottom:10px; background:#94a3b8; color:white; border:none; border-radius:0px; cursor:not-allowed; font-weight:bold;">
+                    <button disabled="true" class="management-btn approve-btn orange_button">
                         Approve Features
                     </button>
-                    <button onclick="openUpdateMapsLogin()" class="management-btn approve-btn" style="display:block; width:100%; padding:10px; color:white; border:none; border-radius:0px; cursor:pointer; font-weight:bold; transition: background 0.2s;">
+                    <button onclick="openUpdateMapsLogin()" class="management-btn teal_button">
                         Update Maps
                     </button>
                 </div>
@@ -1282,6 +1282,8 @@ const iframeModal = document.getElementById('iframe-modal');
 const iframeClose = document.getElementById('iframe-modal-close');
 const iframeBackdrop = document.getElementById('iframe-modal-backdrop');
 
+
+
 if (iframeModal) {
     const closeModal = () => {
         iframeModal.classList.add('hidden');
@@ -1289,14 +1291,26 @@ if (iframeModal) {
     };
     iframeClose.addEventListener('click', closeModal);
     iframeBackdrop.addEventListener('click', closeModal);
-}
 
+    // Mount the borelog React root in this modal instead of the separate modal.
+    // const borelogModalHeaderClose = document.getElementById('close-btn-container');
+    // if (borelogModalHeaderClose) {
+    //     const iframeFrame = document.getElementById('iframe-modal-frame');
+    //     if (iframeFrame) iframeFrame.insertAdjacentElement('afterend', borelogModalHeaderClose);
+    //     else iframeModal.appendChild(borelogModalHeaderClose);
+    // }
+}
 
 
 
 
 window.openBorelogVisualizer = async (f_file) => {
     document.getElementById('borelog-modal').classList.remove('hidden');
+    const modalContent = document.querySelector('#borelog-modal .approval-modal-content');
+    // if (modalContent) modalContent.style.overflowY = 'hidden';
+    const closeBtnOuter = document.querySelector('#borelog-modal .absolute-close-btn');
+    if (closeBtnOuter) closeBtnOuter.style.display = 'none';
+    
     const rootNode = document.getElementById('borelog-react-root');
     rootNode.innerHTML = "<div style='padding: 20px;'>Loading borelog data...</div>";
     
@@ -1306,41 +1320,7 @@ window.openBorelogVisualizer = async (f_file) => {
         const data = await res.json();
         const uid = f_file.replace(/\.json$/i, "");
         
-        rootNode.innerHTML = `
-            <div style="display: flex; justify-content: space-evenly; align-items: center; margin-bottom: 15px; padding-bottom: 10px; padding-right: 32px; border-bottom: 1px solid #ccc;">
-                <h2 style="margin:0; font-size: 20px; font-weight: bold; color: #1e293b;"></h2>
-                <div style="display: flex; gap: 8px;">
-                    <button id="export-graphic-btn" style="padding: 8px 16px; background: #6366f1; color: white; border: none;  cursor: pointer; font-weight: bold;">
-                        Export Graphic
-                    </button>
-                    <button id="export-xlsx-btn" style="padding: 8px 16px; background: #10b981; color: white; border: none; cursor: pointer; font-weight: bold;">
-                        Export XLSX
-                    </button>
-                </div>
-            </div>
-            <style>
-.leaflet-popup-content-wrapper { padding: 0 !important; border-radius: 8px !important; overflow: hidden !important; }
-.leaflet-popup-content { 
-    overflow: hidden !important; 
-    margin: 0 !important; 
-    width: 80vw !important; 
-    max-width: 1200px !important; 
-    height: 85vh !important; 
-    display: flex !important; 
-    flex-direction: column !important; 
-    padding: 24px !important; 
-    box-sizing: border-box !important;
-}
-.leaflet-popup-content > #borelog-plotly-chart {
-    flex: 1 !important;
-    min-height: 0 !important;
-    overflow: hidden !important;
-    display: flex !important;
-    flex-direction: column !important;
-}
-</style>
-              <div id="borelog-plotly-chart" style="width: 100%; flex: 1; min-height: 0;"></div>
-        `;
+        rootNode.innerHTML = document.getElementById("visualizer-template").innerHTML;
         
         document.getElementById("export-xlsx-btn").onclick = () => {
             if (window.exportBorelogToXLSX) window.exportBorelogToXLSX(data, uid);
@@ -1356,9 +1336,9 @@ window.openBorelogVisualizer = async (f_file) => {
         };
         
         if (window.renderBorelogChart) {
-            window.renderBorelogChart("borelog-plotly-chart", data);
+            window.renderBorelogChart("borelog-visualizer-container", data);
         } else {
-            document.getElementById("borelog-plotly-chart").innerHTML = "<p style='color:red;'>Chart renderer not loaded.</p>";
+            document.getElementById("borelog-visualizer-container").innerHTML = "<p style='color:red;'>Chart renderer not loaded.</p>";
         }
         
     } catch (e) {
@@ -1371,6 +1351,11 @@ window.adminCredentials = null;
 
 window.openApprovalLogin = () => {
     document.getElementById('borelog-modal').classList.remove('hidden');
+    const modalContent = document.querySelector('#borelog-modal .approval-modal-content');
+    if (modalContent) modalContent.style.overflowY = 'auto';
+    const closeBtnOuter = document.querySelector('#borelog-modal .absolute-close-btn');
+    if (closeBtnOuter) closeBtnOuter.style.display = 'flex';
+    
     const rootNode = document.getElementById('borelog-react-root');
     rootNode.innerHTML = `
         <div style="max-width: 380px; margin: 60px auto; font-family: 'Outfit', sans-serif; background: #ffffff; padding: 40px; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.05); border: 1px solid #eaeaea;">
@@ -1545,6 +1530,10 @@ window.updateAllMaps = async () => {
 
 window.openUpdateMapsLogin = () => {
     document.getElementById('borelog-modal').classList.remove('hidden');
+    const modalContent = document.querySelector('#borelog-modal .approval-modal-content');
+    if (modalContent) modalContent.style.overflowY = 'auto';
+    const closeBtnOuter = document.querySelector('#borelog-modal .absolute-close-btn');
+    if (closeBtnOuter) closeBtnOuter.style.display = 'flex';
     const rootNode = document.getElementById('borelog-react-root');
     rootNode.innerHTML = `
         <div style="max-width: 380px; margin: 60px auto; font-family: 'Outfit', sans-serif; background: #ffffff; padding: 40px; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.05); border: 1px solid #eaeaea;">
@@ -1646,3 +1635,7 @@ window.openUpdateMapsLogWindow = async () => {
     closeBtn.onmouseover = () => closeBtn.style.background = "#1d4ed8";
     closeBtn.onmouseout = () => closeBtn.style.background = "#2563eb";
 };
+
+
+
+

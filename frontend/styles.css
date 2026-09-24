@@ -1,8 +1,8 @@
 :root {
     --bg-base: #f1f5f9;
-    --panel-bg: rgba(255, 255, 255, 0.65);
+    --panel-bg: #ffffffa6;
     /* Elegant frost */
-    --panel-border: rgba(255, 255, 255, 0.8);
+    --panel-border: #ffffffcc;
     /* Crisp glass edge */
     --text-main: #0f172a;
     /* Slate 900 for high contrast */
@@ -12,15 +12,23 @@
     /* Deep Ocean */
     --accent-blue: #025ec7;
     /* Vibrant Azure */
-    --accent-blue-dim: rgba(2, 132, 199, 0.15);
+    --accent-blue-dim: #008bd126;
     /* Soft active state */
-    --accent-blue-deep-2: rgba(0, 22, 119, 0.807);
+    --accent-blue-deep-2: #001677ce;
     /* Soft active state */
-    --font-display: 'Outfit', sans-serif;
+    --font-display: 'Outfit', sans-serif;   
     --font-body: 'Inter', sans-serif;
     --font-body-special: 'SmartGothic', 'Poppins', sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
     --font-subhead: 'ITC Stone Sans', 'Poppins', sans-serif;
+
+    /* Accent Button Colors */
+    --accent-orange: #f97316;
+    --accent-orange-dim: #ffff00;
+    --accent-green: #53c91e;
+    --accent-green-dim: #30ff30;
+    --accent-teal: #077b9f;
+    --accent-teal-dim: #7ed4ee;
 }
 
 * {
@@ -46,8 +54,8 @@ body {
 /* Small Header */
 .app-header {
     position: absolute;
-    top: 21px;
-    left: 21px;
+    top: max(21px, env(safe-area-inset-top));
+    left: max(21px, env(safe-area-inset-left));
     z-index: 1000;
     background: var(--panel-bg);
     backdrop-filter: blur(12px);
@@ -1315,7 +1323,7 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(13, 40, 56, 0.4);
+    /* background: rgba(13, 40, 56, 0.4); */
     backdrop-filter: blur(6px);
 }
 
@@ -1325,38 +1333,48 @@ body {
     max-width: 800px;
     height: 85vh;
     background: transparent;
-    border-radius: 8px;
+    border-radius: 5px;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
     z-index: 10001;
-    overflow: hidden;
+    /* overflow: hidden; */
     animation: modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     font-family: var(--font-body-special);
 }
 
 .iframe-modal-close {
-    position: absolute;
-    top: 21px;
-    right: 16px;
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.5);
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    width: 32px;
+    height: 32px;
+    background-image: url('resources/images/close-cancel-svgrepo-com-nrm.svg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
     cursor: pointer;
-    color: var(--text-dim);
-    transition: all 0.2s ease;
-    z-index: 10002;
-    backdrop-filter: blur(4px);
+    transition: transform 0.2s ease;
+    padding: 0;
+    border-radius: 0 !important;
 }
 
 .iframe-modal-close:hover {
-    background: white;
-    color: #ef4444;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-    transform: scale(1.05);
+    background-image: url('resources/images/close-cancel-svgrepo-com-cls.svg');
+    background-color: transparent !important;
+    box-shadow: none !important;
+    transform: scale(1.05); /* Slight pop effect */
+}
+
+/* Hide any legacy SVG elements inside the button */
+.iframe-modal-close svg {
+    display: none !important;
+}
+
+/* Helper class for absolutely positioned close buttons */
+.absolute-close-btn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    z-index: 10002;
 }
 
 #iframe-modal-frame {
@@ -1845,25 +1863,15 @@ body {
 
 /* Modal Adaptations */
 .approval-modal-content {
-    width: 90vw !important; 
-    height: 90vh !important;
+    width: 90% !important; 
+    height: 97vh !important;
     max-width: 1000px !important;
     overflow-y: auto !important; 
-    background: white !important; 
-    padding: 20px !important;
+    background: var(--panel-bg) !important; 
+    padding: 11px !important;
 }
 
-.custom-close-btn {
-    z-index: 10001; 
-    color: #475569; 
-    background: #f1f5f9; 
-    border-radius: 50%;
-    transition: all 0.2s;
-}
-.custom-close-btn:hover {
-    background: #e2e8f0;
-    color: #0f172a;
-}
+
 
 @media (max-width: 768px) {
     .approval-modal-content {
@@ -1871,12 +1879,9 @@ body {
         height: 100vh !important;
         max-width: 100vw !important;
         border-radius: 0 !important;
-        padding: 10px !important;
+        padding: 7px !important;
     }
-    .custom-close-btn {
-        top: 10px;
-        right: 10px;
-    }
+    .absolute-close-btn { top: 10px; right: 10px; }
 }
 
 
@@ -1895,16 +1900,156 @@ body {
 
 
 /* Borelog Management Buttons */
-.management-btn.submit-btn {
-    background: var(--accent-blue) !important;
-}
-.management-btn.submit-btn:hover {
-    background: #63b3ed !important;
+.management-btn {
+    padding: 10px;
+    margin-bottom: 7px;
 }
 
-.management-btn.approve-btn {
-    background: #e45d28 !important;
+/* Add new class for the header close button */
+.inline-close-btn {
+    background: #f1f5f9; 
+    border: none; 
+    border-radius: 50%; 
+    width: 32px; 
+    height: 32px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    cursor: pointer; 
+    color: #475569; 
+    transition: all 0.2s; 
+    margin-left: 12px;
 }
-.management-btn.approve-btn:hover {
-    background: #f97316 !important;
+.inline-close-btn:hover {
+    background: #e2e8f0; 
+    color: #0f172a;
 }
+
+.export-graphic-btn-class {
+    padding: 8px 16px;
+    white-space: nowrap;
+    /* flex-shrink: 0; */
+    }
+
+.export-xlsx-btn-class {
+    padding: 8px 16px;
+    white-space: nowrap;
+    /* flex-shrink: 0; */
+    }
+
+.blue_button {
+    width: 100%;
+    /* padding: 8px 16px; */
+    background: var(--accent-blue);
+    color: white;
+    border: none;
+    border-radius: 0;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.2s;
+}
+
+.blue_button:hover {
+    background: #33b3f9; /* #22bfc7; */
+    color: var(--text-main);
+}
+
+.orange_button {
+    width: 100%;
+    /* padding: 8px 16px; */
+    background: var(--accent-orange);
+    color: white;
+    border: none;
+    border-radius: 0px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.2s;
+}
+
+.orange_button:hover {
+    background: var(--accent-orange-dim); /* #f97316; */
+    color: var(--text-main);
+}
+
+.green_button {
+    width: 100%;
+    /* padding: 8px 16px; */
+    background: var(--accent-green);
+    color: white;
+    border: none;
+    border-radius: 0px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.2s;
+}
+
+.green_button:hover {
+    background: var(--accent-green-dim); /* #41ff54; */
+    color: var(--text-main);
+}
+
+.teal_button {
+    width: 100%;
+    /* padding: 8px 16px; */
+    background: var(--accent-teal);
+    color: white;
+    border: none;
+    border-radius: 0px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.2s;
+}
+
+.teal_button:hover {
+    background: var(--accent-teal-dim); /* #22bfc7; */
+    color: var(--text-main);
+}
+
+.blue_button:disabled, .orange_button:disabled, .green_button:disabled, .management-btn:disabled {
+    background: #e2e8f0 !important;
+    color: #94a3b8 !important;
+    cursor: not-allowed !important;
+    box-shadow: none !important;
+}
+
+
+
+
+
+
+
+/* 4K Monitor Adaptations */
+@media (min-width: 2560px) {
+    .side-panel-container {
+        width: 550px;
+    }
+
+    .right-panel-container.pinned {
+        width: 550px;
+    }
+
+    .app-header {
+        padding: 20px 30px;
+        top: 30px;
+        left: 30px;
+    }
+    
+    .logo img {
+        height: 90px;
+    }
+
+    .layer-item {
+        font-size: 18px;
+        padding: 20px 24px;
+    }
+    
+    .side-header h2 {
+        font-size: 24px;
+    }
+
+    .blue_button, .orange_button, .green_button, .teal_button, .management-btn {
+        padding: 14px 24px;
+        font-size: 18px;
+    }
+}
+

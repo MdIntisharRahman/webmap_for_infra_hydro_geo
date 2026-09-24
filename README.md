@@ -219,3 +219,29 @@ Standard 12px checkboxes are an accessibility violation on touch devices. The iO
 
 #### 3. Fully Offline Local Fonts
 To guarantee the UI never breaks, blocks, or flashes unstyled text in offline environments (or slow field-networks), all typography (Inter and Outfit) was converted to ultra-compressed `.woff2` files via Transfonter and stored directly in `frontend/resources/fonts/`. The `font-display: swap` directive guarantees the browser will render instantly.
+
+### Borelog Management System & Approvals
+
+The webmap features a fully integrated pipeline for submitting, reviewing, and rendering geotechnical borelogs, backed by robust file synchronization.
+
+#### 1. GeoJSON Persistent Synchronization
+Cloud providers (like Render) often wipe databases or drift out of sync. To combat this, the backend dynamically synchronizes all borelog states to physical files.
+- When a borelog is staged, approved, or rejected, the FastAPI backend surgically rewrites \Maps/awaiting_borelogs.geojson\ and \Maps/appended_borelogs.geojson\ in real-time.
+- This creates an immutable, git-ready physical file backup, guaranteeing that local deployment resets do not erase admin-approved data.
+
+#### 2. Visualizer Standardization (DOM-Based)
+The application utilizes a custom Vanilla JS DOM engine (\BorelogVisualizer.js\) rather than heavy charting libraries to render soil strata perfectly.
+- **Sticky Context Headers:** As users scroll deep into a 30-meter borelog, the top metadata block (Borelog ID, Project, Water Table) and the column headers flawlessly stick to the top of the modal, ensuring continuous context.
+- **Unified Flex Constraints:** The tooltip map visualizer and the entry form preview visualizer strictly share the \#borelog-visualizer-container\ ID, constrained perfectly via CSS (\height: 81vh\) to prevent window overflow and enforce native horizontal/vertical scrolling.
+
+#### 3. Image-Driven Modal Close System
+To eliminate bulky inline SVGs and messy styling, all modal windows rely on a single empty \<button>\ tag equipped with the \.iframe-modal-close\ class. This CSS class natively handles loading a clean \.svg\ background image and swaps instantly to a hover counterpart with a sleek scaling pop effect, keeping the DOM extremely lightweight.
+
+#### 4. Map Management Terminal & Streaming
+Admins can dynamically trigger Python backend map-rendering scripts (\import_local_maps.py\) directly from the frontend.
+- Instead of silently timing out, the FastAPI backend (\/api/maps/update\) actively captures the \stdout\ of the massive Python subprocess.
+- The web UI features a sleek, dark-themed streaming terminal that renders the backend script output in real-time chunk by chunk, securely locking the UI until execution finishes.
+
+#### 5. Animated Toast Feedback Engine
+User interactions are accompanied by highly polished toast notifications. Utilizing deep drop-shadows, spring-like slide-up transformations, and dynamic CSS modifier classes (\.toast-success\ vs \.toast-error\), it creates a crisp, responsive, native-app feel for form submissions and staging updates.
+

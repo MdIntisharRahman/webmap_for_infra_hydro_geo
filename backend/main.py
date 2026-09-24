@@ -32,7 +32,7 @@ async def run_data_ingestion():
         # await asyncio.to_thread(load_all_gis_layers)
         pass
     except Exception as e:
-        print(f"Error during background data ingestion: {e}")
+            print(f"Error during background data ingestion: {e}")
 
 
 @asynccontextmanager
@@ -663,7 +663,6 @@ async def reject_staged_borelog(f_file: str, db: AsyncSession = Depends(get_db),
             print(f"Warning: Failed to sync awaiting_borelogs.geojson on reject: {e}")
 
     return {"status": "success"}
-app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
 
 import subprocess
 import asyncio
@@ -681,8 +680,15 @@ async def update_maps(username: str = Depends(check_admin)):
             line = await process.stdout.readline()
             if not line:
                 break
-            yield line.decode('utf-8')
+            yield line.decode("utf-8")
         await process.wait()
         yield f"\n[Process exited with code {process.returncode}]\n"
         
     return StreamingResponse(log_generator(), media_type="text/plain")
+
+app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
+
+
+
+
+

@@ -122,6 +122,19 @@ window.renderBorelogChart = function(containerId, geoJsonData) {
     if (properties.date_of_ending_boring && properties.date_of_ending_boring !== dateStr) {
         dateStr += " - " + properties.date_of_ending_boring;
     }
+    
+    const stickyContainer = document.createElement('div');
+    stickyContainer.style.position = "sticky";
+    stickyContainer.style.top = "0";
+    stickyContainer.style.zIndex = "10";
+    stickyContainer.style.backgroundColor = "#ffffff";
+    stickyContainer.style.boxShadow = "0 2px 8px rgba(0,0,0,0.1)";
+    stickyContainer.style.display = "flex";
+    stickyContainer.style.flexDirection = "column";
+    stickyContainer.style.alignSelf = "flex-start"; // Fix for sticky in flexbox
+    stickyContainer.style.width = "max-content"; // Match inner grid width
+    stickyContainer.style.minWidth = "100%";
+    
     const metaDiv = document.createElement('div');
     metaDiv.innerHTML = `
     <div style="padding: 16px 24px; background: white; border-bottom: 2px solid #d4d4d8; font-size: 13px; color: #3f3f46; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
@@ -133,7 +146,7 @@ window.renderBorelogChart = function(containerId, geoJsonData) {
         <div><strong>RL (m):</strong> ${properties.rl_m !== undefined ? properties.rl_m : ""}</div>
         <div><strong>Water Table (m):</strong> ${properties.water_table_m !== undefined ? properties.water_table_m : ""}</div>
     </div>`;
-    innerWrapper.appendChild(metaDiv);
+    stickyContainer.appendChild(metaDiv);
     
     const header = document.createElement('div');
     header.style.display = "grid";
@@ -144,10 +157,6 @@ window.renderBorelogChart = function(containerId, geoJsonData) {
     header.style.fontSize = "13px";
     header.style.color = "#3f3f46";
     header.style.textAlign = "center";
-    header.style.position = "sticky";
-    header.style.top = "0";
-    header.style.zIndex = "10";
-    header.style.boxShadow = "0 2px 4px rgba(0,0,0,0.05)";
     
     const headers = ["Depth (m)", "Stratum", "Description", "SPT Record", "SPT N-Value", "Atterberg Limits", "CPT qc (MPa)"];
     extraTests.forEach(testKey => {
@@ -163,7 +172,8 @@ window.renderBorelogChart = function(containerId, geoJsonData) {
         d.innerText = h;
         header.appendChild(d);
     });
-    innerWrapper.appendChild(header);
+    stickyContainer.appendChild(header);
+    innerWrapper.appendChild(stickyContainer);
 
     const body = document.createElement('div');
     body.style.display = "grid";
