@@ -172,7 +172,7 @@ Vectors (GeoJSONs) and Rasters (GeoTIFFs) represent your analytical overlays. Th
 The platform features a highly advanced, zero-configuration dynamic legend engine. You do not need to manually write HTML/CSS to build legends for your map layers. The frontend automatically parses the underlying data and generates a highly-polished, responsive `sub-legend-ui` with interactive gradient pie-charts, swatches, and overflow menus (`+X` button).
 
 #### 1. Vector Legends (Automatic Extraction)
-For Vector layers, the backend automatically scans the database for the `f_class_name` and `color` (or `f_class_color`) attributes within the GeoJSON features. The frontend dynamically groups these distinct classes and assigns them their respective colors in the UI.
+For Vector layers, the frontend automatically scans the features for class naming attributes (like `f_class_name`) and styling attributes (like `color` or `f_class_color`). When a specific class name is missing, the intelligent fallback engine dynamically scans each feature's properties to extract meaningful quantitative values (e.g., pulling `50.6` from a `speed_mps` column). To ensure the legend strictly matches the visual symbology, the engine **groups directly by color**, automatically combining all names or values that share the exact same color into a single, comprehensive category label in the legend.
 
 #### 2. Raster Legends (QGIS Color Map Integration)
 Because raw `.tif` rasters do not contain vector properties, you can explicitly define a raster's legend by dropping a simple text file into the `Maps/` directory.
@@ -244,4 +244,7 @@ Admins can dynamically trigger Python backend map-rendering scripts (\import_loc
 
 #### 5. Animated Toast Feedback Engine
 User interactions are accompanied by highly polished toast notifications. Utilizing deep drop-shadows, spring-like slide-up transformations, and dynamic CSS modifier classes (\.toast-success\ vs \.toast-error\), it creates a crisp, responsive, native-app feel for form submissions and staging updates.
+
+
+
 

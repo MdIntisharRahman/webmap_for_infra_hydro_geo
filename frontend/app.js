@@ -759,15 +759,40 @@ async function fetchAndRenderLayers() {
                         const layerDataRes = await fetch(`${API_BASE_URL}/layers/${layerInfo.table}`);
                         const data = await layerDataRes.json();
                         
-                        const classMap = new Map();
+                        const colorGroups = new Map();
                         if (data.features) {
                             for (const feat of data.features) {
-                                if (feat.properties && feat.properties.f_class_name) {
-                                    let clr = feat.properties.color || feat.properties.f_class_color || '#9aa5b1';
-                                    if (clr && !clr.startsWith('#')) clr = '#' + clr;
-                                    classMap.set(feat.properties.f_class_name, clr);
+                                if (feat.properties) {
+                                    let clr = feat.properties.color || feat.properties.f_class_color || feat.properties.stroke_color || null;
+                                    if (clr || feat.properties.f_class_name) {
+                                        clr = clr || '#9aa5b1';
+                                        if (clr && !clr.startsWith('#') && !clr.startsWith('rgb')) clr = '#' + clr;
+                                        let name = feat.properties.f_class_name;
+                                        if (name === undefined || name === null) {
+                                            for (const key in feat.properties) {
+                                                if (!['keys', 'original_id', 'f_class_color', 'color', 'stroke_color', 'fill_color'].includes(key)) {
+                                                    name = feat.properties[key];
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                        if (name !== undefined && name !== null) {
+                                            if (!colorGroups.has(clr)) colorGroups.set(clr, new Set());
+                                            colorGroups.get(clr).add(String(name));
+                                        }
+                                    }
                                 }
                             }
+                        }
+                        const classMap = new Map();
+                        for (const [clr, namesSet] of colorGroups.entries()) {
+                            let arr = Array.from(namesSet);
+                            arr.sort((a,b) => {
+                                let numA = parseFloat(a); let numB = parseFloat(b);
+                                if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+                                return a.localeCompare(b);
+                            });
+                            classMap.set(arr.join(', '), clr);
                         }
                         const hasClasses = classMap.size > 0;
                         if (hasClasses) {
@@ -1635,6 +1660,8 @@ window.openUpdateMapsLogWindow = async () => {
     closeBtn.onmouseover = () => closeBtn.style.background = "#1d4ed8";
     closeBtn.onmouseout = () => closeBtn.style.background = "#2563eb";
 };
+
+
 
 
 
