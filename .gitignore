@@ -79,3 +79,5 @@ DESIGN.md
 # *.aux.xml
 *.db
 
+# Prompts
+Logic changes about how the additional info are presented.md

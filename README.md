@@ -93,6 +93,23 @@ When deploying via `docker-compose.yml`, the environment utilizes Nginx to serve
 
 The web map handles GeoJSON feature properties dynamically, using a `keys` array (e.g. `[[field_id, Label], ...]`) defined in the layer data.
 
+### Advanced Formatted Links & Modals
+The `keys` array now supports advanced formatting syntax to seamlessly generate dynamic hyperlinks, file downloads, or trigger fully interactive in-app modals (like the Borelog Visualizer).
+
+**Syntax:** `[AttributeName(=>{type:..., format:...}, MaskString, Target, TargetID=>), Label]`
+
+**Example 1: External Links**
+`[description(=>{type:link, format:weblink},See Borelog,newtab=>), Link]`
+* Creates an interactive hyperlink in the tooltip.
+* The `MaskString` ("See Borelog") is the text the user will see.
+* The `Target` ("newtab") ensures the link safely opens in a new browser tab.
+
+**Example 2: In-App Modals (e.g. Borelog Visualizer)**
+`[f_file(=>{type:file, format:JSON}, See Borelog, imodal, borelog-modal=>), Details]`
+* Automatically routes the `f_file` attribute data into a dedicated modal.
+* The `Target` ("imodal") instructs the UI to open an internal iframe/modal window.
+* The `TargetID` ("borelog-modal") specifically points to the exact modal ID to utilize in the DOM.
+
 **Header Priority Logic:**
 When rendering the interactive popup/tooltip for a feature, the application uses the following hierarchy to determine what appears as the bold **Header Title**:
 

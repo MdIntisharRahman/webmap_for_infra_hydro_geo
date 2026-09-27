@@ -2,6 +2,6 @@
 "type": "FeatureCollection",
 "name": "awaiting_borelogs",
 "features": [
-{ "type": "Feature", "properties": { "borelog_id": "DUMMY", "project": "Initial", "client": "RHD", "Name": "", "xcoord": 0.0, "ycoord": 0.0, "keys": "", "f_class_color": "", "f_file": "" }, "geometry": { "type": "Point", "coordinates": [ 90.4125, 23.8103 ] } }
+{"type":"Feature","properties":{"borelog_id":"DUMMY","project":"Initial","client":"RHD","Name":"Example Awaiting Borelog","xcoord":90.4125,"ycoord":23.81032,"keys":"'[Name, Place], [xcoord, Easting], [ycoord, Northing], [f_file(=>{type:file, format:JSON}, See Borelog, imodal, borelog-modal=>),Details]'","f_class_color":"#2196f3","f_file":"PL-11-SQTRS-09.json","UID":"PL-11-SQTRS-09"},"geometry":{"type":"Point","coordinates":[90.4125,23.8103]}}
 ]
 }
