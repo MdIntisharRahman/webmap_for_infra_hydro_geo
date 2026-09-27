@@ -1,0 +1,23 @@
+#2edb93 - Mixed Types Bridge
+#6ebed6 - PC Girder Bridge
+#29ffa4 - Portable Steel Bridge
+#e8f674 - RC Girder Bridge
+#088afa - RC Slab Bridge
+#13b7dd - Small Slab Bridge
+#b15dec - Steel Girder Bridge
+#6470da - Truss Bridge
+#03e8f9 - Rigid Frame Bridge
+#41df33 - All other
+
+CASE 
+WHEN "bridge_type"= 'Mixed Types Bridge' THEN '#2edb93'
+WHEN "bridge_type"= 'PC Girder Bridge' THEN '#6ebed6'
+WHEN "bridge_type"= 'Portable Steel Bridge' THEN '#29ffa4'
+WHEN "bridge_type"= 'RC Girder Bridge' THEN '#e8f674'
+WHEN "bridge_type"= 'RC Slab Bridge' THEN '#088afa'
+WHEN "bridge_type"= 'Small Slab Bridge' THEN '#13b7dd'
+WHEN "bridge_type"= 'Steel Girder Bridge' THEN '#b15dec'
+WHEN "bridge_type"= 'Truss Bridge' THEN '#6470da'
+WHEN "bridge_type"= 'Rigid Frame Bridge' THEN '#03e8f9'
+ELSE '#41df33'
+END

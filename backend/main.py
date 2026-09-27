@@ -142,6 +142,7 @@ async def get_layers():
                 estimate = (parts[9].strip().lower() in ["yes", "y"]) if len(parts) >= 10 else False
                 credit_page = parts[10].strip() if len(parts) >= 11 else ""
                 zoom_level = parts[11].strip() if len(parts) >= 12 else ""
+                classify_with = parts[12].strip() if len(parts) >= 13 else ""
                 
                 filename = parts[0]
                 rendered_filename = None
@@ -198,7 +199,8 @@ async def get_layers():
                     "rendered_filename": rendered_filename,
                     "color_map": color_map if layer_type.lower() == "raster" else None,
                     "credit_page": credit_page,
-                    "zoom_level": zoom_level
+                    "zoom_level": zoom_level,
+                    "classify_with": classify_with
                 })
     return layers
 

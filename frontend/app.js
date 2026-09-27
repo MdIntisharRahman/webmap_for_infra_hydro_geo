@@ -145,13 +145,13 @@ const getFeatureStyle = (feature, defaultColor, layerTransparency = null) => {
     }
 
     return {
-        color: color,
+        color: isPoint ? "#1e293b" : color,
         fillColor: color,
-        weight: weight,
+        weight: isPoint ? 0.5 : weight,
         fillOpacity: finalFillOpacity,
         opacity: finalOpacity,
         lineCap: "round",
-        radius: isPoint ? 2.5 : undefined,
+        radius: isPoint ? 3.5 : undefined,
     };
 };
 
@@ -170,6 +170,19 @@ const getHighlightStyle = (feature, color) => {
 // ============================================================================
 // TOOLTIP RENDERING
 // ============================================================================
+
+window.openImodal = function(targetID, val) {
+    if (targetID === 'borelog-modal' && typeof window.openBorelogVisualizer === 'function') {
+        window.openBorelogVisualizer(val);
+    } else {
+        const modal = document.getElementById(targetID);
+        if (modal) {
+            const iframe = modal.querySelector('iframe');
+            if (iframe) iframe.src = val;
+            modal.classList.remove('hidden');
+        }
+    }
+};
 
 const renderTooltipProps = (props, displayKeys, layerInfo) => {
     tooltipDetails.innerHTML = "";
@@ -209,13 +222,52 @@ const renderTooltipProps = (props, displayKeys, layerInfo) => {
     if (displayKeys) {
         // Data-driven keys logic
         for (const pair of displayKeys) {
-            const field = pair[0];
+            let fieldConfig = pair[0];
             const label = pair[1];
-            const val = props[field];
+            
+            let baseField = fieldConfig;
+            let configStr = null;
+            if (fieldConfig.includes('(=>') && fieldConfig.endsWith('=>)')) {
+                let parts = fieldConfig.split('(=>');
+                baseField = parts[0].trim();
+                configStr = parts[1].replace('=>)', '').trim();
+            }
+            
+            const val = props[baseField];
 
             if (val === undefined || val === null || val === "") continue;
 
-            const formattedVal = formatValue(label, val);
+            let formattedVal = formatValue(label, val);
+            
+            if (configStr) {
+                let match = configStr.match(/^(\{.*?\})\s*,\s*(.*)$/);
+                if (match) {
+                    let typeFormat = {};
+                    try {
+                        let tfStr = match[1].replace(/[{}]/g, '');
+                        tfStr.split(',').forEach(kv => {
+                            let [k, v] = kv.split(':');
+                            if(k && v) typeFormat[k.trim()] = v.trim();
+                        });
+                    } catch(e) {}
+                    
+                    let remainingStr = match[2];
+                    let rParts = remainingStr.split(',').map(s => s.trim());
+                    let mask = rParts[0] || '';
+                    let target = rParts[1] || '';
+                    let targetID = rParts[2] || '';
+                    
+                    let linkText = mask ? mask : val;
+                    
+                    if (typeFormat.type === 'link' || typeFormat.type === 'file') {
+                        if (target === 'newtab') {
+                            formattedVal = `<a href="${val}" target="_blank" style="color:var(--accent-blue); text-decoration:underline;">${linkText}</a>`;
+                        } else if (target === 'imodal') {
+                            formattedVal = `<a href="javascript:void(0)" onclick="openImodal('${targetID}', '${val}')" style="color:var(--accent-blue); text-decoration:underline;">${linkText}</a>`;
+                        }
+                    }
+                }
+            }
 
             const row = document.createElement("div");
             row.className = "detail-row";
@@ -759,26 +811,48 @@ async function fetchAndRenderLayers() {
                         const layerDataRes = await fetch(`${API_BASE_URL}/layers/${layerInfo.table}`);
                         const data = await layerDataRes.json();
                         
+                        let performClassification = true;
+                        let explicitClassifyWith = null;
+                        if (layerInfo.classify_with) {
+                            let val = layerInfo.classify_with.trim();
+                            if (val.toLowerCase() === 'no') {
+                                performClassification = false;
+                            } else if (val !== '') {
+                                explicitClassifyWith = val;
+                            }
+                        }
+
                         const colorGroups = new Map();
-                        if (data.features) {
+                        if (performClassification && data.features) {
                             for (const feat of data.features) {
                                 if (feat.properties) {
                                     let clr = feat.properties.color || feat.properties.f_class_color || feat.properties.stroke_color || null;
-                                    if (clr || feat.properties.f_class_name) {
-                                        clr = clr || '#9aa5b1';
-                                        if (clr && !clr.startsWith('#') && !clr.startsWith('rgb')) clr = '#' + clr;
-                                        let name = feat.properties.f_class_name;
-                                        if (name === undefined || name === null) {
-                                            for (const key in feat.properties) {
-                                                if (!['keys', 'original_id', 'f_class_color', 'color', 'stroke_color', 'fill_color'].includes(key)) {
-                                                    name = feat.properties[key];
-                                                    break;
-                                                }
-                                            }
-                                        }
+                                    
+                                    if (explicitClassifyWith) {
+                                        let name = feat.properties[explicitClassifyWith];
                                         if (name !== undefined && name !== null) {
+                                            clr = clr || '#9aa5b1';
+                                            if (clr && !clr.startsWith('#') && !clr.startsWith('rgb')) clr = '#' + clr;
                                             if (!colorGroups.has(clr)) colorGroups.set(clr, new Set());
                                             colorGroups.get(clr).add(String(name));
+                                        }
+                                    } else {
+                                        if (clr || feat.properties.f_class_name) {
+                                            clr = clr || '#9aa5b1';
+                                            if (clr && !clr.startsWith('#') && !clr.startsWith('rgb')) clr = '#' + clr;
+                                            let name = feat.properties.f_class_name;
+                                            if (name === undefined || name === null) {
+                                                for (const key in feat.properties) {
+                                                    if (!['keys', 'original_id', 'f_class_color', 'color', 'stroke_color', 'fill_color'].includes(key)) {
+                                                        name = feat.properties[key];
+                                                        break;
+                                                    }
+                                                }
+                                            }
+                                            if (name !== undefined && name !== null) {
+                                                if (!colorGroups.has(clr)) colorGroups.set(clr, new Set());
+                                                colorGroups.get(clr).add(String(name));
+                                            }
                                         }
                                     }
                                 }
@@ -907,10 +981,22 @@ async function fetchAndRenderLayers() {
                                         try {
                                             let keysStr = props.keys;
                                             if (typeof keysStr === "string") {
-                                                let regex = /\[([^,]+),\s*([^\]]+)\]/g;
+                                                let regex = /\[(.*?)\]/g;
                                                 let match;
                                                 while ((match = regex.exec(keysStr)) !== null) {
-                                                    parsedKeys.push([match[1].trim(), match[2].trim()]);
+                                                    let content = match[1].trim();
+                                                    let splitIndex = -1;
+                                                    let configEnd = content.lastIndexOf('=>)');
+                                                    if (configEnd !== -1) {
+                                                        splitIndex = content.indexOf(',', configEnd);
+                                                    } else {
+                                                        splitIndex = content.indexOf(',');
+                                                    }
+                                                    if (splitIndex !== -1) {
+                                                        let keyPart = content.substring(0, splitIndex).trim();
+                                                        let label = content.substring(splitIndex + 1).trim();
+                                                        parsedKeys.push([keyPart, label]);
+                                                    }
                                                 }
                                             } else {
                                                 parsedKeys = keysStr;
@@ -1345,7 +1431,7 @@ window.openBorelogVisualizer = async (f_file) => {
         const data = await res.json();
         const uid = f_file.replace(/\.json$/i, "");
         
-        rootNode.innerHTML = document.getElementById("visualizer-template").innerHTML;
+        rootNode.innerHTML = document.getElementById("borelog-visualizer-template").innerHTML;
         
         document.getElementById("export-xlsx-btn").onclick = () => {
             if (window.exportBorelogToXLSX) window.exportBorelogToXLSX(data, uid);
@@ -1660,6 +1746,10 @@ window.openUpdateMapsLogWindow = async () => {
     closeBtn.onmouseover = () => closeBtn.style.background = "#1d4ed8";
     closeBtn.onmouseout = () => closeBtn.style.background = "#2563eb";
 };
+
+
+
+
 
 
 
