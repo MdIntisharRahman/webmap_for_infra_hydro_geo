@@ -7,6 +7,8 @@
 #b15dec - Steel Girder Bridge
 #6470da - Truss Bridge
 #03e8f9 - Rigid Frame Bridge
+#ffbb00 - PC Box Girder Bridge
+#ff8800 - Concrete Arch Bridge
 #41df33 - All other
 
 CASE 
@@ -19,5 +21,7 @@ WHEN "bridge_type"= 'Small Slab Bridge' THEN '#13b7dd'
 WHEN "bridge_type"= 'Steel Girder Bridge' THEN '#b15dec'
 WHEN "bridge_type"= 'Truss Bridge' THEN '#6470da'
 WHEN "bridge_type"= 'Rigid Frame Bridge' THEN '#03e8f9'
+WHEN "bridge_type"= 'PC Box Girder Bridge' THEN '#ffbb00'
+WHEN "bridge_type"= 'Concrete Arch Bridge' THEN '#ff8800'
 ELSE '#41df33'
 END
