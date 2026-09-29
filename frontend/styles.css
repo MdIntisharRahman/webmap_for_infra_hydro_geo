@@ -3,16 +3,16 @@
     --panel-bg: #ffffffa6;
     /* Elegant frost */
     --panel-border: #ffffffcc;
-    /* Crisp glass edge */
+    /* Text crisp look */
     --text-main: #0f172a;
     /* Slate 900 for high contrast */
     --text-dim: #475569;
-    /* Slate 600 */
-    --accent-blue-deep: #102764;
     /* Deep Ocean */
     --accent-blue: #025ec7;
     /* Vibrant Azure */
     --accent-blue-dim: #008bd126;
+    /* Slate 600 */
+    --accent-blue-deep: #102764;
     /* Soft active state */
     --accent-blue-deep-2: #001677ce;
     /* Soft active state */
@@ -29,6 +29,10 @@
     --accent-green-dim: #30ff30;
     --accent-teal: #077b9f;
     --accent-teal-dim: #7ed4ee;
+
+    /* border-radius control */
+    --button-border-radius: 0px;
+    --layer-item-border-radius: 0px;
 }
 
 * {
@@ -60,7 +64,7 @@ body {
     background: var(--panel-bg);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 0.5px solid var(--panel-border);
+    /* border: 0.5px solid var(--panel-border); */
     border-radius: 0px;
     padding: 11px 19px;
     display: flex;
@@ -216,7 +220,7 @@ body {
 .right-panel {
     /* border-radius: 10px 0 0 10px !important; */
     border-right: none !important;
-    border-left: 1px solid var(--panel-border) !important;
+    /* border-left: 1px solid var(--panel-border) !important; */
     display: flex;
     flex-direction: column;
 }
@@ -266,13 +270,13 @@ body {
     background: var(--panel-bg);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid var(--panel-border);
-    border-left: none;
+    /* border: 1px solid var(--accent-blue-dim); */
+    border-left: none !important;
     border-radius: 0 0px 0px 0;
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
     display: flex;
     flex-direction: column;
-    padding: 12px 20px;
+    padding: 17px 15px 23px 15px;
     pointer-events: auto;
     position: relative;
     overflow: hidden;
@@ -398,7 +402,7 @@ body {
     height: 28px;
     padding: 0 8px;
     border: 1px solid #e2e8f0;
-    /* border-radius: 6px; */
+    border-radius: var(--button-border-radius);
     font-size: 12px;
     outline: none;
 }
@@ -409,7 +413,7 @@ body {
     background: var(--accent-blue);
     color: white;
     border: none;
-    /* border-radius: 6px; */
+    border-radius: var(--button-border-radius);
     cursor: pointer;
     font-weight: 600;
     transition: background 0.2s;
@@ -481,10 +485,10 @@ body {
     align-items: center;
     justify-content: space-between;
     background: transparent;
-    border: 1px solid var(--panel-border);
+    border: 0.25px solid var(--accent-blue-dim);
     padding: 10px 14px;
-    margin: 4px 6px;
-    border-radius: 0px;
+    margin: 5px 17px 5px 5px;
+    border-radius: var(--layer-item-border-radius);
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     cursor: pointer;
 }
@@ -808,7 +812,7 @@ body {
     border-radius: 0;
     margin-bottom: 0;
     padding: 0;
-    border-right: 2px solid #e2e8f0;
+    border-right: 1px solid var(--accent-blue-dim);
     max-height: 33vh;
     overflow-y: auto;
     overflow-x: hidden;
@@ -1943,7 +1947,7 @@ body {
     background: var(--accent-blue);
     color: white;
     border: none;
-    border-radius: 0;
+    border-radius: var(--button-border-radius);
     cursor: pointer;
     font-weight: bold;
     transition: background 0.2s;
@@ -1960,7 +1964,7 @@ body {
     background: var(--accent-orange);
     color: white;
     border: none;
-    border-radius: 0px;
+    border-radius: var(--button-border-radius);
     cursor: pointer;
     font-weight: bold;
     transition: background 0.2s;
@@ -1977,7 +1981,7 @@ body {
     background: var(--accent-green);
     color: white;
     border: none;
-    border-radius: 0px;
+    border-radius: var(--button-border-radius);
     cursor: pointer;
     font-weight: bold;
     transition: background 0.2s;
@@ -1994,7 +1998,7 @@ body {
     background: var(--accent-teal);
     color: white;
     border: none;
-    border-radius: 0px;
+    border-radius: var(--button-border-radius);
     cursor: pointer;
     font-weight: bold;
     transition: background 0.2s;
