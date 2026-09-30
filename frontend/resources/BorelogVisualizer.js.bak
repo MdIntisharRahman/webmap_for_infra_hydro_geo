@@ -90,19 +90,13 @@ window.renderBorelogChart = function(containerId, geoJsonData) {
     const PIXELS_PER_METER = 60;
     const totalHeight = maxDepth * PIXELS_PER_METER;
     
-    const baseWidths = { depth: 60, stratum: 80, desc: 250, sptText: 140, sptGraph: 200, testsGraph: 200, cptGraph: 600 };
-    if (strata.length === 0) { baseWidths.stratum = 0; baseWidths.desc = 0; }
-    if (sptData.length === 0) { baseWidths.sptText = 0; baseWidths.sptGraph = 0; }
-    if (atterberg.length === 0) { baseWidths.testsGraph = 0; }
-    if (cpt.length === 0) { baseWidths.cptGraph = 0; }
-    
+    const baseWidths = { depth: 60, stratum: 80, desc: 250, sptText: 140, sptGraph: 200, testsGraph: 200, cptGraph: 200 };
     const baseWidth = Object.values(baseWidths).reduce((a,b)=>a+b, 0);
     const extraColWidth = 200;
-    const activeExtraTests = extraTests.filter(testKey => (properties[testKey] || []).length > 0);
-    const totalWidth = baseWidth + (activeExtraTests.length * extraColWidth);
+    const totalWidth = baseWidth + (extraTests.length * extraColWidth);
     
     let gridTemplate = `${baseWidths.depth}px ${baseWidths.stratum}px ${baseWidths.desc}px ${baseWidths.sptText}px ${baseWidths.sptGraph}px ${baseWidths.testsGraph}px ${baseWidths.cptGraph}px`;
-    activeExtraTests.forEach(() => { gridTemplate += ` ${extraColWidth}px`; });
+    extraTests.forEach(() => { gridTemplate += ` ${extraColWidth}px`; });
     
     container.style.height = "100%";
     container.style.maxHeight = "100%";
@@ -164,46 +158,18 @@ window.renderBorelogChart = function(containerId, geoJsonData) {
     header.style.color = "#3f3f46";
     header.style.textAlign = "center";
     
-    const headers = ["Depth (m)", "Stratum", "Description", "SPT Record", "SPT N-Value", "Atterberg Limits", "CPT (qc, Rf, u2)"];
+    const headers = ["Depth (m)", "Stratum", "Description", "SPT Record", "SPT N-Value", "Atterberg Limits", "CPT qc (MPa)"];
     extraTests.forEach(testKey => {
         let name = testKey.replace('_test_data', '').replace(/_/g, ' ');
         name = name.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
         headers.push(name);
     });
     
-    header.style.gridTemplateColumns = gridTemplate;
-    
-    headers.forEach((h, i) => {
+    headers.forEach(h => {
         const d = document.createElement('div');
         d.style.padding = "10px 4px";
         d.style.borderRight = "1px solid #e4e4e7";
-        d.style.textAlign = "center";
-        
-        if (i === 6 && cpt.length > 0) {
-            d.style.padding = "0";
-            d.innerHTML = `
-                <div style="border-bottom: 1px solid #e4e4e7; padding: 4px;">CPT Test Results</div>
-                <div style="display: flex;">
-                    <div style="flex: 1; padding: 4px; border-right: 1px solid #e4e4e7;">qc (MPa)</div>
-                    <div style="flex: 1; padding: 4px; border-right: 1px solid #e4e4e7;">Rf (%)</div>
-                    <div style="flex: 1; padding: 4px;">u2 (kPa)</div>
-                </div>
-            `;
-        } else {
-            d.innerText = h;
-        }
-
-        if (i === 1 && strata.length === 0) d.style.display = 'none';
-        if (i === 2 && strata.length === 0) d.style.display = 'none';
-        if (i === 3 && sptData.length === 0) d.style.display = 'none';
-        if (i === 4 && sptData.length === 0) d.style.display = 'none';
-        if (i === 5 && atterberg.length === 0) d.style.display = 'none';
-        if (i === 6 && cpt.length === 0) d.style.display = 'none';
-        if (i > 6) {
-            const arr = properties[extraTests[i - 7]] || [];
-            if (arr.length === 0) d.style.display = 'none';
-        }
-        
+        d.innerText = h;
         header.appendChild(d);
     });
     stickyContainer.appendChild(header);
@@ -223,17 +189,6 @@ window.renderBorelogChart = function(containerId, geoJsonData) {
         c.style.borderRight = "1px solid #e4e4e7";
         c.style.height = "100%";
         
-        if (i === 1 && strata.length === 0) c.style.display = 'none';
-        if (i === 2 && strata.length === 0) c.style.display = 'none';
-        if (i === 3 && sptData.length === 0) c.style.display = 'none';
-        if (i === 4 && sptData.length === 0) c.style.display = 'none';
-        if (i === 5 && atterberg.length === 0) c.style.display = 'none';
-        if (i === 6 && cpt.length === 0) c.style.display = 'none';
-        if (i > 6) {
-            const arr = properties[extraTests[i - 7]] || [];
-            if (arr.length === 0) c.style.display = 'none';
-        }
-
         for (let j=0; j<maxDepth; j++) {
             if (j % 2 !== 0) {
                 const bg = document.createElement('div');
@@ -503,76 +458,58 @@ window.renderBorelogChart = function(containerId, geoJsonData) {
     }
     cols[5].appendChild(labSvg);
     
-    if (cpt.length > 0) {
-        cols[6].style.display = "flex";
-        cols[6].style.flexDirection = "row";
+    const cptSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    cptSvg.setAttribute("width", "100%");
+    cptSvg.setAttribute("height", totalHeight);
+    cptSvg.style.position = "absolute";
+    cptSvg.style.top = "0";
+    cptSvg.style.left = "0";
+    cptSvg.style.zIndex = "1";
+    
+    for(let val=0; val<=20; val+=5) {
+        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        line.setAttribute("x1", `${val * 5}%`);
+        line.setAttribute("x2", `${val * 5}%`);
+        line.setAttribute("y1", "0");
+        line.setAttribute("y2", "100%");
+        line.setAttribute("stroke", "#e4e4e7");
+        line.setAttribute("stroke-dasharray", "4 4");
+        cptSvg.appendChild(line);
         
-        const drawCptPlot = (key, maxVal, color) => {
-            const wrapper = document.createElement('div');
-            wrapper.style.flex = "1";
-            wrapper.style.position = "relative";
-            wrapper.style.borderRight = "1px solid #e4e4e7";
-            
-            const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-            svg.setAttribute("width", "100%");
-            svg.setAttribute("height", totalHeight);
-            svg.style.position = "absolute";
-            svg.style.top = "0";
-            svg.style.left = "0";
-            svg.style.zIndex = "1";
-            
-            for(let val=0; val<=maxVal; val+=maxVal/4) {
-                const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                line.setAttribute("x1", `${(val/maxVal)*100}%`);
-                line.setAttribute("x2", `${(val/maxVal)*100}%`);
-                line.setAttribute("y1", "0");
-                line.setAttribute("y2", "100%");
-                line.setAttribute("stroke", "#e4e4e7");
-                line.setAttribute("stroke-dasharray", "4 4");
-                svg.appendChild(line);
-                
-                const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
-                let xAttr = `calc(${(val/maxVal)*100}% + 2px)`;
-                let anchor = "start";
-                if (val === maxVal) { xAttr = `calc(100% - 2px)`; anchor = "end"; }
-                if (val > 0 && val < maxVal) { xAttr = `${(val/maxVal)*100}%`; anchor = "middle"; }
-                label.setAttribute("x", xAttr);
-                label.setAttribute("y", "12");
-                label.setAttribute("font-size", "10px");
-                label.setAttribute("fill", "#a1a1aa");
-                label.setAttribute("text-anchor", anchor);
-                label.textContent = val;
-                svg.appendChild(label);
-            }
-            
-            let pts = [];
-            cpt.forEach(test => {
-                const y = (parseFloat(test.depth_m) || 0) * PIXELS_PER_METER;
-                let v = parseFloat(test[key]);
-                if (!isNaN(v)) {
-                    if (v > maxVal) v = maxVal;
-                    pts.push(`${(v/maxVal)*100}%,${y}`);
-                }
-            });
-            if (pts.length > 0) {
-                const polyline = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
-                polyline.setAttribute("points", pts.join(" "));
-                polyline.setAttribute("fill", "none");
-                polyline.setAttribute("stroke", color);
-                polyline.setAttribute("stroke-width", "2");
-                svg.appendChild(polyline);
-            }
-            wrapper.appendChild(svg);
-            return wrapper;
-        };
-
-        cols[6].appendChild(drawCptPlot('qc_mpa', 20, '#8b5cf6'));
-        cols[6].appendChild(drawCptPlot('rf_percent', 10, '#ec4899'));
-        
-        const u2Wrapper = drawCptPlot('u2_kpa', 500, '#06b6d4');
-        u2Wrapper.style.borderRight = "none";
-        cols[6].appendChild(u2Wrapper);
+        const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        let xAttr = `calc(${val * 5}% + 2px)`;
+        let anchor = "start";
+        if (val === 20) { xAttr = `calc(100% - 2px)`; anchor = "end"; }
+        if (val > 0 && val < 20) { xAttr = `${val * 5}%`; anchor = "middle"; }
+        label.setAttribute("x", xAttr);
+        label.setAttribute("y", "12");
+        label.setAttribute("font-size", "10px");
+        label.setAttribute("fill", "#a1a1aa");
+        label.setAttribute("text-anchor", anchor);
+        label.textContent = val;
+        cptSvg.appendChild(label);
     }
+    
+    if (cpt.length > 0) {
+        let pts = [];
+        cpt.forEach(test => {
+            const y = (parseFloat(test.depth_m) || 0) * PIXELS_PER_METER;
+            let qc = parseFloat(test.qc_mpa);
+            if (!isNaN(qc)) {
+                if (qc > 20) qc = 20;
+                pts.push(`${qc * 5}%,${y}`);
+            }
+        });
+        if (pts.length > 0) {
+            const polyline = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+            polyline.setAttribute("points", pts.join(" "));
+            polyline.setAttribute("fill", "none");
+            polyline.setAttribute("stroke", "#8b5cf6");
+            polyline.setAttribute("stroke-width", "2");
+            cptSvg.appendChild(polyline);
+        }
+    }
+    cols[6].appendChild(cptSvg);
     
     extraTests.forEach((testKey, idx) => {
         const testData = properties[testKey] || [];

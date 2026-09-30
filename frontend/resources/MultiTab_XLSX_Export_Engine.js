@@ -46,11 +46,13 @@ window.exportBorelogToXLSX = function(feature, uid) {
     XLSX.utils.book_append_sheet(wb, wsStrat, "Stratigraphy");
   }
   
-  const ws2 = XLSX.utils.json_to_sheet(sptData);
-  XLSX.utils.book_append_sheet(wb, ws2, "SPT_Records");
+  if (sptData.length > 0) {
+    const ws2 = XLSX.utils.json_to_sheet(sptData);
+    XLSX.utils.book_append_sheet(wb, ws2, "SPT_Records");
+  }
 
   // TAB 2: Atterberg Limits
-  if (properties.atterberg_test_data) {
+  if (properties.atterberg_test_data && properties.atterberg_test_data.length > 0) {
     const atterbergData = properties.atterberg_test_data.map(test => ({
       "Depth (m)": test.depth_m,
       "Soil Class": getStratumAtDepth(test.depth_m),
@@ -62,7 +64,7 @@ window.exportBorelogToXLSX = function(feature, uid) {
   }
 
   // TAB 3: Consolidation & Odeometric
-  if (properties.consolidation_test_data) {
+  if (properties.consolidation_test_data && properties.consolidation_test_data.length > 0) {
     const consolData = properties.consolidation_test_data.map(test => ({
       "Depth (m)": test.depth_m,
       "Soil Class": getStratumAtDepth(test.depth_m),
