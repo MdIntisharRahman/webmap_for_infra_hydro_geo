@@ -2,7 +2,10 @@
   "type": "Feature",
   "geometry": {
     "type": "Point",
-    "coordinates": [23.828162,90.436514]
+    "coordinates": [
+      23.828162,
+      90.436514
+    ]
   },
   "properties": {
     "borehole_id": "PL-09-SPSGXPC9",
@@ -349,6 +352,14 @@
     "cpt_data": [],
     "direct_shear_test_data": [],
     "consolidation_test_data": [],
-    "odeometric_test_data": []
+    "triaxial_test_data": [
+      {
+        "depth_m": 12.0,
+        "test_type": "CD",
+        "effective_confining_stress_kpa": 100.0,
+        "peak_deviator_stress_kpa": 150.0,
+        "secant_modulus_e50_mpa": 25.0
+      }
+    ]
   }
 }

@@ -158,12 +158,12 @@ body {
 /* Side Panel (Left Hover) */
 .side-panel-container {
     position: absolute;
-    top: 50%;
+    top: 55%;
     left: 0;
     /* Hide mostly, peek 15px */
     transform: translateY(-50%) translateX(calc(-100% + 20px));
     width: 340px;
-    max-height: 90vh;
+    max-height: 93vh;
     display: flex;
     flex-direction: column;
     z-index: 1000;
@@ -611,7 +611,7 @@ body {
     background: var(--panel-bg);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid var(--panel-border);
+    /* border: 0.15px solid var(--accent-blue-dim); */
     border-radius: 6px;
     padding: 12px 20px;
     width: max-content;
@@ -1021,10 +1021,10 @@ body {
     background: var(--panel-bg);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid var(--panel-border);
-    border-radius: 8px;
+    /* border: 0.15px solid var(--accent-blue-dim); */
+    border-radius: 7px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    padding: 0;
+    padding: 1px;
 }
 
 .custom-estimator-popup .leaflet-popup-content {
