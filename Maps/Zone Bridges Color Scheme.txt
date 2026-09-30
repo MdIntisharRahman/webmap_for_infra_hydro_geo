@@ -1,3 +1,5 @@
+### Bridges
+
 #2edb93 - Mixed Types Bridge
 #6ebed6 - PC Girder Bridge
 #29ffa4 - Portable Steel Bridge
@@ -11,6 +13,7 @@
 #ff8800 - Concrete Arch Bridge
 #41df33 - All other
 
+`
 CASE 
 WHEN "bridge_type"= 'Mixed Types Bridge' THEN '#2edb93'
 WHEN "bridge_type"= 'PC Girder Bridge' THEN '#6ebed6'
@@ -25,3 +28,16 @@ WHEN "bridge_type"= 'PC Box Girder Bridge' THEN '#ffbb00'
 WHEN "bridge_type"= 'Concrete Arch Bridge' THEN '#ff8800'
 ELSE '#41df33'
 END
+`
+
+### Culverts
+
+`
+CASE
+WHEN  strpos( "bridge_type", 'Pipe') THEN '#d7d6d2'
+WHEN  strpos( "bridge_type", 'Masonary Arch') THEN '#e8daeb'
+WHEN  strpos( "bridge_type", 'Steel Arch') THEN '#d4d9ed'
+WHEN strpos( "bridge_type", 'Slab Culvert' ) THEN '#cceef0'
+ELSE "f_class_color"
+END
+`
