@@ -266,25 +266,25 @@
             display: none;
         }
 
-        .del-btn {
+        .del-btn, .insert-btn {
             background: transparent;
             color: var(--text-muted);
             border: none;
-            /* padding: 9px; */
             cursor: pointer;  
-            width: inherit;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: color 0.2s;
-            height: inherit;
-            margin-left: 11px;  
-            font-size-adjust: 1.15;
+            font-size: 16px;
+            width: 24px;
+            height: 24px;
         }
-
         .del-btn:hover {
             color: var(--danger);
             /* background: var(--danger-bg); */
+        }
+        .insert-btn:hover {
+            color: #10b981; /* Green color for add */
         }
 
         /* Upgraded Status Toast */
@@ -355,12 +355,17 @@
             .btn {
                 padding: 12px 16px; /* Larger touch targets */
             }
-            .del-btn {
-                min-height: 44px;
-                margin-left: 0;
+            .action-pill {
+                height: 44px !important;
+                padding: 4px 12px !important;
                 margin-top: 8px;
-                background: var(--danger-bg);
             }
+            .del-btn, .insert-btn {
+                width: 32px !important;
+                height: 32px !important;
+                font-size: 20px !important;
+            }
+            /* Remove old mobile overrides */
             .spt-row, .dynamic-row {
                 display: flex;
                 flex-direction: column;
@@ -539,10 +544,33 @@
                 </div>
             </div>
             
-            <!-- Consolidation Test -->
+            <!-- Consolidated Triaxial Test (CU/CD) -->
             <div class="section">
                 <div class="section-header">
-                    <h2>Consolidation Test</h2>
+                    <h2>Consolidated Triaxial Test (CU/CD)</h2>
+                    <button type="button" class="btn btn-outline" onclick="addRow('triaxial-body')">+ Add Sample</button>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Depth (m)</th>
+                                <th>Type (CU/CD)</th>
+                                <th>Confining Stress σ'₃ (kPa)</th>
+                                <th>Peak Deviator Stress q_f (kPa)</th>
+                                <th>Secant Modulus E₅₀ (MPa)</th>
+                                <th style="width:50px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="triaxial-body" data-type="triaxial"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 1-D Consolidation (Oedometer) Test -->
+            <div class="section">
+                <div class="section-header">
+                    <h2>1-D Consolidation (Oedometer) Test</h2>
                     <button type="button" class="btn btn-outline" onclick="addRow('consolidation-body')">+ Add Sample</button>
                 </div>
                 <div class="table-container">
@@ -550,34 +578,15 @@
                         <thead>
                             <tr>
                                 <th>Depth (m)</th>
-                                <th>Void Ratio</th>
-                                <th>Coeff. Cons. (m²/yr)</th>
+                                <th>Vert. Eff. Stress σ'v (kPa)</th>
+                                <th>Constrained Modulus E_oed (MPa)</th>
+                                <th>Comp. Index (C_c)</th>
+                                <th>Recomp. Index (C_r)</th>
+                                <th>Precons. Pressure (kPa)</th>
                                 <th style="width:50px;"></th>
                             </tr>
                         </thead>
                         <tbody id="consolidation-body" data-type="consolidation"></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Odeometric Test -->
-            <div class="section">
-                <div class="section-header">
-                    <h2>Odeometric Test</h2>
-                    <button type="button" class="btn btn-outline" onclick="addRow('odeometric-body')">+ Add Sample</button>
-                </div>
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Depth (m)</th>
-                                <th>Initial Void Ratio</th>
-                                <th>Final Void Ratio</th>
-                                <th>Compression Index</th>
-                                <th style="width:50px;"></th>
-                            </tr>
-                        </thead>
-                        <tbody id="odeometric-body" data-type="odeometric"></tbody>
                     </table>
                 </div>
             </div>

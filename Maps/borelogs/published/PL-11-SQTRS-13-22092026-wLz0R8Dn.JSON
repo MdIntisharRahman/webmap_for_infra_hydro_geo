@@ -433,66 +433,52 @@
     "consolidation_test_data": [
       {
         "depth_m": 10,
-        "void_ratio": 0.8,
-        "coefficient_of_consolidation_m2_per_year": 0.02
+        "vertical_effective_stress_kpa": 100.0,
+        "constrained_modulus_eoed_mpa": 25.0,
+        "compression_index": 0.2,
+        "recompression_index": 0.04,
+        "preconsolidation_pressure_kpa": 120.5
       },
       {
         "depth_m": 12.5,
-        "void_ratio": 0.75,
-        "coefficient_of_consolidation_m2_per_year": 0.02
+        "vertical_effective_stress_kpa": 100.0,
+        "constrained_modulus_eoed_mpa": 25.0,
+        "compression_index": 0.2,
+        "recompression_index": 0.04,
+        "preconsolidation_pressure_kpa": 120.5
       },
       {
         "depth_m": 17.5,
-        "void_ratio": 0.7,
-        "coefficient_of_consolidation_m2_per_year": 0.03
+        "vertical_effective_stress_kpa": 100.0,
+        "constrained_modulus_eoed_mpa": 25.0,
+        "compression_index": 0.2,
+        "recompression_index": 0.04,
+        "preconsolidation_pressure_kpa": 120.5
       },
       {
         "depth_m": 21.5,
-        "void_ratio": 0.65,
-        "coefficient_of_consolidation_m2_per_year": 0.03
+        "vertical_effective_stress_kpa": 100.0,
+        "constrained_modulus_eoed_mpa": 25.0,
+        "compression_index": 0.2,
+        "recompression_index": 0.04,
+        "preconsolidation_pressure_kpa": 120.5
       },
       {
         "depth_m": 23.5,
-        "void_ratio": 0.6,
-        "coefficient_of_consolidation_m2_per_year": 0.04
+        "vertical_effective_stress_kpa": 100.0,
+        "constrained_modulus_eoed_mpa": 25.0,
+        "compression_index": 0.2,
+        "recompression_index": 0.04,
+        "preconsolidation_pressure_kpa": 120.5
       }
     ],
-    "odeometric_test_data": [
+    "triaxial_test_data": [
       {
-        "depth_m": 12,
-        "initial_void_ratio": 0.6,
-        "final_void_ratio": 0.4,
-        "compression_index": 0.2
-      },
-      {
-        "depth_m": 15.5,
-        "initial_void_ratio": 0.8,
-        "final_void_ratio": 0.6,
-        "compression_index": 0.2
-      },
-      {
-        "depth_m": 17.5,
-        "initial_void_ratio": 0.75,
-        "final_void_ratio": 0.55,
-        "compression_index": 0.2
-      },
-      {
-        "depth_m": 19.5,
-        "initial_void_ratio": 0.7,
-        "final_void_ratio": 0.5,
-        "compression_index": 0.2
-      },
-      {
-        "depth_m": 21.5,
-        "initial_void_ratio": 0.65,
-        "final_void_ratio": 0.45,
-        "compression_index": 0.2
-      },
-      {
-        "depth_m": 23.5,
-        "initial_void_ratio": 0.6,
-        "final_void_ratio": 0.4,
-        "compression_index": 0.2
+        "depth_m": 12.0,
+        "test_type": "CD",
+        "effective_confining_stress_kpa": 100.0,
+        "peak_deviator_stress_kpa": 150.0,
+        "secant_modulus_e50_mpa": 25.0
       }
     ]
   }

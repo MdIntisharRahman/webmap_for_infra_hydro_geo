@@ -12,7 +12,14 @@ const getRowHTML = (type) => {
                 <td><input type="number" step="0.01" class="f-bottom" required></td>
                 <td><input type="text" class="f-class" placeholder="e.g. SM" required></td>
                 <td><input type="text" class="f-desc" placeholder="Soil description" required></td>
-                <td><button type="button" class="del-btn" onclick="deleteRow(this)" title="Delete Row">𐩃</button></td>
+                <td style="border: none; padding-right: 0; vertical-align: middle; width: 90px; text-align: right;">
+                    <div class="action-pill" style="display: inline-flex; align-items: center; justify-content: center; gap: 5px; padding: 2px 8px; height: 32px; background: #fff;"> 
+                    
+                        <button type="button" class="insert-btn" onclick="insertRowAfter(this)" title="Insert Row Below" style="margin:0; padding:0;">🞣</button>
+                        <div style="width: 1px; height: 16px; background: #ccc;"></div>
+                        <button type="button" class="del-btn" onclick="deleteRow(this)" title="Delete Row" style="margin:0; padding:0;">𐩃</button>
+                    </div>
+                </td>
             `;
         case 'spt':
             return `
@@ -21,7 +28,14 @@ const getRowHTML = (type) => {
                 <td><input type="number" class="f-b300" required></td>
                 <td><input type="number" class="f-b450" required></td>
                 <td><input type="text" class="f-nval" required></td>
-                <td><button type="button" class="del-btn" onclick="deleteRow(this)" title="Delete Row">𐩃</button></td>
+                <td style="border: none; padding-right: 0; vertical-align: middle; width: 90px; text-align: right;">
+                    <div class="action-pill" style="display: inline-flex; align-items: center; justify-content: center; gap: 5px; padding: 2px 8px; height: 32px; background: #fff;"> 
+                    
+                        <button type="button" class="insert-btn" onclick="insertRowAfter(this)" title="Insert Row Below" style="margin:0; padding:0;">🞣</button>
+                        <div style="width: 1px; height: 16px; background: #ccc;"></div>
+                        <button type="button" class="del-btn" onclick="deleteRow(this)" title="Delete Row" style="margin:0; padding:0;">𐩃</button>
+                    </div>
+                </td>
             `;
         case 'atterberg':
             return `
@@ -30,7 +44,14 @@ const getRowHTML = (type) => {
                 <td><input type="number" step="0.001" class="f-wp" required></td>
                 <td><input type="number" step="0.001" class="f-ip" required></td>
                 <td><input type="number" step="0.001" class="f-li" required></td>
-                <td><button type="button" class="del-btn" onclick="deleteRow(this)" title="Delete Row">𐩃</button></td>
+                <td style="border: none; padding-right: 0; vertical-align: middle; width: 90px; text-align: right;">
+                    <div class="action-pill" style="display: inline-flex; align-items: center; justify-content: center; gap: 5px; padding: 2px 8px; height: 32px; background: #fff;"> 
+                    
+                        <button type="button" class="insert-btn" onclick="insertRowAfter(this)" title="Insert Row Below" style="margin:0; padding:0;">🞣</button>
+                        <div style="width: 1px; height: 16px; background: #ccc;"></div>
+                        <button type="button" class="del-btn" onclick="deleteRow(this)" title="Delete Row" style="margin:0; padding:0;">𐩃</button>
+                    </div>
+                </td>
             `;
         case 'cpt':
             return `
@@ -39,7 +60,14 @@ const getRowHTML = (type) => {
                 <td><input type="number" step="0.001" class="f-fs" required></td>
                 <td><input type="number" step="0.001" class="f-rf" required></td>
                 <td><input type="number" step="0.001" class="f-u2"></td>
-                <td><button type="button" class="del-btn" onclick="deleteRow(this)" title="Delete Row">𐩃</button></td>
+                <td style="border: none; padding-right: 0; vertical-align: middle; width: 90px; text-align: right;">
+                    <div class="action-pill" style="display: inline-flex; align-items: center; justify-content: center; gap: 5px; padding: 2px 8px; height: 32px; background: #fff;"> 
+                    
+                        <button type="button" class="insert-btn" onclick="insertRowAfter(this)" title="Insert Row Below" style="margin:0; padding:0;">🞣</button>
+                        <div style="width: 1px; height: 16px; background: #ccc;"></div>
+                        <button type="button" class="del-btn" onclick="deleteRow(this)" title="Delete Row" style="margin:0; padding:0;">𐩃</button>
+                    </div>
+                </td>
             `;
         case 'shear':
             return `
@@ -48,22 +76,52 @@ const getRowHTML = (type) => {
                 <td><input type="number" step="0.001" class="f-shear" required></td>
                 <td><input type="number" step="0.001" class="f-cohesion" required></td>
                 <td><input type="number" step="0.001" class="f-friction" required></td>
-                <td><button type="button" class="del-btn" onclick="deleteRow(this)" title="Delete Row">𐩃</button></td>
+                <td style="border: none; padding-right: 0; vertical-align: middle; width: 90px; text-align: right;">
+                    <div class="action-pill" style="display: inline-flex; align-items: center; justify-content: center; gap: 5px; padding: 2px 8px; height: 32px; background: #fff;"> 
+                    
+                        <button type="button" class="insert-btn" onclick="insertRowAfter(this)" title="Insert Row Below" style="margin:0; padding:0;">🞣</button>
+                        <div style="width: 1px; height: 16px; background: #ccc;"></div>
+                        <button type="button" class="del-btn" onclick="deleteRow(this)" title="Delete Row" style="margin:0; padding:0;">𐩃</button>
+                    </div>
+                </td>
+            `;
+        case 'triaxial':
+            return `
+                <td><input type="number" step="0.001" class="f-depth" required></td>
+                <td>
+                    <select class="f-type" style="padding: 11px; border: 1px solid var(--border-color); width: 100%;">
+                        <option value="CD">CD</option>
+                        <option value="CU">CU</option>
+                    </select>
+                </td>
+                <td><input type="number" step="0.1" class="f-confining" required></td>
+                <td><input type="number" step="0.1" class="f-deviator" required></td>
+                <td><input type="number" step="0.1" class="f-e50" required></td>
+                <td style="border: none; padding-right: 0; vertical-align: middle; width: 90px; text-align: right;">
+                    <div class="action-pill" style="display: inline-flex; align-items: center; justify-content: center; gap: 5px; padding: 2px 8px; height: 32px; background: #fff;"> 
+                    
+                        <button type="button" class="insert-btn" onclick="insertRowAfter(this)" title="Insert Row Below" style="margin:0; padding:0;">🞣</button>
+                        <div style="width: 1px; height: 16px; background: #ccc;"></div>
+                        <button type="button" class="del-btn" onclick="deleteRow(this)" title="Delete Row" style="margin:0; padding:0;">𐩃</button>
+                    </div>
+                </td>
             `;
         case 'consolidation':
             return `
                 <td><input type="number" step="0.001" class="f-depth" required></td>
-                <td><input type="number" step="0.001" class="f-void" required></td>
-                <td><input type="number" step="0.001" class="f-coeff" required></td>
-                <td><button type="button" class="del-btn" onclick="deleteRow(this)" title="Delete Row">𐩃</button></td>
-            `;
-        case 'odeometric':
-            return `
-                <td><input type="number" step="0.001" class="f-depth" required></td>
-                <td><input type="number" step="0.001" class="f-ivoid" required></td>
-                <td><input type="number" step="0.001" class="f-fvoid" required></td>
-                <td><input type="number" step="0.001" class="f-comp" required></td>
-                <td><button type="button" class="del-btn" onclick="deleteRow(this)" title="Delete Row">𐩃</button></td>
+                <td><input type="number" step="0.1" class="f-stress" required></td>
+                <td><input type="number" step="0.1" class="f-eoed" required></td>
+                <td><input type="number" step="0.001" class="f-cc" required></td>
+                <td><input type="number" step="0.001" class="f-cr" required></td>
+                <td><input type="number" step="0.1" class="f-pc" required></td>
+                <td style="border: none; padding-right: 0; vertical-align: middle; width: 90px; text-align: right;">
+                    <div class="action-pill" style="display: inline-flex; align-items: center; justify-content: center; gap: 5px; padding: 2px 8px; height: 32px; background: #fff;"> 
+                    
+                        <button type="button" class="insert-btn" onclick="insertRowAfter(this)" title="Insert Row Below" style="margin:0; padding:0;">🞣</button>
+                        <div style="width: 1px; height: 16px; background: #ccc;"></div>
+                        <button type="button" class="del-btn" onclick="deleteRow(this)" title="Delete Row" style="margin:0; padding:0;">𐩃</button>
+                    </div>
+                </td>
             `;
         default:
             return '';
@@ -81,6 +139,16 @@ window.addRow = (tbodyId) => {
 
 window.deleteRow = (btn) => {
     btn.closest('tr').remove();
+};
+
+window.insertRowAfter = (btn) => {
+    const currentRow = btn.closest('tr');
+    const tbody = currentRow.closest('tbody');
+    const type = tbody.dataset.type;
+    const tr = document.createElement('tr');
+    tr.innerHTML = getRowHTML(type);
+    currentRow.insertAdjacentElement('afterend', tr);
+    return tr;
 };
 
 const showToast = (message, isError = false) => {
@@ -189,15 +257,19 @@ function gatherBorelogData() {
                 
                 consolidation_test_data: Array.from(document.querySelectorAll('#consolidation-body tr')).map(row => ({
                     depth_m: parseFloat(row.querySelector('.f-depth').value),
-                    void_ratio: parseFloat(row.querySelector('.f-void').value),
-                    coefficient_of_consolidation_m2_per_year: parseFloat(row.querySelector('.f-coeff').value)
+                    vertical_effective_stress_kpa: parseFloat(row.querySelector('.f-stress').value),
+                    constrained_modulus_eoed_mpa: parseFloat(row.querySelector('.f-eoed').value),
+                    compression_index: parseFloat(row.querySelector('.f-cc').value),
+                    recompression_index: parseFloat(row.querySelector('.f-cr').value),
+                    preconsolidation_pressure_kpa: parseFloat(row.querySelector('.f-pc').value)
                 })),
                 
-                odeometric_test_data: Array.from(document.querySelectorAll('#odeometric-body tr')).map(row => ({
+                triaxial_test_data: Array.from(document.querySelectorAll('#triaxial-body tr')).map(row => ({
                     depth_m: parseFloat(row.querySelector('.f-depth').value),
-                    initial_void_ratio: parseFloat(row.querySelector('.f-ivoid').value),
-                    final_void_ratio: parseFloat(row.querySelector('.f-fvoid').value),
-                    compression_index: parseFloat(row.querySelector('.f-comp').value)
+                    test_type: row.querySelector('.f-type').value,
+                    effective_confining_stress_kpa: parseFloat(row.querySelector('.f-confining').value),
+                    peak_deviator_stress_kpa: parseFloat(row.querySelector('.f-deviator').value),
+                    secant_modulus_e50_mpa: parseFloat(row.querySelector('.f-e50').value)
                 }))
             }
         };
@@ -349,7 +421,7 @@ function populateFormFromJson(geoJson) {
     setVal('comments', props.comments);
     
     // Clear existing tables
-    ['strata', 'spt', 'atterberg', 'shear', 'consolidation', 'odeometric', 'cpt'].forEach(type => {
+    ['strata', 'spt', 'atterberg', 'shear', 'consolidation', 'triaxial', 'cpt'].forEach(type => {
         document.getElementById(`${type}-body`).innerHTML = '';
     });
     
@@ -422,19 +494,24 @@ function populateFormFromJson(geoJson) {
             const tr = addRow('consolidation-body');
             const inputs = tr.querySelectorAll('input');
             inputs[0].value = s.depth_m || '';
-            inputs[1].value = s.void_ratio || '';
-            inputs[2].value = s.cv_m2_yr || '';
+            inputs[1].value = s.vertical_effective_stress_kpa || '';
+            inputs[2].value = s.constrained_modulus_eoed_mpa || '';
+            inputs[3].value = s.compression_index || '';
+            inputs[4].value = s.recompression_index || '';
+            inputs[5].value = s.preconsolidation_pressure_kpa || '';
         });
     }
     
-    if (props.odeometric_test_data) {
-        props.odeometric_test_data.forEach(s => {
-            const tr = addRow('odeometric-body');
+    if (props.triaxial_test_data) {
+        props.triaxial_test_data.forEach(s => {
+            const tr = addRow('triaxial-body');
+            const selects = tr.querySelectorAll('select');
             const inputs = tr.querySelectorAll('input');
             inputs[0].value = s.depth_m || '';
-            inputs[1].value = s.initial_void_ratio || '';
-            inputs[2].value = s.final_void_ratio || '';
-            inputs[3].value = s.compression_index || '';
+            if (selects.length > 0) selects[0].value = s.test_type || 'CD';
+            inputs[1].value = s.effective_confining_stress_kpa || '';
+            inputs[2].value = s.peak_deviator_stress_kpa || '';
+            inputs[3].value = s.secant_modulus_e50_mpa || '';
         });
     }
 }

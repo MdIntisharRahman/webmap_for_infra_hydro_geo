@@ -103,6 +103,14 @@
       margin-bottom: 16px;
     }
 
+    .content .meta-table {      
+      font-size: 13px;
+    }
+
+    .content .meta-table td {
+      padding: 3px 17px 0px 7px !important;
+    }
+
     .callout {
       background: rgba(13, 40, 56, 0.03);
       border-top: 1px solid var(--primary-light);
