@@ -101,7 +101,12 @@ window.renderBorelogChart = function(containerId, geoJsonData) {
     const activeExtraTests = extraTests.filter(testKey => (properties[testKey] || []).length > 0);
     const totalWidth = baseWidth + (activeExtraTests.length * extraColWidth);
     
-    let gridTemplate = `${baseWidths.depth}px ${baseWidths.stratum}px ${baseWidths.desc}px ${baseWidths.sptText}px ${baseWidths.sptGraph}px ${baseWidths.testsGraph}px ${baseWidths.cptGraph}px`;
+    const activeWidths = [
+        baseWidths.depth, baseWidths.stratum, baseWidths.desc,
+        baseWidths.sptText, baseWidths.sptGraph, baseWidths.testsGraph, baseWidths.cptGraph
+    ].filter(w => w > 0);
+    
+    let gridTemplate = activeWidths.map(w => `${w}px`).join(' ');
     activeExtraTests.forEach(() => { gridTemplate += ` ${extraColWidth}px`; });
     
     container.style.height = "100%";
@@ -522,9 +527,10 @@ window.renderBorelogChart = function(containerId, geoJsonData) {
             svg.style.zIndex = "1";
             
             for(let val=0; val<=maxVal; val+=maxVal/4) {
+                const xPos = (val/maxVal) * 200;
                 const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                line.setAttribute("x1", `${(val/maxVal)*100}%`);
-                line.setAttribute("x2", `${(val/maxVal)*100}%`);
+                line.setAttribute("x1", xPos);
+                line.setAttribute("x2", xPos);
                 line.setAttribute("y1", "0");
                 line.setAttribute("y2", "100%");
                 line.setAttribute("stroke", "#e4e4e7");
@@ -532,10 +538,10 @@ window.renderBorelogChart = function(containerId, geoJsonData) {
                 svg.appendChild(line);
                 
                 const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
-                let xAttr = `calc(${(val/maxVal)*100}% + 2px)`;
+                let xAttr = xPos + 2;
                 let anchor = "start";
-                if (val === maxVal) { xAttr = `calc(100% - 2px)`; anchor = "end"; }
-                if (val > 0 && val < maxVal) { xAttr = `${(val/maxVal)*100}%`; anchor = "middle"; }
+                if (val === maxVal) { xAttr = xPos - 2; anchor = "end"; }
+                if (val > 0 && val < maxVal) { xAttr = xPos; anchor = "middle"; }
                 label.setAttribute("x", xAttr);
                 label.setAttribute("y", "12");
                 label.setAttribute("font-size", "10px");
@@ -550,8 +556,8 @@ window.renderBorelogChart = function(containerId, geoJsonData) {
                 const y = (parseFloat(test.depth_m) || 0) * PIXELS_PER_METER;
                 let v = parseFloat(test[key]);
                 if (!isNaN(v)) {
-                    if (v > maxVal) v = maxVal;
-                    pts.push(`${(v/maxVal)*100}%,${y}`);
+                    if (v > maxVal) v = maxVal; if (v < 0) v = 0;
+                    pts.push(`${(v/maxVal)*200},${y}`);
                 }
             });
             if (pts.length > 0) {
@@ -673,19 +679,32 @@ window.downloadBorelogSVG = function(geoJsonData, uid) {
     const PIXELS_PER_METER = 60;
     const totalHeight = headerHeight + maxDepth * PIXELS_PER_METER + remarksHeight;
     
-    const baseWidth = 60 + 80 + 250 + 140 + 200 + 200 + 200; // 1130
-    const extraColWidth = 200;
-    const totalWidth = baseWidth + (extraTests.length * extraColWidth);
+    const baseWidths = { depth: 60, stratum: 80, desc: 250, sptText: 140, sptGraph: 200, testsGraph: 200, cptGraph: 600 };
+    if (strata.length === 0) { baseWidths.stratum = 0; baseWidths.desc = 0; }
+    if (sptData.length === 0) { baseWidths.sptText = 0; baseWidths.sptGraph = 0; }
+    if (atterberg.length === 0) { baseWidths.testsGraph = 0; }
+    if (cpt.length === 0) { baseWidths.cptGraph = 0; }
     
-    const colOffsets = [0, 60, 140, 390, 530, 730, 930, 1130];
-    let curOff = 1130;
-    extraTests.forEach(() => {
+    const baseWidth = Object.values(baseWidths).reduce((a,b)=>a+b, 0);
+    const extraColWidth = 200;
+    
+    const activeExtraTests = extraTests.filter(testKey => (properties[testKey] || []).length > 0);
+    const totalWidth = baseWidth + (activeExtraTests.length * extraColWidth);
+    
+    const colOffsets = [0];
+    const widths = [baseWidths.depth, baseWidths.stratum, baseWidths.desc, baseWidths.sptText, baseWidths.sptGraph, baseWidths.testsGraph, baseWidths.cptGraph];
+    let curOff = 0;
+    widths.forEach(w => { curOff += w; colOffsets.push(curOff); });
+    
+    activeExtraTests.forEach(() => {
         curOff += extraColWidth;
         colOffsets.push(curOff);
     });
     
-    const headers = ["Depth (m)", "Stratum", "Description", "SPT Record", "SPT N-Value", "Atterberg Limits", "CPT qc (MPa)"];
-    extraTests.forEach(testKey => {
+    const headers = ["Depth (m)", "Stratum", "Description", "SPT Record", "SPT N-Value", "Atterberg Limits"];
+    if (cpt.length > 0) headers.push("CPT (qc, Rf, u2)"); else headers.push("");
+    
+    activeExtraTests.forEach(testKey => {
         let name = testKey.replace('_test_data', '').replace(/_/g, ' ');
         name = name.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
         headers.push(name);
@@ -711,13 +730,28 @@ window.downloadBorelogSVG = function(geoJsonData, uid) {
         }
     }
     
-    for(let i=1; i<headers.length; i++) {
-        svg += `<line x1="${colOffsets[i]}" y1="${metaHeight}" x2="${colOffsets[i]}" y2="${totalHeight - remarksHeight}" stroke="#e4e4e7" stroke-width="1" />`;
+    for(let i=1; i<colOffsets.length-1; i++) {
+        if (colOffsets[i] > colOffsets[i-1]) {
+            svg += `<line x1="${colOffsets[i]}" y1="${metaHeight}" x2="${colOffsets[i]}" y2="${totalHeight - remarksHeight}" stroke="#e4e4e7" stroke-width="1" />`;
+        }
     }
     
     for(let i=0; i<headers.length; i++) {
-        const cx = (colOffsets[i] + colOffsets[i+1]) / 2;
-        svg += `<text x="${cx}" y="${metaHeight + 25}" font-size="13px" font-weight="bold" fill="#3f3f46" text-anchor="middle">${headers[i]}</text>`;
+        if (colOffsets[i+1] > colOffsets[i]) {
+            const cx = (colOffsets[i] + colOffsets[i+1]) / 2;
+            if (i === 6 && cpt.length > 0) {
+                // Draw 3 sub-headers for CPT in SVG
+                svg += `<line x1="${colOffsets[i]}" y1="${metaHeight + 20}" x2="${colOffsets[i+1]}" y2="${metaHeight + 20}" stroke="#e4e4e7" stroke-width="1" />`;
+                svg += `<text x="${cx}" y="${metaHeight + 14}" font-size="12px" font-weight="bold" fill="#3f3f46" text-anchor="middle">CPT Test Results</text>`;
+                svg += `<line x1="${colOffsets[i] + 200}" y1="${metaHeight + 20}" x2="${colOffsets[i] + 200}" y2="${metaHeight + 40}" stroke="#e4e4e7" stroke-width="1" />`;
+                svg += `<line x1="${colOffsets[i] + 400}" y1="${metaHeight + 20}" x2="${colOffsets[i] + 400}" y2="${metaHeight + 40}" stroke="#e4e4e7" stroke-width="1" />`;
+                svg += `<text x="${colOffsets[i] + 100}" y="${metaHeight + 34}" font-size="11px" fill="#3f3f46" text-anchor="middle">qc (MPa)</text>`;
+                svg += `<text x="${colOffsets[i] + 300}" y="${metaHeight + 34}" font-size="11px" fill="#3f3f46" text-anchor="middle">Rf (%)</text>`;
+                svg += `<text x="${colOffsets[i] + 500}" y="${metaHeight + 34}" font-size="11px" fill="#3f3f46" text-anchor="middle">u2 (kPa)</text>`;
+            } else {
+                svg += `<text x="${cx}" y="${metaHeight + 25}" font-size="13px" font-weight="bold" fill="#3f3f46" text-anchor="middle">${headers[i]}</text>`;
+            }
+        }
     }
     
     for (let i = 0; i <= maxDepth; i++) {
@@ -824,29 +858,64 @@ window.downloadBorelogSVG = function(geoJsonData, uid) {
         svg += `<text x="${colOffsets[6] - 35}" y="${totalHeight - remarksHeight - 9}" font-size="10px" fill="#ef4444" text-anchor="middle">LL / PL</text>`;
     }
     
-    for(let val=0; val<=20; val+=5) {
-        const xPos = colOffsets[6] + (val / 20) * 200;
-        if(val !== 0) svg += `<line x1="${xPos}" y1="${headerHeight}" x2="${xPos}" y2="${totalHeight - remarksHeight}" stroke="#e4e4e7" stroke-width="1" stroke-dasharray="4 4" />`;
-        let textX = xPos;
-        let anchor = "middle";
-        if(val === 0) { textX = xPos + 2; anchor = "start"; }
-        if(val === 20) { textX = xPos - 2; anchor = "end"; }
-        svg += `<text x="${textX}" y="${headerHeight + 12}" font-size="10px" fill="#a1a1aa" text-anchor="${anchor}">${val}</text>`;
-    }
+    // CPT Charts (SVG)
     if (cpt.length > 0) {
-        let pts = [];
+        // qc chart (0 to 20 MPa)
+        for(let val=0; val<=20; val+=5) {
+            const xPos = colOffsets[6] + (val / 20) * 200;
+            if(val !== 0) svg += `<line x1="${xPos}" y1="${headerHeight}" x2="${xPos}" y2="${totalHeight - remarksHeight}" stroke="#e4e4e7" stroke-width="1" stroke-dasharray="4 4" />`;
+            let textX = xPos;
+            let anchor = "middle";
+            if(val === 0) { textX = xPos + 2; anchor = "start"; }
+            if(val === 20) { textX = xPos - 2; anchor = "end"; }
+            svg += `<text x="${textX}" y="${headerHeight + 12}" font-size="10px" fill="#a1a1aa" text-anchor="${anchor}">${val}</text>`;
+        }
+        
+        // Rf chart (0 to 10 %)
+        for(let val=0; val<=10; val+=2.5) {
+            const xPos = colOffsets[6] + 200 + (val / 10) * 200;
+            if(val !== 0) svg += `<line x1="${xPos}" y1="${headerHeight}" x2="${xPos}" y2="${totalHeight - remarksHeight}" stroke="#e4e4e7" stroke-width="1" stroke-dasharray="4 4" />`;
+            let textX = xPos;
+            let anchor = "middle";
+            if(val === 0) { textX = xPos + 2; anchor = "start"; }
+            if(val === 10) { textX = xPos - 2; anchor = "end"; }
+            svg += `<text x="${textX}" y="${headerHeight + 12}" font-size="10px" fill="#a1a1aa" text-anchor="${anchor}">${val}</text>`;
+        }
+        
+        // u2 chart (0 to 1000 kPa)
+        for(let val=0; val<=1000; val+=250) {
+            const xPos = colOffsets[6] + 400 + (val / 1000) * 200;
+            if(val !== 0) svg += `<line x1="${xPos}" y1="${headerHeight}" x2="${xPos}" y2="${totalHeight - remarksHeight}" stroke="#e4e4e7" stroke-width="1" stroke-dasharray="4 4" />`;
+            let textX = xPos;
+            let anchor = "middle";
+            if(val === 0) { textX = xPos + 2; anchor = "start"; }
+            if(val === 1000) { textX = xPos - 2; anchor = "end"; }
+            svg += `<text x="${textX}" y="${headerHeight + 12}" font-size="10px" fill="#a1a1aa" text-anchor="${anchor}">${val}</text>`;
+        }
+
+        let ptsQc = [], ptsRf = [], ptsU2 = [];
         cpt.forEach(test => {
             const y = headerHeight + (parseFloat(test.depth_m) || 0) * PIXELS_PER_METER;
             let qc = parseFloat(test.qc_mpa);
             if (!isNaN(qc)) {
-                if (qc > 20) qc = 20;
-                const x = colOffsets[6] + (qc / 20) * 200;
-                pts.push(`${x},${y}`);
+                if (qc > 20) qc = 20; if (qc < 0) qc = 0;
+                ptsQc.push(`${colOffsets[6] + (qc / 20) * 200},${y}`);
+            }
+            let rf = parseFloat(test.rf_percent);
+            if (!isNaN(rf)) {
+                if (rf > 10) rf = 10; if (rf < 0) rf = 0;
+                ptsRf.push(`${colOffsets[6] + 200 + (rf / 10) * 200},${y}`);
+            }
+            let u2 = parseFloat(test.u2_kpa);
+            if (!isNaN(u2)) {
+                if (u2 > 1000) u2 = 1000; if (u2 < 0) u2 = 0;
+                ptsU2.push(`${colOffsets[6] + 400 + (u2 / 1000) * 200},${y}`);
             }
         });
-        if (pts.length > 0) {
-            svg += `<polyline points="${pts.join(" ")}" fill="none" stroke="#8b5cf6" stroke-width="2" />`;
-        }
+        
+        if (ptsQc.length > 0) svg += `<polyline points="${ptsQc.join(" ")}" fill="none" stroke="#8b5cf6" stroke-width="2" />`;
+        if (ptsRf.length > 0) svg += `<polyline points="${ptsRf.join(" ")}" fill="none" stroke="#f59e0b" stroke-width="2" />`;
+        if (ptsU2.length > 0) svg += `<polyline points="${ptsU2.join(" ")}" fill="none" stroke="#0ea5e9" stroke-width="2" />`;
     }
     
     extraTests.forEach((testKey, idx) => {

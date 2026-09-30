@@ -399,8 +399,8 @@ document.getElementById('preview-btn').addEventListener('click', () => {
     }
 
     // Wire up modal export buttons
-    const btnXlsx = document.getElementById('modal-export-xlsx');
-    const btnGraphic = document.getElementById('modal-export-graphic');
+    const btnXlsx = document.getElementById('export-xlsx-btn');
+    const btnGraphic = document.getElementById('export-graphic-btn');
 
     if (btnXlsx) {
         btnXlsx.onclick = () => {
@@ -509,12 +509,11 @@ function populateFormFromJson(geoJson) {
     if (strataData) {
         strataData.forEach(s => {
             const tr = addRow('strata-body');
-            const inputs = tr.querySelectorAll('input');
-            inputs[0].value = s.stratum !== undefined ? s.stratum : '';
-            inputs[1].value = s.top_m !== undefined ? s.top_m : '';
-            inputs[2].value = s.bottom_m !== undefined ? s.bottom_m : '';
-            inputs[3].value = s.class || s.uscs_class || '';
-            inputs[4].value = s.description || '';
+            tr.querySelector('.f-stratum').value = s.stratum !== undefined ? s.stratum : '';
+            tr.querySelector('.f-top').value = s.top_m !== undefined ? s.top_m : '';
+            tr.querySelector('.f-bottom').value = s.bottom_m !== undefined ? s.bottom_m : '';
+            tr.querySelector('.f-class').value = s.class || s.uscs_class || '';
+            tr.querySelector('.f-desc').value = s.description || '';
         });
     }
 
@@ -593,6 +592,11 @@ function populateFormFromJson(geoJson) {
             inputs[3].value = s.secant_modulus_e50_mpa || '';
         });
     }
+
+    // Always append one empty row at the end of every table to act as the filler/entry row
+    ['strata', 'spt', 'atterberg', 'shear', 'consolidation', 'triaxial', 'cpt'].forEach(type => {
+        addRow(`${type}-body`);
+    });
 }
 
 
