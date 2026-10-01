@@ -331,6 +331,43 @@ function gatherBorelogData() {
     return payload;
 }
 
+// Ignore completely empty rows during native HTML5 validation
+function validateFormIgnoringEmptyRows() {
+    const form = document.getElementById('borelogForm');
+    const emptyInputs = [];
+    
+    document.querySelectorAll('tbody[data-type]').forEach(tbody => {
+        tbody.querySelectorAll('tr').forEach(row => {
+            const inputs = Array.from(row.querySelectorAll('input, select'));
+            const isEmpty = inputs.every(input => {
+                if (input.tagName === 'SELECT') return input.value === '';
+                return input.value.trim() === '';
+            });
+            if (isEmpty) {
+                inputs.forEach(input => {
+                    if (input.hasAttribute('required')) {
+                        input.removeAttribute('required');
+                        emptyInputs.push(input);
+                    }
+                });
+            }
+        });
+    });
+    
+    const isValid = form.reportValidity();
+    
+    // Restore required attributes immediately
+    emptyInputs.forEach(input => input.setAttribute('required', 'true'));
+    
+    return isValid;
+}
+
+document.getElementById('submit-btn').addEventListener('click', (e) => {
+    if (!validateFormIgnoringEmptyRows()) {
+        e.preventDefault(); // Stop submission if invalid
+    }
+});
+
 document.getElementById('borelogForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const btn = document.getElementById('submit-btn');
@@ -368,6 +405,8 @@ document.getElementById('borelogForm').addEventListener('submit', async (e) => {
 
 
 document.getElementById('preview-btn').addEventListener('click', () => {
+    if (!validateFormIgnoringEmptyRows()) return;
+
     let data;
     try {
         data = gatherBorelogData();
