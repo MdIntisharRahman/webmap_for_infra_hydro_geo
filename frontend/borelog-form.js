@@ -111,9 +111,11 @@ const getRowHTML = (type) => {
             return `
                 <td><input required type="number" step="any" class="f-depth"></td>
                 <td>
-                    <select class="f-type" style="padding: 11px; border: 1px solid var(--border-color); width: 100%;">
+                    <select required class="f-type" style="padding: 11px; border: 1px solid var(--border-color); width: 100%;">
+                        <option value="" disabled selected>Type</option>
                         <option value="CD">CD</option>
                         <option value="CU">CU</option>
+                        <option value="UU">UU</option>
                     </select>
                 </td>
                 <td><input required type="number" step="any" class="f-confining"></td>
@@ -570,11 +572,11 @@ function populateFormFromJson(geoJson) {
         props.cpt_data.forEach(s => {
             const tr = addRow('cpt-body');
             const inputs = tr.querySelectorAll('input');
-            inputs[0].value = s.depth_m || '';
-            inputs[1].value = s.qc_mpa || '';
-            inputs[2].value = s.fs_kpa || '';
-            inputs[3].value = s.rf_percent || '';
-            inputs[4].value = s.u2_kpa || '';
+            inputs[0].value = s.depth_m !== undefined ? s.depth_m : '';
+            inputs[1].value = s.qc_mpa !== undefined ? s.qc_mpa : '';
+            inputs[2].value = s.fs_kpa !== undefined ? s.fs_kpa : '';
+            inputs[3].value = s.rf_percent !== undefined ? s.rf_percent : '';
+            inputs[4].value = s.u2_kpa !== undefined ? s.u2_kpa : '';
         });
     }
 
@@ -582,11 +584,11 @@ function populateFormFromJson(geoJson) {
         props.direct_shear_test_data.forEach(s => {
             const tr = addRow('shear-body');
             const inputs = tr.querySelectorAll('input');
-            inputs[0].value = s.depth_m || '';
-            inputs[1].value = s.normal_stress_kpa || '';
-            inputs[2].value = s.shear_stress_kpa || '';
-            inputs[3].value = s.cohesion_kpa || '';
-            inputs[4].value = s.friction_angle_deg || '';
+            inputs[0].value = s.depth_m !== undefined ? s.depth_m : '';
+            inputs[1].value = s.normal_stress_kpa !== undefined ? s.normal_stress_kpa : '';
+            inputs[2].value = s.shear_stress_kpa !== undefined ? s.shear_stress_kpa : '';
+            inputs[3].value = s.cohesion_kpa !== undefined ? s.cohesion_kpa : '';
+            inputs[4].value = s.friction_angle_deg !== undefined ? s.friction_angle_deg : '';
         });
     }
 
@@ -594,12 +596,12 @@ function populateFormFromJson(geoJson) {
         props.consolidation_test_data.forEach(s => {
             const tr = addRow('consolidation-body');
             const inputs = tr.querySelectorAll('input');
-            inputs[0].value = s.depth_m || '';
-            inputs[1].value = s.vertical_effective_stress_kpa || '';
-            inputs[2].value = s.constrained_modulus_eoed_mpa || '';
-            inputs[3].value = s.compression_index || '';
-            inputs[4].value = s.recompression_index || '';
-            inputs[5].value = s.preconsolidation_pressure_kpa || '';
+            inputs[0].value = s.depth_m !== undefined ? s.depth_m : '';
+            inputs[1].value = s.vertical_effective_stress_kpa !== undefined ? s.vertical_effective_stress_kpa : '';
+            inputs[2].value = s.constrained_modulus_eoed_mpa !== undefined ? s.constrained_modulus_eoed_mpa : '';
+            inputs[3].value = s.compression_index !== undefined ? s.compression_index : '';
+            inputs[4].value = s.recompression_index !== undefined ? s.recompression_index : '';
+            inputs[5].value = s.preconsolidation_pressure_kpa !== undefined ? s.preconsolidation_pressure_kpa : '';
         });
     }
 
@@ -608,17 +610,19 @@ function populateFormFromJson(geoJson) {
             const tr = addRow('triaxial-body');
             const selects = tr.querySelectorAll('select');
             const inputs = tr.querySelectorAll('input');
-            inputs[0].value = s.depth_m || '';
+            inputs[0].value = s.depth_m !== undefined ? s.depth_m : '';
             if (selects.length > 0) selects[0].value = s.test_type || 'CD';
-            inputs[1].value = s.effective_confining_stress_kpa || '';
-            inputs[2].value = s.peak_deviator_stress_kpa || '';
-            inputs[3].value = s.secant_modulus_e50_mpa || '';
+            inputs[1].value = s.effective_confining_stress_kpa !== undefined ? s.effective_confining_stress_kpa : '';
+            inputs[2].value = s.peak_deviator_stress_kpa !== undefined ? s.peak_deviator_stress_kpa : '';
+            inputs[3].value = s.secant_modulus_e50_mpa !== undefined ? s.secant_modulus_e50_mpa : '';
         });
     }
 
     // Always append one empty row at the end of every table to act as the filler/entry row
     ['strata', 'spt', 'atterberg', 'shear', 'consolidation', 'triaxial', 'cpt'].forEach(type => {
-        addRow(`${type}-body`);
+        const tr = addRow(`${type}-body`);
+        const inputs = tr.querySelectorAll('input, select');
+        inputs.forEach(i => i.value = '');
     });
 }
 
