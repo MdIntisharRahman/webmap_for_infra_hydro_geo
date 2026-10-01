@@ -1,15 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+<head>resources/images/
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>RHD Infrastructure Webmap</title>
-    <link rel="icon" type="image/png" href="resources/images/favicon.png">
+    <link rel="icon" type="image/png" href="resources/images/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="resources/images/favicon.svg" />
+    <link rel="shortcut icon" href="resources/images/favicon.ico" />
+    <link rel="manifest" href="resources/images/site.webmanifest" />
+    <!-- <link rel="shortcut icon" href="resources/images/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="resources/images/favicon.ico" type="image/x-icon"> -->
+    <!-- <link rel="icon" type="image/png" href="resources/images/favicon.png"> -->
     <link rel="stylesheet" href="resources/leaflet.css" />
     <link rel="stylesheet" href="resources/fonts.css" />
-    <link rel="stylesheet" href="styles.css?v=71">
-
-    <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+    <link rel="stylesheet" href="styles.css?v=79">
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 </head>
 <body>
@@ -62,7 +66,10 @@
                         <img src="resources/images/target-aim.svg" width="22" height="22" alt="Target icon">
                     </button>
                 </div>
-                <button id="coord-btn">Place Marker</button>
+                <div class="coord-action-btns">
+                    <button id="coord-zoom-btn">Zoom To</button>
+                    <button id="coord-marker-btn">Place Marker</button>
+                </div>
             </div>
         </div>
     </div>
