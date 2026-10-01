@@ -1559,7 +1559,7 @@ window.renderAdminDashboard = async () => {
                     </div>
                 </div>
                 
-                <div class="approval-table-container" style="border: 1px solid #e2e8f0; border-radius: 8px; overflow-x: auto; -webkit-overflow-scrolling: touch; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);">
+                <div class="approval-table-container" style="border: 1px solid #e2e8f0; border-radius: 0px; overflow-x: auto; -webkit-overflow-scrolling: touch; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);">
                     <table style="width: 100%; border-collapse: collapse; text-align: left;">
                         <thead>
                             <tr style="background: #f1fffe; border-bottom: 1px solid #e2e8f0;">
@@ -1579,8 +1579,8 @@ window.renderAdminDashboard = async () => {
                     <td style="padding: 16px 24px; font-weight: 600; color: #0d2838; font-size: 15px;">
                         ${f.properties.borelog_id || 'N/A'}
                         <div style="margin-top: 8px; display: flex; gap: 8px;">
-                            <button onclick="adminAction('${f.f_file}', 'reject')" style="padding: 6px 12px; background: transparent; color: #ef4444; border: 1px solid #fca5a5; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.backgroundColor='#fef2f2'; this.style.borderColor='#ef4444'" onmouseout="this.style.backgroundColor='transparent'; this.style.borderColor='#fca5a5'">Reject</button>
-                            <button onclick="adminAction('${f.f_file}', 'approve')" style="padding: 6px 12px; background: #0d2838; color: white; border: none; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: pointer; transition: background 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.1);" onmouseover="this.style.backgroundColor='#2d5e7c'" onmouseout="this.style.backgroundColor='#0d2838'">Approve</button>
+                            <button onclick="adminAction('${f.f_file}', 'reject')" style="padding: 6px 12px; background: transparent; color: #ef4444; border: 1px solid #fca5a5; border-radius: 0px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.backgroundColor='#fef2f2'; this.style.borderColor='#ef4444'" onmouseout="this.style.backgroundColor='transparent'; this.style.borderColor='#fca5a5'">Reject</button>
+                            <button onclick="adminAction('${f.f_file}', 'approve')" style="padding: 6px 12px; background: #0d2838; color: white; border: none; border-radius: 0px; font-size: 12px; font-weight: 600; cursor: pointer; transition: background 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.1);" onmouseover="this.style.backgroundColor='#2d5e7c'" onmouseout="this.style.backgroundColor='#0d2838'">Approve</button>
                         </div>
                     </td>
                     <td style="padding: 16px 24px; color: #475569; font-size: 14px;">
