@@ -165,10 +165,6 @@ window.addRow = (tbodyId) => {
             if (prevBottom) {
                 tr.querySelector('.f-top').value = prevBottom;
             }
-            const prevStratum = prevRow.querySelector('.f-stratum').value;
-            if (prevStratum) {
-                tr.querySelector('.f-stratum').value = parseInt(prevStratum) + 1;
-            }
         }
     }
 
@@ -191,37 +187,6 @@ window.insertRowAfter = (btn) => {
         const prevBottom = currentRow.querySelector('.f-bottom').value;
         if (prevBottom) {
             tr.querySelector('.f-top').value = prevBottom;
-        }
-        const prevStratum = currentRow.querySelector('.f-stratum').value;
-        if (prevStratum) {
-            tr.querySelector('.f-stratum').value = parseInt(prevStratum) + 1;
-        }
-    }
-
-    return tr;
-};
-
-
-window.deleteRow = (btn) => {
-    btn.closest('tr').remove();
-};
-
-window.insertRowAfter = (btn) => {
-    const currentRow = btn.closest('tr');
-    const tbody = currentRow.closest('tbody');
-    const type = tbody.dataset.type;
-    const tr = document.createElement('tr');
-    tr.innerHTML = getRowHTML(type);
-    currentRow.insertAdjacentElement('afterend', tr);
-
-    if (type === 'strata') {
-        const prevBottom = currentRow.querySelector('.f-bottom').value;
-        if (prevBottom) {
-            tr.querySelector('.f-top').value = prevBottom;
-        }
-        const prevStratum = currentRow.querySelector('.f-stratum').value;
-        if (prevStratum) {
-            tr.querySelector('.f-stratum').value = parseInt(prevStratum) + 1;
         }
     }
 
@@ -529,7 +494,6 @@ function populateFormFromJson(geoJson) {
     if (strataData) {
         strataData.forEach(s => {
             const tr = addRow('strata-body');
-            tr.querySelector('.f-stratum').value = s.stratum !== undefined ? s.stratum : '';
             tr.querySelector('.f-top').value = s.top_m !== undefined ? s.top_m : '';
             tr.querySelector('.f-bottom').value = s.bottom_m !== undefined ? s.bottom_m : '';
             tr.querySelector('.f-class').value = s.class || s.uscs_class || '';
