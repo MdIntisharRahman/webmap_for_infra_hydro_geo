@@ -157,7 +157,8 @@ def load_data(db_url, maps_dir, md_filepath):
                     con=engine,
                     if_exists='replace',
                     index=True,
-                    index_label='id'
+                    index_label='id',
+                    chunksize=100
                 )
                 console.print(f"[bold green]+[/bold green] Successfully loaded [bold]{len(gdf)}[/bold] features into '[cyan]{table_name}[/cyan]'.")
 
