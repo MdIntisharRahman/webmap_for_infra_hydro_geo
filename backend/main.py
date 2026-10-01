@@ -406,8 +406,8 @@ security = HTTPBasic()
 
 def check_admin(credentials: HTTPBasicCredentials = Depends(security)):
     env_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".env"))
-    expected_user = os.getenv("WEBMASTER_USERNAME", "admin")
-    expected_pass = os.getenv("WEBMASTER_PASSWORD", "secret")
+    expected_user = os.getenv("WEBMASTER_USERNAME")
+    expected_pass = os.getenv("WEBMASTER_PASSWORD")
     
     try:
         if os.path.exists(env_path):
