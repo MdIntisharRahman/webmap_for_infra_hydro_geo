@@ -371,8 +371,10 @@ function validateFormIgnoringEmptyRows() {
     
     const isValid = form.reportValidity();
     
-    // Restore required attributes immediately
-    emptyInputs.forEach(input => input.setAttribute('required', 'true'));
+    // Restore required attributes shortly after native validation completes
+    setTimeout(() => {
+        emptyInputs.forEach(input => input.setAttribute('required', 'true'));
+    }, 10);
     
     return isValid;
 }
