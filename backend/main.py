@@ -21,16 +21,27 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 # Example: from load_gis_data import load_all_gis_layers
 
 
+import sys
+import subprocess
+
 async def run_data_ingestion():
     """Background task to load spatial data into PostGIS without delaying port startup."""
     print("Starting background GIS data ingestion...")
     try:
-        # If your loading function is asynchronous:
-        # await load_all_gis_layers()
-
-        # If your loading function is synchronous (blocking):
-        # await asyncio.to_thread(load_all_gis_layers)
-        pass
+        process = await asyncio.create_subprocess_exec(
+            sys.executable, "import_local_maps.py",
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.STDOUT
+        )
+        # Log the output so we can see progress in the deployment logs
+        while True:
+            line = await process.stdout.readline()
+            if not line:
+                break
+            print(line.decode("utf-8").strip())
+            
+        await process.wait()
+        print(f"Background data ingestion completed with code {process.returncode}")
     except Exception as e:
             print(f"Error during background data ingestion: {e}")
 
