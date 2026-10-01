@@ -380,7 +380,7 @@ map.on("click", (e) => {
 
         targetBtn.classList.remove("active");
         document.getElementById("map").classList.remove("crosshair-cursor");
-        document.getElementById("coord-btn").click(); // Auto-estimate!
+        document.getElementById("coord-marker-btn").click(); // Auto-estimate!
         return;
     }
 
@@ -1250,7 +1250,7 @@ function parseDMS(input) {
     return { lat, lng };
 }
 
-document.getElementById("coord-btn").addEventListener("click", async () => {
+document.getElementById("coord-marker-btn").addEventListener("click", async () => {
     const rawInput = document.getElementById("coord-input").value;
     const coords = parseDMS(rawInput);
 
@@ -1351,6 +1351,26 @@ document.getElementById("coord-btn").addEventListener("click", async () => {
         currentMarker.bindPopup("Error calculating estimation.", { closeButton: false }).openPopup();
     }
 });
+
+document.getElementById("coord-zoom-btn").addEventListener("click", async () => {
+    const rawInput = document.getElementById("coord-input").value;
+    const coords = parseDMS(rawInput);
+
+    if (!coords) {
+        alert(
+            "Please enter a valid coordinate (e.g. '23.66, 91.06' or '23 45 33, 91 07 45' or '23d 45m 33s, 91d 07m 45s')",
+        );
+        return;
+    }
+
+    const { lat, lng } = coords;
+
+    if (currentMarker) map.removeLayer(currentMarker);
+
+    // currentMarker = L.marker([lat, lng], { icon: customIcon }).addTo(map);
+    map.setView([lat, lng], 13);
+
+});     
 
 // Target Mode Logic
 const targetBtn = document.getElementById("target-btn");
@@ -1591,7 +1611,7 @@ window.renderAdminDashboard = async () => {
                     </td>
                     <td style="padding: 16px 24px; text-align: right;">
                         <div style="display: inline-flex; gap: 8px;">
-                            <button onclick="window.open('/maps/borelogs/staged/${f.f_file}', '_blank')" style="padding: 8px 16px; background: #f8fafc; color: #0f172a; border: 1px solid #cbd5e1; border-radius: 0px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.backgroundColor='#e2e8f0'" onmouseout="this.style.backgroundColor='#f8fafc'">JSON</button>
+                            <button onclick="window.open(window.location.href = (window.location.port === '8383' ? 'http://localhost:8484' : '') + '/maps/borelogs/staged/${f.f_file}', '_blank')" style="padding: 8px 16px; background: #f8fafc; color: #0f172a; border: 1px solid #cbd5e1; border-radius: 0px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.backgroundColor='#e2e8f0'" onmouseout="this.style.backgroundColor='#f8fafc'">JSON</button>
                             <button onclick="window.open('borelog-entry.html?view_staged=${f.f_file}', '_blank')" style="padding: 8px 16px; background: #2563eb; color: white; border: none; border-radius: 0px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.1);" onmouseover="this.style.backgroundColor='#1d4ed8'" onmouseout="this.style.backgroundColor='#2563eb'">View</button>
                         </div>
                     </td>
