@@ -1554,7 +1554,7 @@ window.renderAdminDashboard = async () => {
                         <h2 style="font-family: 'Outfit', sans-serif; font-size: 28px; font-weight: 700; color: #0d2838; margin: 0 0 8px 0; letter-spacing: -0.5px;">Pending Approvals</h2>
                         <p style="margin: 0; color: #69707a; font-size: 14px;">Review and authorize submitted geotechnical borelog records.</p>
                     </div>
-                    <div style="color: #078915; padding: 6px 12px; border-radius: 0px; font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600; border: 1px solid rgba(0, 0, 0, 0.57);">
+                    <div style="color: #078915; padding: 6px 12px; border-radius: 0px; font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600; border: none;">
                         ${files.length} AWAITING
                     </div>
                 </div>
@@ -1580,7 +1580,7 @@ window.renderAdminDashboard = async () => {
                         ${f.properties.borelog_id || 'N/A'}
                         <div style="margin-top: 8px; display: flex; gap: 8px;">
                             <button onclick="adminAction('${f.f_file}', 'reject')" style="padding: 6px 12px; background: transparent; color: #ef4444; border: 1px solid #fca5a5; border-radius: 0px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.backgroundColor='#fef2f2'; this.style.borderColor='#ef4444'" onmouseout="this.style.backgroundColor='transparent'; this.style.borderColor='#fca5a5'">Reject</button>
-                            <button onclick="adminAction('${f.f_file}', 'approve')" style="padding: 6px 12px; background: #0d2838; color: white; border: none; border-radius: 0px; font-size: 12px; font-weight: 600; cursor: pointer; transition: background 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.1);" onmouseover="this.style.backgroundColor='#2d5e7c'" onmouseout="this.style.backgroundColor='#0d2838'">Approve</button>
+                            <button onclick="adminAction('${f.f_file}', 'approve')" style="padding: 6px 12px; background: transparent; color: #0f832c; border: 1px solid #2ca64a; border-radius: 0px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.backgroundColor='#dff2e4'; this.style.borderColor='#0f832c'" onmouseout="this.style.backgroundColor='transparent'; this.style.borderColor='#43eb6d'">Approve</button>
                         </div>
                     </td>
                     <td style="padding: 16px 24px; color: #475569; font-size: 14px;">
