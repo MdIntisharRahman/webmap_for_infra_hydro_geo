@@ -7,9 +7,9 @@ const getRowHTML = (type) => {
     switch (type) {
         case 'strata':
             return `
-                <td><input required type="number" step="0.5" class="f-top"></td>
-                <td><input required type="number" step="0.5" class="f-bottom"></td>
-                <td><select required class="f-class" style="padding: 11px; border: 1px solid var(--border-color); width: 100%;">
+                <td data-label="Top (m)"><input required type="number" step="0.5" class="f-top"></td>
+                <td data-label="Bottom (m)"><input required type="number" step="0.5" class="f-bottom"></td>
+                <td data-label="Class (USCS)"><select required class="f-class" style="padding: 11px; border: 1px solid var(--border-color); width: 100%;">
                     <option value="" disabled selected>Select USCS</option>
                     <option value="GW">GW</option>
                     <option value="GP">GP</option>
@@ -38,8 +38,8 @@ const getRowHTML = (type) => {
                     <option value="SC-SM">SC-SM</option>
                     <option value="CL-ML">CL-ML</option>
                 </select></td>
-                <td><input required type="text" class="f-desc" placeholder="Soil description" placeholder="Add a concise description"></td>
-                <td class="action-pill-td">
+                <td data-label="Description"><input required type="text" class="f-desc" placeholder="Soil description" placeholder="Add a concise description"></td>
+                <td data-label="Actions" class="action-pill-td">
                     <span class="empty-table-row-filler" title="Type into any field to begin"><img src="resources/images/enter-svgrepo.svg"></span>
                     <div class="action-pill" style="display: inline-flex; align-items: center; justify-content: center; gap: 5px; padding: 2px 9px; height: 32px; /*! background: #fff; */"> 
                         <button type="button" class="insert-btn" onclick="insertRowAfter(this)" title="Insert Row Below">🞣</button>
@@ -49,12 +49,12 @@ const getRowHTML = (type) => {
             `;
         case 'spt':
             return `
-                <td><input required type="number" step="0.01" class="f-depth"></td>
-                <td><input required type="number" class="f-b150"></td>
-                <td><input required type="number" class="f-b300"></td>
-                <td><input required type="number" class="f-b450"></td>
-                <td><input required type="text" class="f-nval"></td>
-                <td class="action-pill-td">
+                <td data-label="Depth (m)"><input required type="number" step="0.01" class="f-depth"></td>
+                <td data-label="Blows (0-150)"><input required type="number" class="f-b150"></td>
+                <td data-label="Blows (150-300)"><input required type="number" class="f-b300"></td>
+                <td data-label="Blows (300-450)"><input required type="number" class="f-b450"></td>
+                <td data-label="N-Value"><input required type="text" class="f-nval"></td>
+                <td data-label="Actions" class="action-pill-td">
                     <span class="empty-table-row-filler" title="Type into any field to begin"><img src="resources/images/enter-svgrepo.svg"></span>
                     <div class="action-pill">                    
                         <button type="button" class="insert-btn" onclick="insertRowAfter(this)" title="Insert Row Below">🞣</button>
@@ -64,12 +64,12 @@ const getRowHTML = (type) => {
             `;
         case 'atterberg':
             return `
-                <td><input type="number" step="0.1" class="f-depth" required></td>
-                <td><input type="number" step="1" class="f-wl" required></td>
-                <td><input type="number" step="1" class="f-wp" required></td>
-                <td><input type="number" step="0.1" class="f-ip" required></td>
-                <td><input type="number" step="1" class="f-li" required></td>
-                <td class="action-pill-td">
+                <td data-label="Depth (m)"><input type="number" step="0.1" class="f-depth" required></td>
+                <td data-label="WL (%)"><input type="number" step="1" class="f-wl" required></td>
+                <td data-label="WP (%)"><input type="number" step="1" class="f-wp" required></td>
+                <td data-label="IP (%)"><input type="number" step="0.1" class="f-ip" required></td>
+                <td data-label="LI"><input type="number" step="1" class="f-li" required></td>
+                <td data-label="Actions" class="action-pill-td">
                     <span class="empty-table-row-filler" title="Type into any field to begin"><img src="resources/images/enter-svgrepo.svg"></span>
                     <div class="action-pill">                    
                         <button type="button" class="insert-btn" onclick="insertRowAfter(this)" title="Insert Row Below">🞣</button>
@@ -79,12 +79,12 @@ const getRowHTML = (type) => {
             `;
         case 'cpt':
             return `
-                <td><input required aria-required="true" type="number" step="0.1" class="f-depth"></td>
-                <td><input required aria-required="true" type="number" step="10" class="f-qc"></td>
-                <td><input type="number" step="1" class="f-fs"></td>
-                <td><input required aria-required="true" type="number" step="1" class="f-rf"></td>
-                <td><input required aria-required="true" type="number" step="10" class="f-u2"></td>
-                <td class="action-pill-td">
+                <td data-label="Depth (m)"><input required aria-required="true" type="number" step="0.1" class="f-depth"></td>
+                <td data-label="qc (MPa)"><input required aria-required="true" type="number" step="10" class="f-qc"></td>
+                <td data-label="fs (kPa)"><input type="number" step="1" class="f-fs"></td>
+                <td data-label="Rf (%)"><input required aria-required="true" type="number" step="1" class="f-rf"></td>
+                <td data-label="u2 (kPa)"><input required aria-required="true" type="number" step="10" class="f-u2"></td>
+                <td data-label="Actions" class="action-pill-td">
                     <span class="empty-table-row-filler" title="Type into any field to begin"><img src="resources/images/enter-svgrepo.svg"></span>
                     <div class="action-pill">                    
                         <button type="button" class="insert-btn" onclick="insertRowAfter(this)" title="Insert Row Below">🞣</button>
@@ -99,7 +99,7 @@ const getRowHTML = (type) => {
                 <td><input required aria-required="true" type="number" step="0.001" class="f-shear"></td>
                 <td><input required aria-required="true" type="number" step="0.001" class="f-cohesion"></td>
                 <td><input required aria-required="true" type="number" step="0.001" class="f-friction"></td>
-                <td class="action-pill-td">
+                <td data-label="Actions" class="action-pill-td">
                     <span class="empty-table-row-filler" title="Type into any field to begin"><img src="resources/images/enter-svgrepo.svg"></span>
                     <div class="action-pill">                    
                         <button type="button" class="insert-btn" onclick="insertRowAfter(this)" title="Insert Row Below">🞣</button>
@@ -119,7 +119,7 @@ const getRowHTML = (type) => {
                 <td><input required type="number" step="0.1" class="f-confining"></td>
                 <td><input required type="number" step="0.1" class="f-deviator"></td>
                 <td><input required type="number" step="0.1" class="f-e50"></td>
-                <td class="action-pill-td">
+                <td data-label="Actions" class="action-pill-td">
                     <span class="empty-table-row-filler" title="Type into any field to begin"><img src="resources/images/enter-svgrepo.svg"></span>
                     <div class="action-pill">                    
                         <button type="button" class="insert-btn" onclick="insertRowAfter(this)" title="Insert Row Below">🞣</button>
@@ -135,7 +135,7 @@ const getRowHTML = (type) => {
                 <td><input required type="number" step="0.001" class="f-cc"></td>
                 <td><input required type="number" step="0.001" class="f-cr"></td>
                 <td><input required type="number" step="0.1" class="f-pc"></td>
-                <td class="action-pill-td">
+                <td data-label="Actions" class="action-pill-td">
                     <span class="empty-table-row-filler" title="Type into any field to begin"><img src="resources/images/enter-svgrepo.svg"></span>
                     <div class="action-pill"> 
                     
