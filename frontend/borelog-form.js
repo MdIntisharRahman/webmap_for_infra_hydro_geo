@@ -7,7 +7,6 @@ const getRowHTML = (type) => {
     switch (type) {
         case 'strata':
             return `
-                <td><input required type="number" class="f-stratum" placeholder="e.g. 1"></td>
                 <td><input required type="number" step="0.5" class="f-top"></td>
                 <td><input required type="number" step="0.5" class="f-bottom"></td>
                 <td><select required class="f-class" style="padding: 11px; border: 1px solid var(--border-color); width: 100%;">
@@ -294,7 +293,6 @@ function gatherBorelogData() {
             comments: document.getElementById('comments').value,
 
             strata: Array.from(document.querySelectorAll('#strata-body tr')).filter(row => row.querySelector('.f-bottom').value.trim() !== '').map(row => ({
-                stratum: parseInt(row.querySelector('.f-stratum').value),
                 top_m: parseFloat(row.querySelector('.f-top').value),
                 bottom_m: parseFloat(row.querySelector('.f-bottom').value),
                 class: row.querySelector('.f-class').value,
@@ -351,6 +349,21 @@ function gatherBorelogData() {
             }))
         }
     };
+
+    // Continuity Validation for Stratigraphy
+    const strata = payload.properties.strata;
+    if (strata.length > 0) {
+        if (strata[0].top_m !== 0) {
+            throw new Error(`Stratigraphy must begin at 0 m. The first layer begins at ${strata[0].top_m} m.`);
+        }
+        for (let i = 1; i < strata.length; i++) {
+            if (strata[i].top_m !== strata[i - 1].bottom_m) {
+                throw new Error(`Stratigraphy discontinuity detected! Layer ${i + 1} begins at ${strata[i].top_m} m, but the previous layer ended at ${strata[i - 1].bottom_m} m.`);
+            }
+        }
+    }
+
+    return payload;
 }
 
 document.getElementById('borelogForm').addEventListener('submit', async (e) => {
@@ -390,7 +403,14 @@ document.getElementById('borelogForm').addEventListener('submit', async (e) => {
 
 
 document.getElementById('preview-btn').addEventListener('click', () => {
-    const data = gatherBorelogData();
+    let data;
+    try {
+        data = gatherBorelogData();
+    } catch (e) {
+        alert("Validation Error: " + e.message);
+        return;
+    }
+    
     document.getElementById('preview-modal').style.display = 'flex';
     if (window.renderBorelogChart) {
         window.renderBorelogChart('borelog-visualizer-container', data);
