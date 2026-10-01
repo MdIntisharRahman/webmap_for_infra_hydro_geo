@@ -406,8 +406,8 @@ security = HTTPBasic()
 
 def check_admin(credentials: HTTPBasicCredentials = Depends(security)):
     env_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".env"))
-    expected_user = os.getenv("WEBMASTER_USERNAME")
-    expected_pass = os.getenv("WEBMASTER_PASSWORD")
+    expected_user = os.getenv("WEBMASTER_USERNAME", "admin")
+    expected_pass = os.getenv("WEBMASTER_PASSWORD", "secret")
     
     try:
         if os.path.exists(env_path):
@@ -666,6 +666,7 @@ async def reject_staged_borelog(f_file: str, db: AsyncSession = Depends(get_db),
 
     return {"status": "success"}
 
+import sys
 import subprocess
 import asyncio
 from fastapi.responses import StreamingResponse
@@ -674,7 +675,7 @@ from fastapi.responses import StreamingResponse
 async def update_maps(username: str = Depends(check_admin)):
     async def log_generator():
         process = await asyncio.create_subprocess_exec(
-            "uv", "run", "python", "import_local_maps.py",
+            sys.executable, "import_local_maps.py",
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.STDOUT
         )
