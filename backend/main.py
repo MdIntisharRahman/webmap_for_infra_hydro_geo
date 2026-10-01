@@ -453,7 +453,7 @@ async def stage_borelog(request: Request, db: AsyncSession = Depends(get_db)):
     borelog_id = str(props.get("borelog_id", "UNKNOWN"))
     
     # 1. Parse Name
-    b_name = borelog_id
+    b_name = re.sub(r'[\\/*?:"<>|]', '_', borelog_id)
     if len(b_name) > 14:
         b_name = b_name[:14]
     else:
