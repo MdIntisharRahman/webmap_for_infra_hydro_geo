@@ -27,16 +27,16 @@
     {
       "type": "Feature",
       "properties": {
-        "borelog_id": "IGI 2: Covert Strike",
+        "borelog_id": "IGI-2-Covert-Strike-2010",
         "project": "IGI: Covert Strike",
         "client": "Yousef Priboy Consortium",
-        "Name": "IGI 2: Covert -01102026-gDSDviin",
+        "Name": "IGI-2-Covert-S-01102026-zEOtjjz9",
         "xcoord": 90.436514,
         "ycoord": 23.828162,
         "keys": "[Name, Place], [xcoord, Easting], [ycoord, Northing], [f_file, See Details]",
         "f_class_color": "#3b82f6",
-        "UID": "IGI 2: Covert -01102026-gDSDviin",
-        "f_file": "IGI 2: Covert -01102026-gDSDviin.JSON"
+        "UID": "IGI-2-Covert-S-01102026-zEOtjjz9",
+        "f_file": "IGI-2-Covert-S-01102026-zEOtjjz9.JSON"
       },
       "geometry": {
         "type": "Point",
