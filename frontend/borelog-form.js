@@ -339,12 +339,25 @@ function validateFormIgnoringEmptyRows() {
     const emptyInputs = [];
     
     document.querySelectorAll('tbody[data-type]').forEach(tbody => {
+        const type = tbody.dataset.type;
         tbody.querySelectorAll('tr').forEach(row => {
             const inputs = Array.from(row.querySelectorAll('input, select'));
-            const isEmpty = inputs.every(input => {
-                if (input.tagName === 'SELECT') return input.value === '';
-                return input.value.trim() === '';
-            });
+            
+            let isEmpty = true;
+            if (type === 'strata') {
+                // Ignore the auto-filled Top (m) when checking if strata row is completely empty
+                const checkInputs = Array.from(row.querySelectorAll('.f-bottom, .f-class, .f-desc'));
+                isEmpty = checkInputs.every(input => {
+                    if (input.tagName === 'SELECT') return input.value === '';
+                    return input.value.trim() === '';
+                });
+            } else {
+                isEmpty = inputs.every(input => {
+                    if (input.tagName === 'SELECT') return input.value === '';
+                    return input.value.trim() === '';
+                });
+            }
+            
             if (isEmpty) {
                 inputs.forEach(input => {
                     if (input.hasAttribute('required')) {
