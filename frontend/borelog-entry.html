@@ -90,41 +90,41 @@
         }
 
         .metadata-section {
-            background: linear-gradient(rgba(255, 255, 255, 0.57), rgba(229, 229, 229, 0.69)), url('resources/images/bg-metadata.jpg') center/cover repeat;
-        } 
+            background: linear-gradient(rgba(255, 255, 255, 0.53), rgba(229, 229, 229, 0.69)), url('resources/images/bg-metadata.jpg') center/cover repeat;
+        }
 
         .metadata-section .section-header {
             margin-bottom: 24px;
         }
 
         .stratigraphy-section {
-            background: linear-gradient(rgba(255, 255, 255, 0.83), rgba(255, 255, 255, 0.93)), url('resources/images/bg-stratigraphy.jpg') center/cover repeat;
-        } 
+            background: linear-gradient(rgba(255, 255, 255, 0.93), rgba(255, 255, 255, 0.97)), url('resources/images/bg-stratigraphy.jpg') center/cover repeat;
+        }
 
         .spt-section {
-            background: linear-gradient(rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.9)), url('resources/images/bg-spt.jpg') center/cover repeat;
-        } 
+            background: linear-gradient(rgba(255, 255, 255, 0.93), rgba(255, 255, 255, 0.97)), url('resources/images/bg-spt.jpg') center/cover repeat;
+        }
 
         .atterberg-section {
-            background: linear-gradient(rgba(255, 255, 255, 0.83), rgba(255, 255, 255, 0.93)), url('resources/images/bg-atterberg.jpg') center/cover repeat;
-        } 
-        
+            background: linear-gradient(rgba(255, 255, 255, 0.93), rgba(255, 255, 255, 0.97)), url('resources/images/bg-atterberg.jpg') center/cover repeat;
+        }
+
         .shear-section {
-            background: linear-gradient(rgba(255, 255, 255, 0.87), rgba(255, 255, 255, 0.97)), url('resources/images/bg-shear.jpg') center/cover repeat;
-        } 
+            background: linear-gradient(rgba(255, 255, 255, 0.83), rgba(255, 255, 255, 0.97)), url('resources/images/bg-shear.jpg') center/cover repeat;
+        }
 
         .consolidation-section {
-            background: linear-gradient(rgba(255, 255, 255, 0.89), rgba(255, 255, 255, 0.97)), url('resources/images/bg-consolidation.png') center/cover repeat;
-        } 
+            background: linear-gradient(rgba(255, 255, 255, 0.93), rgba(255, 255, 255, 0.97)), url('resources/images/bg-consolidation.png') center/cover repeat;
+        }
 
         .consolidation-1d-section {
-            background: linear-gradient(rgba(255, 255, 255, 0.83), rgba(255, 255, 255, 0.97)), url('resources/images/bg-consolidation-1d.jpg') center/cover repeat;
-        } 
+            background: linear-gradient(rgba(255, 255, 255, 0.93), rgba(255, 255, 255, 0.93)), url('resources/images/bg-consolidation-1d.jpg') center/cover repeat
+        }
 
         .cpt-section {
-            background: linear-gradient(rgba(255, 255, 255, 0.83), rgba(255, 255, 255, 0.97)), url('resources/images/bg-cpt.jpg') center/cover repeat;
-        } 
-        
+            background: linear-gradient(rgba(255, 255, 255, 0.93), rgba(255, 255, 255, 0.97)), url('resources/images/bg-cpt.jpg') center/cover repeat;
+        }
+
         .section-header {
             /* margin-bottom: 24px; */
             padding-bottom: 12px;
@@ -240,6 +240,7 @@
             -webkit-appearance: none;
             margin: 0;
         }
+
         input[type="number"] {
             -moz-appearance: textfield;
         }
@@ -436,8 +437,8 @@
             text-align: right;
             background: var(--table-header-background);
         }
-        
-        
+
+
         .section .section-header .btn {
             display: none;
         }
@@ -458,7 +459,7 @@
             .header-container h1 {
                 font-size: 24px;
             }
-            
+
             .grid-2,
             .grid-3,
             .grid-4 {
@@ -480,7 +481,7 @@
                 padding: 4px 12px !important;
                 margin-top: 8px;
             }
-            
+
             .del-btn,
             .insert-btn {
                 width: 32px !important;
@@ -515,6 +516,7 @@
                 background: var(--bg-surface);
             }
         }
+
         .empty-table-row-filler {
             display: none;
             text-align: center;
@@ -536,10 +538,9 @@
         tbody tr:last-child .action-pill {
             display: none !important;
         }
-        
+
         /* If it's the ONLY row, we actually want to hide them too, since it's an empty placeholder! */
         /* They will appear as soon as you type and spawn a second row below it. */
-
     </style>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
 </head>
@@ -608,13 +609,14 @@
                             id="date_of_starting_boring"></div>
                     <div class="form-group"><label>Date of Ending the Boring</label><input type="date"
                             id="date_of_ending_boring"></div>
-                    <div class="form-group"><label>Reduced Level (RL, m)</label><input required aria-required="true" type="number" step="0.00001"
-                            max="99999.99999" min="-99999.99999" id="rl_m"></div>
-                    <div class="form-group"><label>Total Depth (m)</label><input required aria-required="true" type="number" step="0.01" id="depth_m">
+                    <div class="form-group"><label>Reduced Level (RL, m)</label><input required aria-required="true"
+                            type="number" step="0.00001" max="99999.99999" min="-99999.99999" id="rl_m"></div>
+                    <div class="form-group"><label>Total Depth (m)</label><input required aria-required="true"
+                            type="number" step="0.01" id="depth_m">
                     </div>
 
-                    <div class="form-group"><label>Water Table Depth (m)</label><input required aria-required="true" type="number" step="0.01"
-                            id="water_table_m"></div>
+                    <div class="form-group"><label>Water Table Depth (m)</label><input required aria-required="true"
+                            type="number" step="0.01" id="water_table_m"></div>
                     <div class="form-group"><label>TBM No.</label><input type="text" id="tbm_no"></div>
                 </div>
             </div>
