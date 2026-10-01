@@ -1460,7 +1460,24 @@ window.openBorelogVisualizer = async (f_file) => {
 
 window.adminCredentials = null;
 
-window.openApprovalLogin = () => {
+window.openApprovalLogin = async () => {
+    const storedHash = sessionStorage.getItem('adminCredentials');
+    if (storedHash) {
+        try {
+            const res = await fetch(`${API_BASE_URL}/borelog/auth`, { headers: { 'Authorization': 'Basic ' + storedHash } });
+            if (res.ok) {
+                window.adminCredentials = storedHash;
+                document.getElementById('borelog-modal').classList.remove('hidden');
+                renderAdminDashboard();
+                return;
+            } else {
+                sessionStorage.removeItem('adminCredentials');
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
     document.getElementById('borelog-modal').classList.remove('hidden');
     const modalContent = document.querySelector('#borelog-modal .approval-modal-content');
     if (modalContent) modalContent.style.overflowY = 'auto';
@@ -1494,6 +1511,7 @@ window.openApprovalLogin = () => {
             const res = await fetch(`${API_BASE_URL}/borelog/auth`, { headers: { 'Authorization': 'Basic ' + hash } });
             if (res.ok) {
                 window.adminCredentials = hash;
+                sessionStorage.setItem('adminCredentials', hash);
                 renderAdminDashboard();
             } else {
                 document.getElementById('admin-error').innerText = "Invalid credentials.";
@@ -1639,7 +1657,24 @@ window.updateAllMaps = async () => {
     }
 };
 
-window.openUpdateMapsLogin = () => {
+window.openUpdateMapsLogin = async () => {
+    const storedHash = sessionStorage.getItem('adminCredentials');
+    if (storedHash) {
+        try {
+            const res = await fetch(`${API_BASE_URL}/borelog/auth`, { headers: { 'Authorization': 'Basic ' + storedHash } });
+            if (res.ok) {
+                window.adminCredentials = storedHash;
+                document.getElementById('borelog-modal').classList.remove('hidden');
+                openUpdateMapsLogWindow();
+                return;
+            } else {
+                sessionStorage.removeItem('adminCredentials');
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
     document.getElementById('borelog-modal').classList.remove('hidden');
     const modalContent = document.querySelector('#borelog-modal .approval-modal-content');
     if (modalContent) modalContent.style.overflowY = 'auto';
@@ -1672,6 +1707,7 @@ window.openUpdateMapsLogin = () => {
             const res = await fetch(`${API_BASE_URL}/borelog/auth`, { headers: { 'Authorization': 'Basic ' + hash } });
             if (res.ok) {
                 window.adminCredentials = hash;
+                sessionStorage.setItem('adminCredentials', hash);
                 openUpdateMapsLogWindow();
             } else {
                 document.getElementById('admin-error-map').innerText = "Invalid credentials.";
