@@ -84,7 +84,7 @@
         .section {
             margin-bottom: 48px;
             padding: 24px;
-            border-radius: 7px;
+            /* border-radius: 7px; */
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
             border: 1px solid rgba(0, 0, 0, 0.05);
             backdrop-filter: blur(12px);
@@ -162,10 +162,18 @@
             gap: 24px;
         }
 
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+        }
+
         .form-group {
             display: flex;
             flex-direction: column;
             margin-bottom: 24px;
+            min-width: 0; /* For flexbox overflow handling */
+            width: 100%; /* Ensure full width in grid layouts */
         }
 
         label {
@@ -265,6 +273,7 @@
             -webkit-appearance: none;
             -moz-appearance: none;
             appearance: none;
+            text-overflow: ellipsis;
         }
 
         td input:focus,
@@ -399,7 +408,7 @@
             /* border-radius: 10px; */
             font-size: var(--text-base);
             font-weight: 600;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 1px 11px -5px rgba(0, 0, 0, 0.1);
             transform: translateY(150px) scale(0.9);
             opacity: 0;
             transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -440,7 +449,7 @@
             align-items: center;
             justify-content: center;
             gap: 5px;
-            padding: 2px 8px;
+            padding: 3px 7px;
             opacity: 1;
             transition: opacity 0.25s ease;
         }
@@ -450,7 +459,7 @@
             /* border: 1px solid var(--border-color); */
             padding-right: 0;
             vertical-align: middle;
-            width: 69px;
+            /* width: 69px; */
             text-align: right;
             background: var(--table-header-background);
         }
@@ -503,7 +512,7 @@
         }
 
         /* Responsive Adaptations */
-        @media (max-width: 992px) {
+        @media (max-width: 821px) {
             .grid-2,
             .grid-3,
             .grid-4 {
@@ -546,8 +555,8 @@
 
             .action-pill {
                 height: 52px !important;
-                padding: 4px 8px !important;
-                margin-top: 8px;
+                padding: 4px 7px !important;
+                margin-top: 7px;
             }
 
             .del-btn,

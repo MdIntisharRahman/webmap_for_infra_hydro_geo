@@ -9,7 +9,7 @@
   },
   "properties": {
     "borehole_id": "PL-09-SPSGXPC9",
-    "client": "Yousef Priboy Consortium",
+    "client": "Josef Priboy Consortium",
     "project": "IGI: Covert Strike",
     "location": "Romanian Border",
     "drilling_team": "D90 B_3",
@@ -593,7 +593,6 @@
         "peak_deviator_stress_kpa": 150.0,
         "secant_modulus_e50_mpa": 25.0
       }
-    ],
-    "odeometric_test_data": []
+    ]
   }
 }
