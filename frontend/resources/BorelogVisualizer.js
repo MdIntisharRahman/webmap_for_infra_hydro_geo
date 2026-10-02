@@ -1,17 +1,17 @@
 
 
 const extraTestLabels = {
-    'normal_stress_kpa': { label: 'σn', unit: 'kPa' },
+    'normal_stress_kpa': { label: "σ'_{n}", unit: 'kPa' },
     'shear_stress_kpa': { label: 'τ', unit: 'kPa' },
     'cohesion_kpa': { label: 'c', unit: 'kPa' },
     'friction_angle_deg': { label: 'φ', unit: '°' },
-    'vertical_effective_stress_kpa': { label: "σ'v", unit: 'kPa' },
+    'vertical_effective_stress_kpa': { label: "σ'_{v}", unit: 'kPa' },
     'constrained_modulus_eoed_mpa': { label: 'E_{oed}', unit: 'MPa' },
-    'compression_index': { label: 'Cc', unit: '' },
-    'recompression_index': { label: 'Cr', unit: '' },
-    'preconsolidation_pressure_kpa': { label: 'Pc', unit: 'kPa' },
+    'compression_index': { label: 'C_{c}', unit: '' },
+    'recompression_index': { label: 'C_{r}', unit: '' },
+    'preconsolidation_pressure_kpa': { label: 'P_{c}', unit: 'kPa' },
     'test_type': { label: 'Type', unit: '' },
-    'effective_confining_stress_kpa': { label: "σ'3", unit: 'kPa' },
+    'effective_confining_stress_kpa': { label: "σ'_{3}", unit: 'kPa' },
     'peak_deviator_stress_kpa': { label: 'q', unit: 'kPa' },
     'secant_modulus_e50_mpa': { label: 'E_{50}', unit: 'MPa' }
 };
