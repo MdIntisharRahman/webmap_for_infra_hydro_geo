@@ -1,16 +1,67 @@
 
+
+const extraTestLabels = {
+    'normal_stress_kpa': { label: 'σn', unit: 'kPa' },
+    'shear_stress_kpa': { label: 'τ', unit: 'kPa' },
+    'cohesion_kpa': { label: 'c', unit: 'kPa' },
+    'friction_angle_deg': { label: 'φ', unit: '°' },
+    'vertical_effective_stress_kpa': { label: "σ'v", unit: 'kPa' },
+    'constrained_modulus_eoed_mpa': { label: 'E_{oed}', unit: 'MPa' },
+    'compression_index': { label: 'Cc', unit: '' },
+    'recompression_index': { label: 'Cr', unit: '' },
+    'preconsolidation_pressure_kpa': { label: 'Pc', unit: 'kPa' },
+    'test_type': { label: 'Type', unit: '' },
+    'effective_confining_stress_kpa': { label: "σ'3", unit: 'kPa' },
+    'peak_deviator_stress_kpa': { label: 'q', unit: 'kPa' },
+    'secant_modulus_e50_mpa': { label: 'E_{50}', unit: 'MPa' }
+};
+
+function formatKey(k, v, renderType) {
+    let label = "";
+    let unit = "";
+    if (extraTestLabels[k]) {
+        label = extraTestLabels[k].label;
+        unit = extraTestLabels[k].unit;
+    } else {
+        label = k.split('_')[0];
+        if (label.length <= 2) label = k.split('_').slice(0,2).join('_');
+        if (k.endsWith('_kpa')) unit = 'kPa';
+        else if (k.endsWith('_mpa')) unit = 'MPa';
+        else if (k.endsWith('_deg')) unit = '°';
+        else if (k.endsWith('_percent')) unit = '%';
+    }
+    
+    if (renderType === 'html') {
+        label = label.replace(/_\{([^}]+)\}/g, '<sub>$1</sub>');
+    } else if (renderType === 'svg') {
+        // We use baseline-shift="baseline" to reset the shift for following text!
+        label = label.replace(/_\{([^}]+)\}/g, '<tspan baseline-shift="sub" font-size="0.8em">$1</tspan><tspan baseline-shift="baseline" font-size="1.25em"></tspan>');
+    } else {
+        label = label.replace(/_\{([^}]+)\}/g, '$1');
+    }
+    
+    return unit ? `${label}: ${v} ${unit}` : `${label}: ${v}`;
+}
+
 function wrapTextPairs(pairs, maxChars = 25) {
     let lines = [];
     let currentLine = "";
+    let currentVisibleLen = 0;
+    
     for (let i = 0; i < pairs.length; i++) {
         let pair = pairs[i];
+        let visibleLen = pair.replace(/<[^>]*>?/gm, '').length;
+        
         if (currentLine.length === 0) {
             currentLine = pair;
-        } else if (currentLine.length + 2 + pair.length <= maxChars) {
+            currentVisibleLen = visibleLen;
+        } else if (currentVisibleLen + 2 + visibleLen <= maxChars) {
             currentLine += ", " + pair;
+            currentVisibleLen += 2 + visibleLen;
         } else {
             lines.push(currentLine);
             currentLine = pair;
+            currentVisibleLen = visibleLen;
         }
     }
     if (currentLine.length > 0) {
@@ -127,9 +178,7 @@ window.renderBorelogChart = function(containerId, geoJsonData) {
             let vals = [];
             for (const [k, v] of Object.entries(test)) {
                 if (k !== 'depth_m' && v !== "" && v !== null && v !== undefined) {
-                    let shortK = k.split('_')[0]; 
-                    if (shortK.length <= 2) shortK = k.split('_').slice(0,2).join('_'); 
-                    vals.push(`${shortK}: ${v}`);
+                    vals.push(formatKey(k, v, 'raw'));
                 }
             }
             if (vals.length > 0) {
@@ -753,9 +802,7 @@ window.downloadBorelogSVG = function(geoJsonData, uid) {
             let vals = [];
             for (const [k, v] of Object.entries(test)) {
                 if (k !== 'depth_m' && v !== "" && v !== null && v !== undefined) {
-                    let shortK = k.split('_')[0]; 
-                    if (shortK.length <= 2) shortK = k.split('_').slice(0,2).join('_'); 
-                    vals.push(`${shortK}: ${v}`);
+                    vals.push(formatKey(k, v, 'html'));
                 }
             }
             if (vals.length > 0) {
@@ -1023,9 +1070,7 @@ window.downloadBorelogSVG = function(geoJsonData, uid) {
             let vals = [];
             for (const [k, v] of Object.entries(test)) {
                 if (k !== 'depth_m' && v !== "" && v !== null && v !== undefined) {
-                    let shortK = k.split('_')[0]; 
-                    if (shortK.length <= 2) shortK = k.split('_').slice(0,2).join('_'); 
-                    vals.push(`${shortK}: ${v}`);
+                    vals.push(formatKey(k, v, 'svg'));
                 }
             }
             if (vals.length > 0) {
