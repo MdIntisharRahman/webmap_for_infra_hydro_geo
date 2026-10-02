@@ -90,16 +90,35 @@ window.renderBorelogChart = function(containerId, geoJsonData) {
     const PIXELS_PER_METER = 60;
     const totalHeight = maxDepth * PIXELS_PER_METER;
     
-    const baseWidths = { depth: 60, stratum: 80, desc: 250, sptText: 140, sptGraph: 200, testsGraph: 200, cptGraph: 600 };
+    const baseWidths = { depth: 60, stratum: 80, desc: 250, sptText: 140, sptGraph: 215, testsGraph: 200, cptGraph: 600 };
     if (strata.length === 0) { baseWidths.stratum = 0; baseWidths.desc = 0; }
     if (sptData.length === 0) { baseWidths.sptText = 0; baseWidths.sptGraph = 0; }
     if (atterberg.length === 0) { baseWidths.testsGraph = 0; }
     if (cpt.length === 0) { baseWidths.cptGraph = 0; }
     
     const baseWidth = Object.values(baseWidths).reduce((a,b)=>a+b, 0);
-    const extraColWidth = 200;
     const activeExtraTests = extraTests.filter(testKey => (properties[testKey] || []).length > 0);
-    const totalWidth = baseWidth + (activeExtraTests.length * extraColWidth);
+    
+    const extraColWidths = activeExtraTests.map(testKey => {
+        let maxLen = 0;
+        const testData = properties[testKey] || [];
+        testData.forEach(test => {
+            let vals = [];
+            for (const [k, v] of Object.entries(test)) {
+                if (k !== 'depth_m' && v !== "" && v !== null && v !== undefined) {
+                    let shortK = k.split('_')[0]; 
+                    if (shortK.length <= 2) shortK = k.split('_').slice(0,2).join('_'); 
+                    vals.push(`${shortK}: ${v}`);
+                }
+            }
+            const strLen = vals.join(', ').length;
+            if (strLen > maxLen) maxLen = strLen;
+        });
+        return Math.max(200, maxLen * 6 + 30);
+    });
+    
+    const extraTotalWidth = extraColWidths.reduce((sum, w) => sum + w, 0);
+    const totalWidth = baseWidth + extraTotalWidth;
     
     const activeWidths = [
         baseWidths.depth, baseWidths.stratum, baseWidths.desc,
@@ -107,7 +126,7 @@ window.renderBorelogChart = function(containerId, geoJsonData) {
     ].filter(w => w > 0);
     
     let gridTemplate = activeWidths.map(w => `${w}px`).join(' ');
-    activeExtraTests.forEach(() => { gridTemplate += ` ${extraColWidth}px`; });
+    extraColWidths.forEach(w => { gridTemplate += ` ${w}px`; });
     
     container.style.height = "100%";
     container.style.maxHeight = "100%";
@@ -580,7 +599,7 @@ window.renderBorelogChart = function(containerId, geoJsonData) {
         cols[6].appendChild(u2Wrapper);
     }
     
-    extraTests.forEach((testKey, idx) => {
+    activeExtraTests.forEach((testKey, idx) => {
         const testData = properties[testKey] || [];
         const colIdx = 7 + idx;
         
@@ -679,25 +698,43 @@ window.downloadBorelogSVG = function(geoJsonData, uid) {
     const PIXELS_PER_METER = 60;
     const totalHeight = headerHeight + maxDepth * PIXELS_PER_METER + remarksHeight;
     
-    const baseWidths = { depth: 60, stratum: 80, desc: 250, sptText: 140, sptGraph: 200, testsGraph: 200, cptGraph: 600 };
+    const baseWidths = { depth: 60, stratum: 80, desc: 250, sptText: 140, sptGraph: 215, testsGraph: 200, cptGraph: 600 };
     if (strata.length === 0) { baseWidths.stratum = 0; baseWidths.desc = 0; }
     if (sptData.length === 0) { baseWidths.sptText = 0; baseWidths.sptGraph = 0; }
     if (atterberg.length === 0) { baseWidths.testsGraph = 0; }
     if (cpt.length === 0) { baseWidths.cptGraph = 0; }
     
     const baseWidth = Object.values(baseWidths).reduce((a,b)=>a+b, 0);
-    const extraColWidth = 200;
-    
     const activeExtraTests = extraTests.filter(testKey => (properties[testKey] || []).length > 0);
-    const totalWidth = baseWidth + (activeExtraTests.length * extraColWidth);
+    
+    const extraColWidths = activeExtraTests.map(testKey => {
+        let maxLen = 0;
+        const testData = properties[testKey] || [];
+        testData.forEach(test => {
+            let vals = [];
+            for (const [k, v] of Object.entries(test)) {
+                if (k !== 'depth_m' && v !== "" && v !== null && v !== undefined) {
+                    let shortK = k.split('_')[0]; 
+                    if (shortK.length <= 2) shortK = k.split('_').slice(0,2).join('_'); 
+                    vals.push(`${shortK}: ${v}`);
+                }
+            }
+            const strLen = vals.join(', ').length;
+            if (strLen > maxLen) maxLen = strLen;
+        });
+        return Math.max(200, maxLen * 6 + 30);
+    });
+    
+    const extraTotalWidth = extraColWidths.reduce((sum, w) => sum + w, 0);
+    const totalWidth = baseWidth + extraTotalWidth;
     
     const colOffsets = [0];
     const widths = [baseWidths.depth, baseWidths.stratum, baseWidths.desc, baseWidths.sptText, baseWidths.sptGraph, baseWidths.testsGraph, baseWidths.cptGraph];
     let curOff = 0;
     widths.forEach(w => { curOff += w; colOffsets.push(curOff); });
     
-    activeExtraTests.forEach(() => {
-        curOff += extraColWidth;
+    extraColWidths.forEach(w => {
+        curOff += w;
         colOffsets.push(curOff);
     });
     
@@ -918,7 +955,7 @@ window.downloadBorelogSVG = function(geoJsonData, uid) {
         if (ptsU2.length > 0) svg += `<polyline points="${ptsU2.join(" ")}" fill="none" stroke="#0ea5e9" stroke-width="2" />`;
     }
     
-    extraTests.forEach((testKey, idx) => {
+    activeExtraTests.forEach((testKey, idx) => {
         const testData = properties[testKey] || [];
         const colIdx = 7 + idx;
         const xCenter = (colOffsets[colIdx] + colOffsets[colIdx+1]) / 2;
