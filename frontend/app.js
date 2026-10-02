@@ -213,7 +213,8 @@ const renderTooltipProps = (props, displayKeys, layerInfo) => {
                 (layerInfo.name && layerInfo.name.toLowerCase().includes('borelog'))
             );
             if (isBorelogLayer && trimmed.toLowerCase().endsWith('.json')) {
-                return `<a href="javascript:void(0)" onclick="if(window.openBorelogVisualizer) { window.openBorelogVisualizer('${trimmed}') } else { alert('Visualizer not loaded.') }" style="color:#2563eb; font-weight:normal; text-decoration:underline; font-size:inherit;">[borelog]</a>`;
+                const isAwaiting = layerInfo.table === "awaiting_borelogs" || layerInfo.table === "awaiting_borelogs.geojson" || (layerInfo.name && layerInfo.name.includes("Awaiting"));
+                return `<a href="javascript:void(0)" onclick="if(window.openBorelogVisualizer) { window.openBorelogVisualizer('${trimmed}', ${isAwaiting}) } else { alert('Visualizer not loaded.') }" style="color:#2563eb; font-weight:normal; text-decoration:underline; font-size:inherit;">[borelog]</a>`;
             }
         }
         return value;
@@ -1435,7 +1436,7 @@ if (iframeModal) {
 
 
 
-window.openBorelogVisualizer = async (f_file) => {
+window.openBorelogVisualizer = async (f_file, isAwaiting = false) => {
     document.getElementById('borelog-modal').classList.remove('hidden');
     const modalContent = document.querySelector('#borelog-modal .approval-modal-content');
     // if (modalContent) modalContent.style.overflowY = 'hidden';
@@ -1446,23 +1447,35 @@ window.openBorelogVisualizer = async (f_file) => {
     rootNode.innerHTML = "<div style='padding: 20px;'>Loading borelog data...</div>";
     
     try {
-        const res = await fetch(`${API_BASE_URL.replace("/api", "")}/borelogs/${f_file}`);
+        const fetchPath = isAwaiting ? `/maps/borelogs/staged/${f_file}` : `${API_BASE_URL.replace("/api", "")}/borelogs/${f_file}`;
+        const res = await fetch(fetchPath);
         if (!res.ok) throw new Error("Could not fetch " + f_file);
         const data = await res.json();
         const uid = f_file.replace(/\.json$/i, "");
         
         rootNode.innerHTML = document.getElementById("borelog-visualizer-template").innerHTML;
         
+        document.getElementById("export-json-btn").onclick = () => {
+            if (window.exportBorelogJSON) {
+                window.exportBorelogJSON(data, uid);
+            } else {
+                alert("JSON export engine could not load.");
+            }
+        };
+        
         document.getElementById("export-xlsx-btn").onclick = () => {
-            if (window.exportBorelogToXLSX) window.exportBorelogToXLSX(data, uid);
-            else alert("Export engine not loaded.");
+            if (window.exportBorelogToXLSX) {
+                window.exportBorelogToXLSX(data, uid);
+            } else {
+                alert("XLSX export engine could not load.");
+            }
         };
         
         document.getElementById("export-graphic-btn").onclick = () => {
             if (window.downloadBorelogSVG) {
                 window.downloadBorelogSVG(data, uid);
             } else {
-                alert("SVG exporter not loaded.");
+                alert("SVG exporter not could not load.");
             }
         };
         
@@ -1470,6 +1483,18 @@ window.openBorelogVisualizer = async (f_file) => {
             window.renderBorelogChart("borelog-visualizer-container", data);
         } else {
             document.getElementById("borelog-visualizer-container").innerHTML = "<p style='color:red;'>Chart renderer not loaded.</p>";
+        }
+        
+        if (isAwaiting) {
+            const btnContainer = rootNode.querySelector('#visualizer-action-buttons');
+            if (btnContainer) {
+                const approveBtn = document.createElement('button');
+                approveBtn.className = "teal_button";
+                approveBtn.innerText = "Approve";
+                approveBtn.style.backgroundColor = "#10b981"; // vibrant green
+                approveBtn.onclick = (e) => window.handleApproveFromMap(f_file, e);
+                btnContainer.appendChild(approveBtn);
+            }
         }
         
     } catch (e) {
@@ -1812,3 +1837,47 @@ window.openUpdateMapsLogWindow = async () => {
 
 
 
+
+window.handleApproveFromMap = async (f_file, event) => {
+    let storedHash = window.adminCredentials;
+    if (!storedHash) {
+        const pass = prompt("Admin Password required to approve this borelog:");
+        if (!pass) return;
+        storedHash = btoa("admin:" + pass);
+    }
+    
+    const approveBtn = event.target;
+    const originalText = approveBtn.innerText;
+    approveBtn.innerText = "Approving...";
+    approveBtn.disabled = true;
+    
+    try {
+        const authRes = await fetch(`${API_BASE_URL}/borelog/auth`, { headers: { 'Authorization': 'Basic ' + storedHash } });
+        if (!authRes.ok) {
+            alert("Invalid admin password.");
+            approveBtn.innerText = originalText;
+            approveBtn.disabled = false;
+            return;
+        }
+        window.adminCredentials = storedHash;
+        
+        const res = await fetch(`${API_BASE_URL}/borelog/approve/${f_file}`, {
+            method: "POST",
+            headers: { 'Authorization': 'Basic ' + storedHash }
+        });
+        
+        if (res.ok) {
+            document.getElementById('borelog-modal').classList.add('hidden');
+            window.location.reload();
+        } else {
+            const e = await res.json();
+            alert("Approval failed: " + (e.detail || "Unknown error"));
+            approveBtn.innerText = originalText;
+            approveBtn.disabled = false;
+        }
+    } catch (e) {
+        alert("Error approving borelog: " + e.message);
+        approveBtn.innerText = originalText;
+        approveBtn.disabled = false;
+    }
+};
