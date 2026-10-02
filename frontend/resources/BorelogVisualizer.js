@@ -373,6 +373,7 @@ window.renderBorelogChart = function(containerId, geoJsonData) {
         tick.style.width = "100%";
         tick.style.textAlign = "center";
         tick.style.fontSize = "12px";
+        tick.style.fontFamily = "'JetBrains Mono', Consolas, monospace";
         tick.style.color = "#71717a";
         tick.style.zIndex = "1";
         tick.innerText = i.toFixed(1);
@@ -398,6 +399,7 @@ window.renderBorelogChart = function(containerId, geoJsonData) {
         rect.style.justifyContent = "center";
         rect.style.fontWeight = "bold";
         rect.style.fontSize = "12px";
+        rect.style.fontFamily = "'JetBrains Mono', Consolas, monospace";
         rect.style.color = "#333";
         rect.style.zIndex = "1";
         rect.innerText = s.class || s.uscs_class || "";
@@ -437,6 +439,7 @@ window.renderBorelogChart = function(containerId, geoJsonData) {
         txt.style.width = "100%";
         txt.style.textAlign = "center";
         txt.style.fontSize = "12px";
+        txt.style.fontFamily = "'JetBrains Mono', Consolas, monospace";
         txt.style.color = "#52525b";
         txt.style.zIndex = "1";
         
@@ -690,31 +693,76 @@ window.renderBorelogChart = function(containerId, geoJsonData) {
     activeExtraTests.forEach((testKey, idx) => {
         const testData = properties[testKey] || [];
         const colIdx = 7 + idx;
+        const colW = extraColWidths[idx];
         
+        let boxes = [];
         testData.forEach(test => {
-            const y = (parseFloat(test.depth_m) || 0) * PIXELS_PER_METER;
             let vals = [];
             for (const [k, v] of Object.entries(test)) {
                 if (k !== 'depth_m' && v !== "" && v !== null && v !== undefined) {
-                    let shortK = k.split('_')[0];
-                    if (shortK.length <= 2) shortK = k.split('_').slice(0,2).join('_');
-                    vals.push(`${shortK}: ${v}`);
+                    vals.push(formatKey(k, v, 'html'));
                 }
             }
             if (vals.length > 0) {
-                const txt = document.createElement('div');
-                txt.style.position = "absolute";
-                txt.style.top = `${y - 8}px`;
-                txt.style.width = "100%";
-                txt.style.textAlign = "center";
-                txt.style.fontSize = "11px";
-                txt.style.color = "#52525b";
-                txt.style.padding = "0 4px";
-                txt.style.boxSizing = "border-box";
-                txt.style.wordWrap = "break-word";
-                txt.innerText = vals.join(', ');
-                cols[colIdx].appendChild(txt);
+                let lines = wrapTextPairs(vals, 26);
+                let boxHeight = 12 + lines.length * 14;
+                let Y = (parseFloat(test.depth_m) || 0) * PIXELS_PER_METER;
+                boxes.push({ lines, Y, boxHeight });
             }
+        });
+        
+        boxes.sort((a,b) => a.Y - b.Y);
+        let laneEndY = [];
+        let maxL = 0;
+        
+        boxes.forEach(box => {
+            let L = 0;
+            while (L < laneEndY.length && box.Y < laneEndY[L]) {
+                L++;
+            }
+            box.L = L;
+            if (L > maxL) maxL = L;
+            laneEndY[L] = box.Y + box.boxHeight + 8;
+        });
+        
+        boxes.forEach(box => {
+            const wrapper = document.createElement('div');
+            wrapper.style.position = "absolute";
+            wrapper.style.top = `${box.Y}px`;
+            let leftOffset = (colW - (150 + maxL*160))/2 + box.L * 160;
+            wrapper.style.left = `${leftOffset}px`;
+            wrapper.style.width = "150px";
+            wrapper.style.background = "#f8fafc";
+            wrapper.style.border = "1px solid #cbd5e1";
+            wrapper.style.borderRadius = "4px";
+            wrapper.style.padding = "6px 4px";
+            wrapper.style.boxSizing = "border-box";
+            wrapper.style.boxShadow = "0 1px 2px rgba(0,0,0,0.05)";
+            
+            const dot = document.createElement('div');
+            dot.style.position = "absolute";
+            dot.style.top = "-4px";
+            dot.style.left = "calc(50% - 4px)";
+            dot.style.width = "8px";
+            dot.style.height = "8px";
+            dot.style.borderRadius = "50%";
+            dot.style.background = "#3b82f6";
+            dot.style.border = "1px solid white";
+            wrapper.appendChild(dot);
+            
+            box.lines.forEach(line => {
+                const txt = document.createElement('div');
+                txt.style.textAlign = "center";
+                txt.style.fontSize = "10px";
+        txt.style.fontFamily = "'JetBrains Mono', Consolas, monospace";
+                txt.style.color = "#475569";
+                txt.style.lineHeight = "1.4";
+                txt.style.fontFamily = "'JetBrains Mono', Consolas, monospace";
+                txt.innerHTML = line;
+                wrapper.appendChild(txt);
+            });
+            
+            cols[colIdx].appendChild(wrapper);
         });
     });
     
@@ -851,7 +899,12 @@ window.downloadBorelogSVG = function(geoJsonData, uid) {
         headers.push(name);
     });
     
-    let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${totalWidth}" height="${totalHeight}" style="background: white; font-family: sans-serif;">`;
+    let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${totalWidth}" height="${totalHeight}" style="background: white; font-family: sans-serif;">
+<defs>
+    <style>
+        .plot-data { font-family: 'JetBrains Mono', Consolas, monospace; }
+    </style>
+</defs>`;
     
     svg += `<rect x="0" y="0" width="${totalWidth}" height="${metaHeight}" fill="#ffffff" />`;
     svg += `<text x="24" y="24" font-size="14px" font-weight="bold" fill="#3f3f46">Borelog ID:</text><text x="130" y="24" font-size="14px" fill="#3f3f46">${properties.borelog_id || properties.borehole_id || properties.Name || ""}</text>`;
@@ -900,7 +953,7 @@ window.downloadBorelogSVG = function(geoJsonData, uid) {
         let textY = y + 4;
         if (i === 0) textY = y + 12;
         if (i === maxDepth) textY = y - 4;
-        svg += `<text x="30" y="${textY}" font-size="12px" font-weight="500" fill="#71717a" text-anchor="middle">${i.toFixed(1)}</text>`;
+        svg += `<text x="30" y="${textY}" class="plot-data" font-size="12px" font-weight="500" fill="#71717a" text-anchor="middle">${i.toFixed(1)}</text>`;
     }
     
     strata.forEach(s => {
@@ -911,7 +964,7 @@ window.downloadBorelogSVG = function(geoJsonData, uid) {
         
         const color = getColorForClass(s.class || s.uscs_class);
         svg += `<rect x="${colOffsets[1] + 8}" y="${y}" width="64" height="${h}" fill="${color}" stroke="rgba(0,0,0,0.1)" stroke-width="1" />`;
-        svg += `<text x="${colOffsets[1] + 40}" y="${y + h/2 + 4}" font-size="12px" font-weight="bold" fill="#333" text-anchor="middle">${s.class || s.uscs_class || ""}</text>`;
+        svg += `<text x="${colOffsets[1] + 40}" y="${y + h/2 + 4}" class="plot-data" font-size="12px" font-weight="bold" fill="#333" text-anchor="middle">${s.class || s.uscs_class || ""}</text>`;
         
         svg += `<foreignObject x="${colOffsets[2]}" y="${y}" width="250" height="${h}">
             <div xmlns="http://www.w3.org/1999/xhtml" style="width:100%; height:100%; padding: 4px 8px; box-sizing: border-box; font-size: 13px; color: #3f3f46; display: flex; align-items: center; border-bottom: 1px dashed #d4d4d8; overflow: hidden;">
@@ -929,7 +982,7 @@ window.downloadBorelogSVG = function(geoJsonData, uid) {
         let blowsStr = [b1, b2, b3].filter(b => b !== "").join(", ");
         const nval = spt.n_value || "-";
         
-        svg += `<text x="${colOffsets[3] + 70}" y="${y + 4}" font-size="12px" fill="#a1a1aa" text-anchor="middle">${blowsStr}, N=${nval}</text>`;
+        svg += `<text x="${colOffsets[3] + 70}" y="${y + 4}" class="plot-data" font-size="12px" fill="#a1a1aa" text-anchor="middle">${blowsStr}, N=${nval}</text>`;
     });
     
     for(let val=0; val<=50; val+=10) {
@@ -939,7 +992,7 @@ window.downloadBorelogSVG = function(geoJsonData, uid) {
         let anchor = "middle";
         if(val === 0) { textX = xPos + 2; anchor = "start"; }
         if(val === 50) { textX = xPos - 2; anchor = "end"; }
-        svg += `<text x="${textX}" y="${headerHeight + 12}" font-size="10px" fill="#a1a1aa" text-anchor="${anchor}">${val}</text>`;
+        svg += `<text x="${textX}" y="${headerHeight + 12}" class="plot-data" font-size="10px" fill="#a1a1aa" text-anchor="${anchor}">${val}</text>`;
     }
     if (sptData.length > 0) {
         let pts = [];
@@ -964,7 +1017,7 @@ window.downloadBorelogSVG = function(geoJsonData, uid) {
         let anchor = "middle";
         if(val === 0) { textX = xPos + 2; anchor = "start"; }
         if(val === 100) { textX = xPos - 2; anchor = "end"; }
-        svg += `<text x="${textX}" y="${headerHeight + 12}" font-size="10px" fill="#a1a1aa" text-anchor="${anchor}">${val}</text>`;
+        svg += `<text x="${textX}" y="${headerHeight + 12}" class="plot-data" font-size="10px" fill="#a1a1aa" text-anchor="${anchor}">${val}</text>`;
     }
     if (atterberg.length > 0) {
         let llPts = [];
@@ -978,13 +1031,13 @@ window.downloadBorelogSVG = function(geoJsonData, uid) {
                 let x = colOffsets[5] + Math.min(Math.max(wl, 0), 100) / 100 * 200;
                 llPts.push(`${x},${y}`);
                 svg += `<circle cx="${x}" cy="${y}" r="5" fill="#ef4444" />`;
-                svg += `<text x="${x + 8}" y="${y + 4}" font-size="10px" fill="#ef4444">${wl.toFixed(1)}</text>`;
+                svg += `<text x="${x + 8}" y="${y + 4}" class="plot-data" font-size="10px" fill="#ef4444">${wl.toFixed(1)}</text>`;
             }
             if (!isNaN(wp)) {
                 let x = colOffsets[5] + Math.min(Math.max(wp, 0), 100) / 100 * 200;
                 plPts.push(`${x},${y}`);
                 svg += `<rect x="${x - 4}" y="${y - 4}" width="8" height="8" fill="#10b981" />`;
-                svg += `<text x="${x - 8}" y="${y + 4}" font-size="10px" fill="#10b981" text-anchor="end">${wp.toFixed(1)}</text>`;
+                svg += `<text x="${x - 8}" y="${y + 4}" class="plot-data" font-size="10px" fill="#10b981" text-anchor="end">${wp.toFixed(1)}</text>`;
             }
             if (!isNaN(wl) && !isNaN(wp)) {
                 let x1 = colOffsets[5] + Math.min(Math.max(wl, 0), 100) / 100 * 200;
@@ -996,7 +1049,7 @@ window.downloadBorelogSVG = function(geoJsonData, uid) {
         if (plPts.length > 0) svg += `<polyline points="${plPts.join(" ")}" fill="none" stroke="#10b981" stroke-width="1" stroke-dasharray="2 2" />`;
         
         svg += `<rect x="${colOffsets[6] - 60}" y="${totalHeight - remarksHeight - 20}" width="50" height="15" fill="white" stroke="#e4e4e7" />`;
-        svg += `<text x="${colOffsets[6] - 35}" y="${totalHeight - remarksHeight - 9}" font-size="10px" fill="#ef4444" text-anchor="middle">LL / PL</text>`;
+        svg += `<text x="${colOffsets[6] - 35}" y="${totalHeight - remarksHeight - 9}" class="plot-data" font-size="10px" fill="#ef4444" text-anchor="middle">LL / PL</text>`;
     }
     
     // CPT Charts (SVG)
@@ -1009,7 +1062,7 @@ window.downloadBorelogSVG = function(geoJsonData, uid) {
             let anchor = "middle";
             if(val === 0) { textX = xPos + 2; anchor = "start"; }
             if(val === 20) { textX = xPos - 2; anchor = "end"; }
-            svg += `<text x="${textX}" y="${headerHeight + 12}" font-size="10px" fill="#a1a1aa" text-anchor="${anchor}">${val}</text>`;
+            svg += `<text x="${textX}" y="${headerHeight + 12}" class="plot-data" font-size="10px" fill="#a1a1aa" text-anchor="${anchor}">${val}</text>`;
         }
         
         // Rf chart (0 to 10 %)
@@ -1020,7 +1073,7 @@ window.downloadBorelogSVG = function(geoJsonData, uid) {
             let anchor = "middle";
             if(val === 0) { textX = xPos + 2; anchor = "start"; }
             if(val === 10) { textX = xPos - 2; anchor = "end"; }
-            svg += `<text x="${textX}" y="${headerHeight + 12}" font-size="10px" fill="#a1a1aa" text-anchor="${anchor}">${val}</text>`;
+            svg += `<text x="${textX}" y="${headerHeight + 12}" class="plot-data" font-size="10px" fill="#a1a1aa" text-anchor="${anchor}">${val}</text>`;
         }
         
         // u2 chart (0 to 1000 kPa)
@@ -1031,7 +1084,7 @@ window.downloadBorelogSVG = function(geoJsonData, uid) {
             let anchor = "middle";
             if(val === 0) { textX = xPos + 2; anchor = "start"; }
             if(val === 1000) { textX = xPos - 2; anchor = "end"; }
-            svg += `<text x="${textX}" y="${headerHeight + 12}" font-size="10px" fill="#a1a1aa" text-anchor="${anchor}">${val}</text>`;
+            svg += `<text x="${textX}" y="${headerHeight + 12}" class="plot-data" font-size="10px" fill="#a1a1aa" text-anchor="${anchor}">${val}</text>`;
         }
 
         let ptsQc = [], ptsRf = [], ptsU2 = [];
@@ -1104,7 +1157,7 @@ window.downloadBorelogSVG = function(geoJsonData, uid) {
             svg += `<circle cx="${X_start + 75}" cy="${Y_svg}" r="3" fill="#3b82f6" stroke="#ffffff" stroke-width="1" />`;
             
             box.lines.forEach((line, i) => {
-                svg += `<text x="${X_start + 75}" y="${Y_svg + 16 + i*14}" font-size="10px" fill="#475569" text-anchor="middle">${line}</text>`;
+                svg += `<text x="${X_start + 75}" y="${Y_svg + 16 + i*14}" class="plot-data" font-size="10px" fill="#475569" text-anchor="middle">${line}</text>`;
             });
         });
     });
