@@ -1,3 +1,24 @@
+
+function wrapTextPairs(pairs, maxChars = 25) {
+    let lines = [];
+    let currentLine = "";
+    for (let i = 0; i < pairs.length; i++) {
+        let pair = pairs[i];
+        if (currentLine.length === 0) {
+            currentLine = pair;
+        } else if (currentLine.length + 2 + pair.length <= maxChars) {
+            currentLine += ", " + pair;
+        } else {
+            lines.push(currentLine);
+            currentLine = pair;
+        }
+    }
+    if (currentLine.length > 0) {
+        lines.push(currentLine);
+    }
+    return lines;
+}
+
 const pastelColors = [
     "#fbcfe8", "#fde047", "#86efac", "#93c5fd", "#d8b4fe", "#fdba74", "#67e8f9", "#fca5a5",
     "#bef264", "#c4b5fd", "#fcd34d", "#7dd3fc", "#f9a8d4", "#f87171", "#6ee7b7", "#a78bfa",
@@ -100,8 +121,8 @@ window.renderBorelogChart = function(containerId, geoJsonData) {
     const activeExtraTests = extraTests.filter(testKey => (properties[testKey] || []).length > 0);
     
     const extraColWidths = activeExtraTests.map(testKey => {
-        let maxLen = 0;
         const testData = properties[testKey] || [];
+        let boxes = [];
         testData.forEach(test => {
             let vals = [];
             for (const [k, v] of Object.entries(test)) {
@@ -111,10 +132,28 @@ window.renderBorelogChart = function(containerId, geoJsonData) {
                     vals.push(`${shortK}: ${v}`);
                 }
             }
-            const strLen = vals.join(', ').length;
-            if (strLen > maxLen) maxLen = strLen;
+            if (vals.length > 0) {
+                let lines = wrapTextPairs(vals, 26);
+                let boxHeight = 12 + lines.length * 14;
+                let Y = (parseFloat(test.depth_m) || 0) * PIXELS_PER_METER;
+                boxes.push({ Y, boxHeight });
+            }
         });
-        return Math.max(200, maxLen * 6 + 30);
+        
+        boxes.sort((a,b) => a.Y - b.Y);
+        let laneEndY = [];
+        let maxL = 0;
+        boxes.forEach(box => {
+            let L = 0;
+            while (L < laneEndY.length && box.Y < laneEndY[L]) {
+                L++;
+            }
+            if (L > maxL) maxL = L;
+            laneEndY[L] = box.Y + box.boxHeight + 8;
+        });
+        
+        // base width is 200. box width is 150. shifted box adds 160px per lane.
+        return Math.max(200, 160 + maxL * 160);
     });
     
     const extraTotalWidth = extraColWidths.reduce((sum, w) => sum + w, 0);
@@ -708,8 +747,8 @@ window.downloadBorelogSVG = function(geoJsonData, uid) {
     const activeExtraTests = extraTests.filter(testKey => (properties[testKey] || []).length > 0);
     
     const extraColWidths = activeExtraTests.map(testKey => {
-        let maxLen = 0;
         const testData = properties[testKey] || [];
+        let boxes = [];
         testData.forEach(test => {
             let vals = [];
             for (const [k, v] of Object.entries(test)) {
@@ -719,10 +758,28 @@ window.downloadBorelogSVG = function(geoJsonData, uid) {
                     vals.push(`${shortK}: ${v}`);
                 }
             }
-            const strLen = vals.join(', ').length;
-            if (strLen > maxLen) maxLen = strLen;
+            if (vals.length > 0) {
+                let lines = wrapTextPairs(vals, 26);
+                let boxHeight = 12 + lines.length * 14;
+                let Y = (parseFloat(test.depth_m) || 0) * PIXELS_PER_METER;
+                boxes.push({ Y, boxHeight });
+            }
         });
-        return Math.max(200, maxLen * 6 + 30);
+        
+        boxes.sort((a,b) => a.Y - b.Y);
+        let laneEndY = [];
+        let maxL = 0;
+        boxes.forEach(box => {
+            let L = 0;
+            while (L < laneEndY.length && box.Y < laneEndY[L]) {
+                L++;
+            }
+            if (L > maxL) maxL = L;
+            laneEndY[L] = box.Y + box.boxHeight + 8;
+        });
+        
+        // base width is 200. box width is 150. shifted box adds 160px per lane.
+        return Math.max(200, 160 + maxL * 160);
     });
     
     const extraTotalWidth = extraColWidths.reduce((sum, w) => sum + w, 0);
@@ -958,10 +1015,11 @@ window.downloadBorelogSVG = function(geoJsonData, uid) {
     activeExtraTests.forEach((testKey, idx) => {
         const testData = properties[testKey] || [];
         const colIdx = 7 + idx;
-        const xCenter = (colOffsets[colIdx] + colOffsets[colIdx+1]) / 2;
+        const colW = extraColWidths[idx];
+        const colStart = colOffsets[colIdx];
         
+        let boxes = [];
         testData.forEach(test => {
-            const y = headerHeight + (parseFloat(test.depth_m) || 0) * PIXELS_PER_METER;
             let vals = [];
             for (const [k, v] of Object.entries(test)) {
                 if (k !== 'depth_m' && v !== "" && v !== null && v !== undefined) {
@@ -971,8 +1029,38 @@ window.downloadBorelogSVG = function(geoJsonData, uid) {
                 }
             }
             if (vals.length > 0) {
-                svg += `<text x="${xCenter}" y="${y + 4}" font-size="10px" fill="#52525b" text-anchor="middle">${vals.join(', ')}</text>`;
+                let lines = wrapTextPairs(vals, 26);
+                let boxHeight = 12 + lines.length * 14;
+                let Y = (parseFloat(test.depth_m) || 0) * PIXELS_PER_METER;
+                boxes.push({ lines, Y, boxHeight });
             }
+        });
+        
+        boxes.sort((a,b) => a.Y - b.Y);
+        let laneEndY = [];
+        let maxL = 0;
+        
+        boxes.forEach(box => {
+            let L = 0;
+            while (L < laneEndY.length && box.Y < laneEndY[L]) {
+                L++;
+            }
+            box.L = L;
+            if (L > maxL) maxL = L;
+            laneEndY[L] = box.Y + box.boxHeight + 8;
+        });
+        
+        boxes.forEach(box => {
+            let Y_svg = headerHeight + box.Y;
+            let leftOffset = (colW - (150 + maxL*160))/2 + box.L * 160;
+            let X_start = colStart + leftOffset;
+            
+            svg += `<rect x="${X_start}" y="${Y_svg}" width="150" height="${box.boxHeight}" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="4" />`;
+            svg += `<circle cx="${X_start + 75}" cy="${Y_svg}" r="3" fill="#3b82f6" stroke="#ffffff" stroke-width="1" />`;
+            
+            box.lines.forEach((line, i) => {
+                svg += `<text x="${X_start + 75}" y="${Y_svg + 16 + i*14}" font-size="10px" fill="#475569" text-anchor="middle">${line}</text>`;
+            });
         });
     });
     
