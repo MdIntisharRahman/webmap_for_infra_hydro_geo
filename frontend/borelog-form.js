@@ -41,7 +41,7 @@ const getRowHTML = (type) => {
                 <td data-label="Description"><input required type="text" class="f-desc" placeholder="Soil description" placeholder="Add a concise description"></td>
                 <td data-label="Actions" class="action-pill-td">
                     <span class="empty-table-row-filler" title="Type into any field to begin"><img src="resources/images/enter-svgrepo.svg"></span>
-                    <div class="action-pill" style="display: inline-flex; align-items: center; justify-content: center; gap: 5px; padding: 2px 9px; height: 32px; /*! background: #fff; */"> 
+                    <div class="action-pill"> 
                         <button type="button" class="insert-btn" onclick="insertRowAfter(this)" title="Insert Row Below">🞣</button>
                         <button type="button" class="del-btn" onclick="deleteRow(this)" title="Delete Row">𐩃</button>
                     </div>

@@ -138,7 +138,7 @@ const getFeatureStyle = (feature, defaultColor, layerTransparency = null) => {
     ) {
         t = parseFloat(feature.properties.f_class_transparency);
     }
-    
+
     if (t !== null && !isNaN(t)) {
         finalOpacity = (100 - t) / 100;
         finalFillOpacity = isPolygon ? Math.min(0.3, finalOpacity) : isPoint ? Math.min(0.8, finalOpacity) : finalOpacity;
@@ -171,9 +171,9 @@ const getHighlightStyle = (feature, color) => {
 // TOOLTIP RENDERING
 // ============================================================================
 
-window.openImodal = function(targetID, val) {
+window.openImodal = function (targetID, val, isAwaitingBorelog = false) {
     if (targetID === 'borelog-modal' && typeof window.openBorelogVisualizer === 'function') {
-        window.openBorelogVisualizer(val);
+        window.openBorelogVisualizer(val, isAwaitingBorelog);
     } else {
         const modal = document.getElementById(targetID);
         if (modal) {
@@ -198,7 +198,7 @@ const renderTooltipProps = (props, displayKeys, layerInfo) => {
 
     let count = 0;
 
-            const formatValue = (keyLabel, value) => {
+    const formatValue = (keyLabel, value) => {
         if (typeof value === "string") {
             const trimmed = value.trim();
             if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
@@ -213,8 +213,9 @@ const renderTooltipProps = (props, displayKeys, layerInfo) => {
                 (layerInfo.name && layerInfo.name.toLowerCase().includes('borelog'))
             );
             if (isBorelogLayer && trimmed.toLowerCase().endsWith('.json')) {
-                const isAwaiting = layerInfo.table === "awaiting_borelogs" || layerInfo.table === "awaiting_borelogs.geojson" || (layerInfo.name && layerInfo.name.includes("Awaiting"));
-                return `<a href="javascript:void(0)" onclick="if(window.openBorelogVisualizer) { window.openBorelogVisualizer('${trimmed}', ${isAwaiting}) } else { alert('Visualizer not loaded.') }" style="color:#2563eb; font-weight:normal; text-decoration:underline; font-size:inherit;">[borelog]</a>`;
+                const isAwaitingBorelog = layerInfo && layerInfo.name && layerInfo.name.toLowerCase().includes("awaiting");
+                return `<a href="javascript:void(0)" onclick="if(window.openBorelogVisualizer) { window.openBorelogVisualizer('${trimmed}', ${isAwaitingBorelog}) } 
+                else { alert('Visualizer not loaded.') }" style="color:#2563eb; font-weight:bold; text-decoration:underline; font-size:inherit; cursor:pointer;">[borelog - ${isAwaitingBorelog} - ${layerInfo ? layerInfo.name : "null"}]</a>`;
             }
         }
         return value;
@@ -225,7 +226,7 @@ const renderTooltipProps = (props, displayKeys, layerInfo) => {
         for (const pair of displayKeys) {
             let fieldConfig = pair[0];
             const label = pair[1];
-            
+
             let baseField = fieldConfig;
             let configStr = null;
             if (fieldConfig.includes('(=>') && fieldConfig.endsWith('=>)')) {
@@ -233,13 +234,13 @@ const renderTooltipProps = (props, displayKeys, layerInfo) => {
                 baseField = parts[0].trim();
                 configStr = parts[1].replace('=>)', '').trim();
             }
-            
+
             const val = props[baseField];
 
             if (val === undefined || val === null || val === "") continue;
 
             let formattedVal = formatValue(label, val);
-            
+
             if (configStr) {
                 let match = configStr.match(/^(\{.*?\})\s*,\s*(.*)$/);
                 if (match) {
@@ -248,23 +249,27 @@ const renderTooltipProps = (props, displayKeys, layerInfo) => {
                         let tfStr = match[1].replace(/[{}]/g, '');
                         tfStr.split(',').forEach(kv => {
                             let [k, v] = kv.split(':');
-                            if(k && v) typeFormat[k.trim()] = v.trim();
+                            if (k && v) typeFormat[k.trim()] = v.trim();
                         });
-                    } catch(e) {}
-                    
+                    } catch (e) { }
+
                     let remainingStr = match[2];
                     let rParts = remainingStr.split(',').map(s => s.trim());
                     let mask = rParts[0] || '';
                     let target = rParts[1] || '';
                     let targetID = rParts[2] || '';
-                    
+
                     let linkText = mask ? mask : val;
-                    
+
                     if (typeFormat.type === 'link' || typeFormat.type === 'file') {
                         if (target === 'newtab') {
                             formattedVal = `<a href="${val}" target="_blank" style="color:var(--accent-blue); text-decoration:underline;">${linkText}</a>`;
                         } else if (target === 'imodal') {
-                            formattedVal = `<a href="javascript:void(0)" onclick="openImodal('${targetID}', '${val}')" style="color:var(--accent-blue); text-decoration:underline;">${linkText}</a>`;
+                            let isAwaitingBorelog = false;
+                            if (targetID === 'borelog-modal') {
+                                isAwaitingBorelog = layerInfo && layerInfo.name && layerInfo.name.toLowerCase().includes("awaiting") ? true : false;
+                            }
+                            formattedVal = `<a href="javascript:void(0)" onclick="openImodal('${targetID}', '${val}', ${isAwaitingBorelog})" style="color:var(--accent-blue); text-decoration:underline;">${linkText}</a>`;
                         }
                     }
                 }
@@ -424,7 +429,7 @@ async function fetchAndRenderLayers() {
             if (rMetaRes.ok) {
                 window.rasterMetadata = await rMetaRes.json();
             }
-        } catch(e) {
+        } catch (e) {
             console.warn("No raster metadata:", e);
         }
 
@@ -508,7 +513,7 @@ async function fetchAndRenderLayers() {
                 e.target.classList.add("active");
                 const targetId = e.target.dataset.target;
                 document.getElementById(targetId).classList.add("active");
-                
+
                 if (targetId === "tab-content-about-us") {
                     tabContentAreaEl.classList.add("no-scrollbar");
                 } else {
@@ -536,7 +541,7 @@ async function fetchAndRenderLayers() {
                 .then((res) => res.json())
                 .then((data) => {
                     tabContentWrappers["About Us"].innerHTML =
-                        `<div id="about-us-content">${marked.parse ? marked.parse(data.content, {breaks: true}) : data.content}</div>`;
+                        `<div id="about-us-content">${marked.parse ? marked.parse(data.content, { breaks: true }) : data.content}</div>`;
                 })
                 .catch((err) => {
                     tabContentWrappers["About Us"].innerHTML =
@@ -544,7 +549,7 @@ async function fetchAndRenderLayers() {
                 });
         }
 
-        
+
         if (tabContentWrappers["Control Tools"]) {
             tabContentWrappers["Control Tools"].innerHTML = `
                 <div style="padding: 15px; font-family: var(--font-body-special);">
@@ -581,21 +586,21 @@ async function fetchAndRenderLayers() {
             const item = document.createElement("div");
             item.className = "layer-item";
             item.dataset.table = layerInfo.table;
-            
+
             if (layerInfo.transparency !== null && layerInfo.transparency < 0) {
                 item.style.display = "none";
                 layerInfo.show_first = true; // force load
             }
-            
+
             let isVisuallyActive = layerInfo.show_first !== false;
             let isLoaded = layerInfo.show_first !== false;
-            
+
             if (isVisuallyActive) {
                 item.classList.add("active");
             }
 
             const isBasemap = layerInfo.type && layerInfo.type.toLowerCase() === 'basemap';
-            
+
             let creditBtnUI = "";
             if (layerInfo.credit_page && layerInfo.credit_page.trim() !== '' && !isBasemap) {
                 creditBtnUI = `<div class="credit-btn" data-url="credits/${layerInfo.credit_page}" title="View Credits">Cr</div>`;
@@ -606,7 +611,7 @@ async function fetchAndRenderLayers() {
             const inputType = isBasemap ? 'radio' : 'checkbox';
             const inputName = isBasemap ? 'name="basemap-group"' : '';
             const classExtras = isBasemap ? 'basemap-radio layer-load-cb' : 'layer-load-cb';
-            
+
             checkboxUI = `
                 <label class="ios-checkbox">
                   <input id="${checkboxId}" class="${classExtras}" ${inputName} type="${inputType}" ${isChecked} />
@@ -634,12 +639,12 @@ async function fetchAndRenderLayers() {
                 </div>
                 <div class="toggle-switch" style="flex-shrink: 0;"></div>
             `;
-            
+
             const toggleSwitch = item.querySelector('.toggle-switch');
             const loadCb = item.querySelector('.layer-load-cb');
             const colorUI = item.querySelector('.layer-color-ui');
             const subLegendUI = item.querySelector('.sub-legend-ui');
-            
+
             const crBtn = item.querySelector(".credit-btn");
             if (crBtn) {
                 crBtn.addEventListener("click", (e) => {
@@ -664,11 +669,11 @@ async function fetchAndRenderLayers() {
                 nameEl.style.transition = `transform 0.3s ease`;
                 nameEl.style.transform = `translateX(0)`;
             };
-            
+
             item.addEventListener('mouseenter', handleSlide);
             item.addEventListener('mouseleave', handleReset);
-            item.addEventListener('touchstart', handleSlide, {passive: true});
-            item.addEventListener('touchend', () => { setTimeout(handleReset, 1500); }, {passive: true});
+            item.addEventListener('touchstart', handleSlide, { passive: true });
+            item.addEventListener('touchend', () => { setTimeout(handleReset, 1500); }, { passive: true });
 
             tabContentWrappers[layerInfo.tab].appendChild(item);
 
@@ -693,22 +698,22 @@ async function fetchAndRenderLayers() {
                                 attributionHtml = layerInfo.credit_page;
                             }
                         }
-                        
+
                         let maxZoom = 19;
                         if (layerInfo.zoom_level) {
                             maxZoom = parseInt(layerInfo.zoom_level, 10) || 19;
                         }
-                        
+
                         geoLayer = L.tileLayer(layerInfo.filename, {
                             maxZoom: maxZoom,
                             attribution: attributionHtml,
                             pane: "tilePane"
                         });
-                        
+
                         colorUI.innerHTML = `<div style="width: 1em; height: 1em; border-radius: 50%; background: #cbd5e1; flex-shrink:0;"></div>`;
                     } else if (layerInfo.type && layerInfo.type.toLowerCase() === "raster") {
                         const rMeta = window.rasterMetadata && window.rasterMetadata[layerInfo.filename];
-                        
+
                         let rasterOpacity = 0.7;
                         if (layerInfo.transparency !== null) {
                             if (layerInfo.transparency < 0) {
@@ -717,26 +722,26 @@ async function fetchAndRenderLayers() {
                                 rasterOpacity = (100 - layerInfo.transparency) / 100;
                             }
                         }
-                        
+
                         if (rMeta) {
                             const imageUrl = API_BASE_URL.replace("/api", "") + rMeta.png_url + "?v=" + new Date().getTime();
                             geoLayer = L.imageOverlay(imageUrl, rMeta.bounds, {
                                 opacity: rasterOpacity,
                                 pane: paneName
                             });
-                            
+
                             // Because raster images don't download until added to the map, 
                             // we must manage the spinner independently via Leaflet events
                             geoLayer.on('add', () => { toggleSwitch.classList.add('loading'); });
                             geoLayer.on('load', () => { toggleSwitch.classList.remove('loading'); });
-                            geoLayer.on('error', () => { 
+                            geoLayer.on('error', () => {
                                 toggleSwitch.classList.remove('loading');
                                 console.error("Raster failed to load:", imageUrl);
                             });
-                            
+
                         } else {
                             console.warn("No metadata found for raster:", layerInfo.filename);
-                            geoLayer = L.imageOverlay("", [[0,0],[0,0]], { opacity: 0 }); // dummy
+                            geoLayer = L.imageOverlay("", [[0, 0], [0, 0]], { opacity: 0 }); // dummy
                         }
 
                         if (layerInfo.color_map && layerInfo.color_map.length > 0) {
@@ -745,7 +750,7 @@ async function fetchAndRenderLayers() {
                             let pct = 100 / classEntries.length;
                             for (let i = 0; i < classEntries.length; i++) {
                                 let c = classEntries[i][1];
-                                gradientParts.push(`${c} ${i*pct}% ${(i+1)*pct}%`);
+                                gradientParts.push(`${c} ${i * pct}% ${(i + 1) * pct}%`);
                             }
                             let bg = `conic-gradient(${gradientParts.join(', ')})`;
                             colorUI.innerHTML = `<div style="width: 1em; height: 1em; border-radius: 50%; background: ${bg}; flex-shrink:0;"></div>`;
@@ -759,7 +764,7 @@ async function fetchAndRenderLayers() {
                                 for (const [cName, cColor] of classEntries) {
                                     let estWidth = 12 + (cName.length * 5.5);
                                     if (estWidth > 95) estWidth = 95;
-                                    
+
                                     if (available - estWidth >= 0) {
                                         subHTML += `<span style="display: flex; align-items: center; gap: 3px; flex-shrink: 0;" title="${cName}"><div style="width: 6px; height: 6px; border-radius: 50%; background: ${cColor}; flex-shrink: 0;"></div><span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 80px;">${cName}</span></span>`;
                                         available -= (estWidth + 8);
@@ -770,13 +775,13 @@ async function fetchAndRenderLayers() {
                                     count++;
                                 }
                                 subHTML += `</div>`;
-                                
+
                                 const remaining = classEntries.length - rendered;
                                 if (remaining > 0) {
                                     subHTML += `<div class="legend-more-btn" title="See all classes" style="flex-shrink: 0; width: 24px; height: 18px; border-radius: 10px; background: #e2e8f0; color: var(--text-dim); font-size: 10px; font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer;">+${remaining}</div>`;
                                 }
                                 subLegendUI.innerHTML = subHTML;
-                                
+
                                 const moreBtn = subLegendUI.querySelector('.legend-more-btn');
                                 if (moreBtn) {
                                     moreBtn.addEventListener("click", (e) => {
@@ -795,9 +800,9 @@ async function fetchAndRenderLayers() {
                                     });
                                 }
                             };
-                            
+
                             setTimeout(renderLegends, 50);
-                            
+
                             const ro = new ResizeObserver(() => {
                                 if (subLegendUI.clientWidth > 0 && Math.abs(subLegendUI.clientWidth - (subLegendUI._lastWidth || 0)) > 10) {
                                     subLegendUI._lastWidth = subLegendUI.clientWidth;
@@ -811,7 +816,7 @@ async function fetchAndRenderLayers() {
                     } else {
                         const layerDataRes = await fetch(`${API_BASE_URL}/layers/${layerInfo.table}`);
                         const data = await layerDataRes.json();
-                        
+
                         let performClassification = true;
                         let explicitClassifyWith = null;
                         if (layerInfo.classify_with) {
@@ -828,7 +833,7 @@ async function fetchAndRenderLayers() {
                             for (const feat of data.features) {
                                 if (feat.properties) {
                                     let clr = feat.properties.color || feat.properties.f_class_color || feat.properties.stroke_color || null;
-                                    
+
                                     if (explicitClassifyWith) {
                                         let name = feat.properties[explicitClassifyWith];
                                         if (name !== undefined && name !== null) {
@@ -862,7 +867,7 @@ async function fetchAndRenderLayers() {
                         const classMap = new Map();
                         for (const [clr, namesSet] of colorGroups.entries()) {
                             let arr = Array.from(namesSet);
-                            arr.sort((a,b) => {
+                            arr.sort((a, b) => {
                                 let numA = parseFloat(a); let numB = parseFloat(b);
                                 if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
                                 return a.localeCompare(b);
@@ -876,7 +881,7 @@ async function fetchAndRenderLayers() {
                             let pct = 100 / classEntries.length;
                             for (let i = 0; i < classEntries.length; i++) {
                                 let c = classEntries[i][1];
-                                gradientParts.push(`${c} ${i*pct}% ${(i+1)*pct}%`);
+                                gradientParts.push(`${c} ${i * pct}% ${(i + 1) * pct}%`);
                             }
                             let bg = `conic-gradient(${gradientParts.join(', ')})`;
                             colorUI.innerHTML = `<div style="width: 1em; height: 1em; border-radius: 50%; background: ${bg}; flex-shrink:0;"></div>`;
@@ -891,7 +896,7 @@ async function fetchAndRenderLayers() {
                                     // Estimate width: 12px for dot/gap + ~5.5px per char
                                     let estWidth = 12 + (cName.length * 5.5);
                                     if (estWidth > 95) estWidth = 95; // max-width is 80px + 15px
-                                    
+
                                     if (available - estWidth >= 0) {
                                         subHTML += `<span style="display: flex; align-items: center; gap: 3px; flex-shrink: 0;" title="${cName}"><div style="width: 6px; height: 6px; border-radius: 50%; background: ${cColor}; flex-shrink: 0;"></div><span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 80px;">${cName}</span></span>`;
                                         available -= (estWidth + 8); // gap
@@ -902,13 +907,13 @@ async function fetchAndRenderLayers() {
                                     count++;
                                 }
                                 subHTML += `</div>`;
-                                
+
                                 const remaining = classEntries.length - rendered;
                                 if (remaining > 0) {
                                     subHTML += `<div class="legend-more-btn" title="See all classes" style="flex-shrink: 0; width: 24px; height: 18px; border-radius: 10px; background: #e2e8f0; color: var(--text-dim); font-size: 10px; font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer;">+${remaining}</div>`;
                                 }
                                 subLegendUI.innerHTML = subHTML;
-                                
+
                                 const moreBtn = subLegendUI.querySelector('.legend-more-btn');
                                 if (moreBtn) {
                                     moreBtn.addEventListener("click", (e) => {
@@ -927,10 +932,10 @@ async function fetchAndRenderLayers() {
                                     });
                                 }
                             };
-                            
+
                             // Initial render (might have 0 clientWidth if display is none, so setTimeout)
                             setTimeout(renderLegends, 50);
-                            
+
                             // Re-render on resize
                             const ro = new ResizeObserver(() => {
                                 // Only re-render if width changed significantly to avoid infinite loops
@@ -940,7 +945,7 @@ async function fetchAndRenderLayers() {
                                 }
                             });
                             ro.observe(subLegendUI);
-                            
+
                             // Cleanup observer when item is removed or unchecked
                             item._ro = ro;
                         } else {
@@ -972,9 +977,9 @@ async function fetchAndRenderLayers() {
                             onEachFeature: (feature, layer) => {
                                 const populateTooltip = (e) => {
                                     const props = feature.properties;
-                                    
 
-                                    
+
+
                                     let headerValue = " ";
                                     let displayKeys = null;
                                     if (props.keys) {
@@ -1002,7 +1007,7 @@ async function fetchAndRenderLayers() {
                                             } else {
                                                 parsedKeys = keysStr;
                                             }
-                                        } catch (err) {}
+                                        } catch (err) { }
                                         if (parsedKeys && parsedKeys.length > 0) {
                                             let hasNameInKeys = false;
                                             for (let i = 0; i < parsedKeys.length; i++) {
@@ -1033,11 +1038,11 @@ async function fetchAndRenderLayers() {
                                     const tooltipLayer = document.getElementById("tooltip-layer");
                                     const tooltipRef = document.getElementById("tooltip-ref");
                                     const tooltip = document.getElementById("tooltip");
-                                    if(tooltipName) tooltipName.textContent = headerValue;
-                                    if(tooltipLayer) tooltipLayer.textContent = layerInfo.name;
-                                    if(tooltipRef) tooltipRef.style.display = "none";
+                                    if (tooltipName) tooltipName.textContent = headerValue;
+                                    if (tooltipLayer) tooltipLayer.textContent = layerInfo.name;
+                                    if (tooltipRef) tooltipRef.style.display = "none";
                                     renderTooltipProps(props, displayKeys, layerInfo);
-                                    if(tooltip) tooltip.classList.add("visible");
+                                    if (tooltip) tooltip.classList.add("visible");
                                 };
                                 layer.on({
                                     click: (e) => {
@@ -1055,7 +1060,7 @@ async function fetchAndRenderLayers() {
                                         layer.bringToFront();
                                         populateTooltip(e);
                                         const tooltip = document.getElementById("tooltip");
-                                        if(tooltip) tooltip.style.transform = `translate3d(${e.originalEvent.pageX + 15}px, ${e.originalEvent.pageY + 15}px, 0)`;
+                                        if (tooltip) tooltip.style.transform = `translate3d(${e.originalEvent.pageX + 15}px, ${e.originalEvent.pageY + 15}px, 0)`;
                                     },
                                     mouseover: (e) => {
                                         if (window.featureTooltipLocked) return;
@@ -1072,7 +1077,7 @@ async function fetchAndRenderLayers() {
                                         window.tooltipHideTimeout = setTimeout(() => {
                                             if (!window.featureTooltipLocked) {
                                                 const tooltip = document.getElementById("tooltip");
-                                                if(tooltip) tooltip.classList.remove("visible");
+                                                if (tooltip) tooltip.classList.remove("visible");
                                                 window.activeFeatureLayer = null;
                                             }
                                         }, 250);
@@ -1080,7 +1085,7 @@ async function fetchAndRenderLayers() {
                                     mousemove: (e) => {
                                         if (window.featureTooltipLocked) return;
                                         const tooltip = document.getElementById("tooltip");
-                                        if(tooltip) tooltip.style.transform = `translate3d(${e.originalEvent.pageX + 15}px, ${e.originalEvent.pageY + 15}px, 0)`;
+                                        if (tooltip) tooltip.style.transform = `translate3d(${e.originalEvent.pageX + 15}px, ${e.originalEvent.pageY + 15}px, 0)`;
                                     },
                                 });
                             },
@@ -1104,12 +1109,12 @@ async function fetchAndRenderLayers() {
                         if (window.activeBasemapItem && window.activeBasemapItem !== item) {
                             window.activeBasemapItem.classList.remove('active');
                         }
-                        
+
                         if (!geoLayer) {
                             console.log("Loading basemap data...");
                             await loadLayerData();
                         }
-                        
+
                         if (geoLayer) {
                             console.log("Adding new basemap to map");
                             geoLayer.addTo(map);
@@ -1121,14 +1126,14 @@ async function fetchAndRenderLayers() {
                         isVisuallyActive = true;
                     }
                 });
-                
+
                 item.addEventListener("click", () => {
                     if (!loadCb.checked) {
                         loadCb.checked = true;
                         loadCb.dispatchEvent(new Event('change'));
                     }
                 });
-                
+
                 if (isLoaded) {
                     loadLayerData().then(() => {
                         if (isVisuallyActive && geoLayer) {
@@ -1279,9 +1284,9 @@ document.getElementById("coord-marker-btn").addEventListener("click", async () =
 
     try {
         let activeTables = Array.from(document.querySelectorAll('.layer-load-cb:checked'))
-                                .map(cb => cb.closest('.layer-item').dataset.table)
-                                .filter(Boolean);
-        
+            .map(cb => cb.closest('.layer-item').dataset.table)
+            .filter(Boolean);
+
         if (window.allLayerConfigs) {
             window.allLayerConfigs.forEach(layer => {
                 if (layer.transparency !== null && layer.transparency < 0) {
@@ -1291,7 +1296,7 @@ document.getElementById("coord-marker-btn").addEventListener("click", async () =
                 }
             });
         }
-        
+
         activeTables = activeTables.join(',');
         const res = await fetch(
             `${API_BASE_URL}/estimate_water_levels?lat=${lat}&lng=${lng}&active_tables=${activeTables}`,
@@ -1299,7 +1304,7 @@ document.getElementById("coord-marker-btn").addEventListener("click", async () =
         const data = await res.json();
 
         let allRows = [];
-        
+
         if (data.estimates) {
             for (const [label, val] of Object.entries(data.estimates)) {
                 let text = "N/A";
@@ -1322,7 +1327,7 @@ document.getElementById("coord-marker-btn").addEventListener("click", async () =
 
         const visibleRows = allRows.slice(0, 3).join("");
         const hiddenRows = allRows.slice(3).join("");
-        
+
         let seeMoreHTML = "";
         if (hiddenRows.length > 0) {
             seeMoreHTML = `
@@ -1371,7 +1376,7 @@ document.getElementById("coord-zoom-btn").addEventListener("click", async () => 
     // currentMarker = L.marker([lat, lng], { icon: customIcon }).addTo(map);
     map.setView([lat, lng], 13);
 
-});     
+});
 
 // Target Mode Logic
 const targetBtn = document.getElementById("target-btn");
@@ -1442,27 +1447,38 @@ window.openBorelogVisualizer = async (f_file, isAwaiting = false) => {
     // if (modalContent) modalContent.style.overflowY = 'hidden';
     const closeBtnOuter = document.querySelector('#borelog-modal .absolute-close-btn');
     if (closeBtnOuter) closeBtnOuter.style.display = 'none';
-    
+
     const rootNode = document.getElementById('borelog-react-root');
     rootNode.innerHTML = "<div style='padding: 20px;'>Loading borelog data...</div>";
-    
+
     try {
-        const fetchPath = isAwaiting ? `/maps/borelogs/staged/${f_file}` : `${API_BASE_URL.replace("/api", "")}/borelogs/${f_file}`;
-        const res = await fetch(fetchPath);
+        let fetchPath = isAwaiting ? `${API_BASE_URL.replace("/api", "")}/staged-borelogs/${f_file}` : `${API_BASE_URL.replace("/api", "")}/borelogs/${f_file}`;
+        let res = await fetch(fetchPath);
+
+        // Bulletproof Fallback: if we get a 404, try the other directory automatically!
+        // if (!res.ok) {
+        //     fetchPath = isAwaiting ? `${API_BASE_URL.replace("/api", "")}/borelogs/${f_file}` : `${API_BASE_URL.replace("/api", "")}/staged-borelogs/${f_file}`;
+        //     res = await fetch(fetchPath);
+        //     if (res.ok) {
+        //         // If we found it in the alternate directory, update the isAwaiting flag so the Approve button logic correctly follows!
+        //         isAwaiting = fetchPath.includes('staged-borelogs');
+        //     }
+        // }
+
         if (!res.ok) throw new Error("Could not fetch " + f_file);
         const data = await res.json();
         const uid = f_file.replace(/\.json$/i, "");
-        
+
         rootNode.innerHTML = document.getElementById("borelog-visualizer-template").innerHTML;
-        
+
         document.getElementById("export-json-btn").onclick = () => {
-            if (window.exportBorelogJSON) {
-                window.exportBorelogJSON(data, uid);
+            if (data) {
+                window.open(fetchPath, '_blank'); // Open the JSON file in a new tab
             } else {
-                alert("JSON export engine could not load.");
+                alert("JSON file could not load.");
             }
         };
-        
+
         document.getElementById("export-xlsx-btn").onclick = () => {
             if (window.exportBorelogToXLSX) {
                 window.exportBorelogToXLSX(data, uid);
@@ -1470,7 +1486,7 @@ window.openBorelogVisualizer = async (f_file, isAwaiting = false) => {
                 alert("XLSX export engine could not load.");
             }
         };
-        
+
         document.getElementById("export-graphic-btn").onclick = () => {
             if (window.downloadBorelogSVG) {
                 window.downloadBorelogSVG(data, uid);
@@ -1478,20 +1494,40 @@ window.openBorelogVisualizer = async (f_file, isAwaiting = false) => {
                 alert("SVG exporter not could not load.");
             }
         };
-        
+
         if (window.renderBorelogChart) {
             window.renderBorelogChart("borelog-visualizer-container", data);
         } else {
             document.getElementById("borelog-visualizer-container").innerHTML = "<p style='color:red;'>Chart renderer not loaded.</p>";
         }
-        
+
         if (isAwaiting) {
             const btnContainer = rootNode.querySelector('#visualizer-action-buttons');
             if (btnContainer) {
                 const approveBtn = document.createElement('button');
-                approveBtn.className = "teal_button";
+                approveBtn.className = "green_button";
                 approveBtn.innerText = "Approve";
-                approveBtn.style.backgroundColor = "#10b981"; // vibrant green
+                // approveBtn.style.backgroundColor = "#10b981"; // vibrant green
+                // approveBtn.style.padding = "6px 12px";
+                approveBtn.style.background = "transparent";
+                approveBtn.style.color = "#0f832c";
+                approveBtn.style.border = "1px solid #2ca64a";
+                approveBtn.style.boxsizing = "border-box";
+                // approveBtn.style.border = "1px solid #42eb6c";
+                // approveBtn.style.borderRadius = "0px";
+                // approveBtn.style.fontSize = "12px";
+                // approveBtn.style.fontWeight = "600";
+                // approveBtn.style.cursor = "pointer";
+                // approveBtn.style.transition = "0.2s";
+                approveBtn.style.marginLeft = "23px";
+                approveBtn.onmouseover = () => {
+                approveBtn.style.backgroundColor = '#dff2e4';
+                approveBtn.style.borderColor = '#0f832c';
+                }
+                approveBtn.onmouseout = () => {
+                    approveBtn.style.backgroundColor = 'transparent';
+                    approveBtn.style.borderColor = '#43eb6d';
+                }
                 approveBtn.onclick = (e) => window.handleApproveFromMap(f_file, e);
                 btnContainer.appendChild(approveBtn);
             }
@@ -1528,7 +1564,7 @@ window.openApprovalLogin = async () => {
     if (modalContent) modalContent.style.overflowY = 'auto';
     const closeBtnOuter = document.querySelector('#borelog-modal .absolute-close-btn');
     if (closeBtnOuter) closeBtnOuter.style.display = 'flex';
-    
+
     const rootNode = document.getElementById('borelog-react-root');
     rootNode.innerHTML = `
         <div style="max-width: 380px; margin: 60px auto; font-family: 'Outfit', sans-serif; background: #ffffff; padding: 40px; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.05); border: 1px solid #eaeaea;">
@@ -1547,7 +1583,7 @@ window.openApprovalLogin = async () => {
             <p id="admin-error" style="color: #ef4444; margin-top: 15px; text-align: center; font-family: 'SmartGothic', sans-serif; font-size: 14px;"></p>
         </div>
     `;
-    
+
     document.getElementById('admin-login-btn').onclick = async () => {
         const u = document.getElementById('admin-user').value;
         const p = document.getElementById('admin-pass').value;
@@ -1575,7 +1611,7 @@ window.renderAdminDashboard = async () => {
         if (!res.ok) throw new Error("Failed to fetch list");
         const data = await res.json();
         const files = data.files;
-        
+
         if (files.length === 0) {
             rootNode.innerHTML = `
                 <div style="padding: 60px 20px; text-align: center; font-family: 'Inter', sans-serif;">
@@ -1590,7 +1626,7 @@ window.renderAdminDashboard = async () => {
             `;
             return;
         }
-        
+
         /* background: rgba(144, 205, 244, 0.15); */
         let html = `
             <div style="padding: 10px 20px; font-family: 'Inter', sans-serif; color: #313845;">
@@ -1616,7 +1652,7 @@ window.renderAdminDashboard = async () => {
                         </thead>
                         <tbody>
         `;
-        
+
         files.forEach((f, i) => {
             const bg = i % 2 === 0 ? '#ffffff' : '#fafafa';
             html += `
@@ -1636,14 +1672,14 @@ window.renderAdminDashboard = async () => {
                     </td>
                     <td style="padding: 16px 24px; text-align: right;">
                         <div style="display: inline-flex; gap: 8px;">
-                            <button onclick="window.open(window.location.href = (window.location.port === '8383' ? 'http://localhost:8484' : '') + '/maps/borelogs/staged/${f.f_file}', '_blank')" style="padding: 8px 16px; background: #f8fafc; color: #0f172a; border: 1px solid #cbd5e1; border-radius: 0px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.backgroundColor='#e2e8f0'" onmouseout="this.style.backgroundColor='#f8fafc'">JSON</button>
+                            <button onclick="window.open((window.location.port === '8383' ? 'http://localhost:8484' : '') + '/maps/borelogs/staged/${f.f_file}', '_blank')" style="padding: 8px 16px; background: #f8fafc; color: #0f172a; border: 1px solid #cbd5e1; border-radius: 0px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.backgroundColor='#e2e8f0'" onmouseout="this.style.backgroundColor='#f8fafc'">JSON</button>
                             <button onclick="window.open('borelog-entry.html?view_staged=${f.f_file}', '_blank')" style="padding: 8px 16px; background: #2563eb; color: white; border: none; border-radius: 0px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.1);" onmouseover="this.style.backgroundColor='#1d4ed8'" onmouseout="this.style.backgroundColor='#2563eb'">View</button>
                         </div>
                     </td>
                 </tr>
             `;
         });
-        
+
         html += `
                         </tbody>
                     </table>
@@ -1651,8 +1687,8 @@ window.renderAdminDashboard = async () => {
             </div>
         `;
         rootNode.innerHTML = html;
-        
-    } catch(e) {
+
+    } catch (e) {
         rootNode.innerHTML = "<div style='padding:20px; color:red;'>Error loading dashboard.</div>";
     }
 };
@@ -1670,7 +1706,7 @@ window.adminAction = async (f_file, action) => {
         } else {
             alert(`Failed to ${action} ${f_file}`);
         }
-    } catch(e) {
+    } catch (e) {
         alert("Network error.");
     }
 };
@@ -1681,7 +1717,7 @@ window.updateAllMaps = async () => {
         btn.disabled = true;
         btn.textContent = "Updating...";
     }
-    
+
     try {
         const res = await fetch(`${API_BASE_URL}/maps/update`, {
             method: 'POST',
@@ -1692,10 +1728,10 @@ window.updateAllMaps = async () => {
         } else {
             alert("Failed to start map update. Check server logs.");
         }
-    } catch(e) {
+    } catch (e) {
         alert("Network error while trying to update maps.");
     }
-    
+
     if (btn) {
         btn.disabled = false;
         btn.textContent = "Update All Maps";
@@ -1743,7 +1779,7 @@ window.openUpdateMapsLogin = async () => {
             <p id="admin-error-map" style="color: #ef4444; margin-top: 15px; text-align: center; font-family: 'SmartGothic', sans-serif; font-size: 14px;"></p>
         </div>
     `;
-    
+
     document.getElementById('admin-login-btn-map').onclick = async () => {
         const u = document.getElementById('admin-user-map').value;
         const p = document.getElementById('admin-pass-map').value;
@@ -1806,7 +1842,7 @@ window.openUpdateMapsLogWindow = async () => {
             while (true) {
                 const { done, value } = await reader.read();
                 if (done) break;
-                
+
                 const chunk = decoder.decode(value, { stream: true });
                 logsContainer.textContent += chunk;
                 logsContainer.scrollTop = logsContainer.scrollHeight;
@@ -1845,12 +1881,12 @@ window.handleApproveFromMap = async (f_file, event) => {
         if (!pass) return;
         storedHash = btoa("admin:" + pass);
     }
-    
+
     const approveBtn = event.target;
     const originalText = approveBtn.innerText;
     approveBtn.innerText = "Approving...";
     approveBtn.disabled = true;
-    
+
     try {
         const authRes = await fetch(`${API_BASE_URL}/borelog/auth`, { headers: { 'Authorization': 'Basic ' + storedHash } });
         if (!authRes.ok) {
@@ -1860,12 +1896,12 @@ window.handleApproveFromMap = async (f_file, event) => {
             return;
         }
         window.adminCredentials = storedHash;
-        
+
         const res = await fetch(`${API_BASE_URL}/borelog/approve/${f_file}`, {
             method: "POST",
             headers: { 'Authorization': 'Basic ' + storedHash }
         });
-        
+
         if (res.ok) {
             document.getElementById('borelog-modal').classList.add('hidden');
             window.location.reload();

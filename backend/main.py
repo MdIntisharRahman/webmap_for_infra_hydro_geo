@@ -407,6 +407,7 @@ app.mount("/tiles", StaticFiles(directory=tiles_dir), name="tiles")
 
 app.mount("/maps", StaticFiles(directory=os.path.join(os.path.dirname(__file__), "..", "Maps")), name="maps")
 app.mount("/borelogs", StaticFiles(directory=os.path.join(os.path.dirname(__file__), "..", "Maps", "borelogs", "published")), name="borelogs")
+app.mount("/staged-borelogs", StaticFiles(directory=os.path.join(os.path.dirname(__file__), "..", "Maps", "borelogs", "staged")), name="staged-borelogs")
 
 
 import base64

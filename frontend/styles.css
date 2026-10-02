@@ -4,6 +4,7 @@
     --text-base: 1rem;
     --text-lg: 1.125rem;
     --text-xl: 1.25rem;
+    --text-cr: 0.47rem;
 
     --bg-base: #f1f5f9;
     --panel-bg: #ffffffa6;
@@ -23,16 +24,16 @@
     --accent-blue-deep-2: #001677ce;
     /* Soft active state */
     --font-display: 'Outfit', sans-serif;
-    --font-body: 'SmartGothic', sans-serif;
-    --font-body-special: 'SmartGothic', sans-serif;
+    --font-body: 'Inter', 'SmartGothic', sans-serif;
+    --font-body-special: 'SmartGothic', 'ITC Stone Sans', sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
     --font-subhead: 'ITC Stone Sans', sans-serif;
 
     /* Accent Button Colors */
     --accent-orange: #f97316;
-    --accent-orange-dim: #ffff00;
-    --accent-green: #53c91e;
-    --accent-green-dim: #30ff30;
+    --accent-orange-dim: #ffcc00;
+    --accent-green: #089a2d;
+    --accent-green-dim: #1ed88b;
     --accent-teal: #077b9f;
     --accent-teal-dim: #7ed4ee;
 
@@ -531,7 +532,7 @@ body {
 }
 
 .layer-name {
-    font-size: 1em;
+    font-size: 0.91em;
     font-weight: 600;
     color: var(--text-main);
     white-space: nowrap;
@@ -1322,14 +1323,14 @@ body {
     border-radius: 50%;
     background: #e2e8f0;
     color: var(--text-dim);
-    font-size: var(--text-xs);
-    font-weight: 700;
+    font-size: var(--text-cr);
+    font-weight: 701;
     font-family: var(--font-body);
     display: flex;
     justify-content: center;
     align-items: center;
     cursor: pointer;
-    border: 1px solid #cbd5e1;
+    border: 0.5px solid var(--accent-blue-dim);
     transition: all 0.2s;
     flex-shrink: 0;
     margin-left: 4px;
@@ -1979,17 +1980,16 @@ body {
     color: #0f172a;
 }
 
-.export-graphic-btn-class {
-    padding: 8px 16px;
+.blue_button,
+.orange_button,
+.green_button,
+.teal_button,
+.management-btn {
+    padding: 7px 17px;
     white-space: nowrap;
     /* flex-shrink: 0; */
 }
 
-.export-xlsx-btn-class {
-    padding: 8px 16px;
-    white-space: nowrap;
-    /* flex-shrink: 0; */
-}
 
 .blue_button {
     width: 100%;
