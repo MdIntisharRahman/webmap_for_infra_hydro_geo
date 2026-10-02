@@ -156,6 +156,7 @@ window.addRow = (tbodyId) => {
     const tbody = document.getElementById(tbodyId);
     const type = tbody.dataset.type;
     const tr = document.createElement('tr');
+    tr.classList.add('new-row');
     tr.innerHTML = getRowHTML(type);
     tbody.appendChild(tr);
 
@@ -169,12 +170,17 @@ window.addRow = (tbodyId) => {
             }
         }
     }
+    
+    // Remove class after animation to clean up DOM
+    setTimeout(() => tr.classList.remove('new-row'), 400);
 
     return tr;
 };
 
 window.deleteRow = (btn) => {
-    btn.closest('tr').remove();
+    const tr = btn.closest('tr');
+    tr.classList.add('removing-row');
+    setTimeout(() => tr.remove(), 200);
 };
 
 window.insertRowAfter = (btn) => {
@@ -182,8 +188,11 @@ window.insertRowAfter = (btn) => {
     const tbody = currentRow.closest('tbody');
     const type = tbody.dataset.type;
     const tr = document.createElement('tr');
+    tr.classList.add('new-row');
     tr.innerHTML = getRowHTML(type);
     currentRow.insertAdjacentElement('afterend', tr);
+    
+    setTimeout(() => tr.classList.remove('new-row'), 400);
 
     if (type === 'strata') {
         const prevBottom = currentRow.querySelector('.f-bottom').value;
@@ -432,7 +441,7 @@ document.getElementById('preview-btn').addEventListener('click', () => {
         return;
     }
     
-    document.getElementById('preview-modal').style.display = 'flex';
+    document.getElementById('preview-modal').classList.add('active');
     if (window.renderBorelogChart) {
         window.renderBorelogChart('borelog-visualizer-container', data);
     } else {
