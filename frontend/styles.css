@@ -757,7 +757,8 @@ body {
     /* Added */
     display: grid;
     gap: 5px;
-    padding: 7px !important;
+    padding: 9px 5px !important;
+    border-radius: 0px !important;
 }
 
 .leaflet-control-zoom a {
@@ -1760,6 +1761,11 @@ body {
     #target-btn {
         width: 44px;
         height: 44px;
+    }
+    
+    .iframe-modal-close {
+        min-width: 44px;
+        min-height: 44px;
     }
 }
 
