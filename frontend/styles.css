@@ -1,4 +1,10 @@
 :root {
+    --text-xs: 0.75rem;
+    --text-sm: 0.875rem;
+    --text-base: 1rem;
+    --text-lg: 1.125rem;
+    --text-xl: 1.25rem;
+
     --bg-base: #f1f5f9;
     --panel-bg: #ffffffa6;
     /* Elegant frost */
@@ -17,10 +23,10 @@
     --accent-blue-deep-2: #001677ce;
     /* Soft active state */
     --font-display: 'Outfit', sans-serif;
-    --font-body: 'Inter', sans-serif;
-    --font-body-special: 'SmartGothic', 'Poppins', sans-serif;
+    --font-body: 'SmartGothic', sans-serif;
+    --font-body-special: 'SmartGothic', sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
-    --font-subhead: 'ITC Stone Sans', 'Poppins', sans-serif;
+    --font-subhead: 'ITC Stone Sans', sans-serif;
 
     /* Accent Button Colors */
     --accent-orange: #f97316;
@@ -80,7 +86,7 @@ body {
     color: #fff;
     font-family: var(--font-display);
     font-weight: 800;
-    font-size: 20px;
+    font-size: var(--text-xl);
     border-radius: 0px;
     letter-spacing: 1px;
 }
@@ -106,7 +112,7 @@ body {
 
 .header-titles h1 {
     font-family: var(--font-display);
-    font-size: 20px;
+    font-size: var(--text-xl);
     font-weight: 800;
     color: var(--text-main);
     line-height: 1.1;
@@ -148,7 +154,7 @@ body {
 
 .header-titles p {
     font-family: var(--font-subhead);
-    font-size: 12px;
+    font-size: var(--text-xs);
     color: var(--accent-blue-deep);
     font-weight: 999;
     text-transform: uppercase;
@@ -319,7 +325,7 @@ body {
 
 .side-header h2 {
     font-family: var(--font-display);
-    font-size: 15px;
+    font-size: var(--text-base);
     font-weight: 800;
     color: var(--accent-blue-deep);
     margin: 0;
@@ -382,7 +388,7 @@ body {
 
 .coord-tool h3 {
     font-family: var(--font-display);
-    font-size: 15px;
+    font-size: var(--text-base);
     font-weight: 800;
     color: var(--accent-blue-deep);
     margin: 0 0 8px 0;
@@ -403,7 +409,7 @@ body {
     padding: 0 8px;
     border: 1px solid #e2e8f0;
     border-radius: var(--button-border-radius);
-    font-size: 12px;
+    font-size: var(--text-xs);
     outline: none;
 }
 
@@ -465,7 +471,7 @@ body {
     flex-direction: column;
     align-items: center;
     gap: 12px;
-    font-size: 13px;
+    font-size: var(--text-sm);
     color: var(--accent-blue);
 }
 
@@ -486,7 +492,7 @@ body {
 
 /* Layer Control Item */
 .layer-item {
-    font-size: 13px;
+    font-size: var(--text-sm);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -539,7 +545,7 @@ body {
     border-radius: 50%;
     background: #e2e8f0;
     color: var(--text-dim);
-    font-size: 8px;
+    font-size: var(--text-xs);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -560,7 +566,7 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 11px;
+    font-size: var(--text-xs);
     font-weight: 600;
     color: var(--text-main);
     padding: 6px 4px;
@@ -644,7 +650,7 @@ body {
     background: #f1f5f9;
     color: var(--text-main);
     border: 1px solid #cbd5e1;
-    font-size: 11px;
+    font-size: var(--text-xs);
     font-weight: 700;
     padding: 2px 6px;
     border-radius: 4px;
@@ -652,7 +658,7 @@ body {
 
 .layer-badge {
     font-family: var(--font-mono);
-    font-size: 10px;
+    font-size: var(--text-xs);
     text-transform: uppercase;
     color: var(--accent-blue);
     font-weight: 600;
@@ -661,7 +667,7 @@ body {
 
 #tooltip-name {
     font-family: var(--font-display);
-    font-size: 17px;
+    font-size: var(--text-base);
     font-weight: 600;
     color: var(--text-main);
     margin-bottom: 12px;
@@ -680,7 +686,7 @@ body {
     display: flex;
     justify-content: space-between;
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: var(--text-xs);
     gap: 16px;
 }
 
@@ -716,7 +722,7 @@ body {
     background: #f1f5f9;
     border: 1px solid #cbd5e1;
     color: var(--accent-blue);
-    font-size: 10px;
+    font-size: var(--text-xs);
     font-weight: 700;
     text-transform: uppercase;
     cursor: pointer;
@@ -859,7 +865,7 @@ body {
     flex: none;
     text-align: center;
     padding: 16px 8px;
-    font-size: 12px;
+    font-size: var(--text-xs);
     font-weight: 600;
     color: var(--text-dim);
     cursor: pointer;
@@ -919,7 +925,7 @@ body {
 
 #about-us-content {
     padding: 0 4px;
-    font-size: 11px;
+    font-size: var(--text-xs);
     line-height: 1.5;
     color: var(--text-main);
     background: transparent;
@@ -976,7 +982,7 @@ body {
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     padding: 10px 14px;
     font-family: var(--font-display);
-    font-size: 12px;
+    font-size: var(--text-xs);
     color: var(--text-main);
     width: 260px;
     white-space: normal;
@@ -984,7 +990,7 @@ body {
 
 .custom-estimator-tooltip .est-header {
     color: var(--accent-blue);
-    font-size: 14px;
+    font-size: var(--text-sm);
     font-weight: 700;
     text-transform: uppercase;
     margin-bottom: 8px;
@@ -1015,7 +1021,7 @@ body {
 
 .custom-estimator-tooltip .est-val.text-val {
     font-family: var(--font-body);
-    font-size: 11px;
+    font-size: var(--text-xs);
 }
 
 .custom-estimator-tooltip .est-more-btn {
@@ -1024,7 +1030,7 @@ body {
     border: none;
     border-radius: 4px;
     padding: 4px 8px;
-    font-size: 10px;
+    font-size: var(--text-xs);
     cursor: pointer;
     margin-top: 4px;
     width: 100%;
@@ -1062,7 +1068,7 @@ body {
     margin: 0;
     padding: 10px 14px;
     font-family: var(--font-display);
-    font-size: 12px;
+    font-size: var(--text-xs);
     color: var(--text-main);
     width: 260px !important;
     white-space: normal;
@@ -1076,7 +1082,7 @@ body {
 
 .custom-estimator-popup .est-header {
     color: var(--accent-blue);
-    font-size: 14px;
+    font-size: var(--text-sm);
     font-weight: 700;
     text-transform: uppercase;
     margin-bottom: 8px;
@@ -1108,7 +1114,7 @@ body {
 
 .custom-estimator-popup .est-val.text-val {
     font-family: var(--font-body);
-    font-size: 11px;
+    font-size: var(--text-xs);
 }
 
 .custom-estimator-popup .est-hidden-rows {
@@ -1156,7 +1162,7 @@ body {
     }
 
     .logo {
-        font-size: 16px;
+        font-size: var(--text-base);
         padding: 0;
     }
 
@@ -1165,13 +1171,13 @@ body {
     }
 
     .header-titles h1 {
-        font-size: 15px;
+        font-size: var(--text-base);
         padding-bottom: 2px;
         margin-bottom: 2px;
     }
 
     .header-titles p {
-        font-size: 10px;
+        font-size: var(--text-xs);
     }
 
     /* Map Controls -> Bottom Sheet */
@@ -1315,7 +1321,7 @@ body {
     border-radius: 50%;
     background: #e2e8f0;
     color: var(--text-dim);
-    font-size: 8px;
+    font-size: var(--text-xs);
     font-weight: 700;
     font-family: var(--font-body);
     display: flex;
@@ -1528,7 +1534,7 @@ body {
 
     input[type=checkbox]+label,
     input[type=radio]+label {
-        font-size: 14px;
+        font-size: var(--text-sm);
         line-height: 21px;
         display: inline-block;
         vertical-align: top;
@@ -1622,7 +1628,7 @@ body {
     border: 1px solid #e2e8f0;
     padding: 2px 6px;
     border-radius: 12px;
-    font-size: 10px;
+    font-size: var(--text-xs);
     color: #475569;
     white-space: nowrap;
     max-width: 90px;
@@ -1685,7 +1691,7 @@ body {
     .credit-btn {
         width: 22px;
         height: 22px;
-        font-size: 11px;
+        font-size: var(--text-xs);
         position: relative;
     }
 
@@ -1719,7 +1725,7 @@ body {
 
     /* Make Layer items larger to tap */
     .layer-item {
-        font-size: 15px;
+        font-size: var(--text-base);
         padding: 14px 16px;
         margin: 6px;
     }
@@ -2088,12 +2094,12 @@ body {
     }
 
     .layer-item {
-        font-size: 18px;
+        font-size: var(--text-lg);
         padding: 20px 24px;
     }
 
     .side-header h2 {
-        font-size: 24px;
+        font-size: var(--text-xl);
     }
 
     .blue_button,
@@ -2102,6 +2108,6 @@ body {
     .teal_button,
     .management-btn {
         padding: 14px 24px;
-        font-size: 18px;
+        font-size: var(--text-lg);
     }
 }
