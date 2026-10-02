@@ -29,9 +29,9 @@
     --font-mono: 'JetBrains Mono', monospace;
     --font-subhead: 'ITC Stone Sans', sans-serif;
 
-    /* Accent Button Colors */
-    --accent-orange: #f97316;
-    --accent-orange-dim: #ffcc00;
+    /* Accent Button Colors */#e07e00;
+    --accent-orange: #eb6404;
+    --accent-orange-dim: #f3fa1f;
     --accent-green: #089a2d;
     --accent-green-dim: #1ed88b;
     --accent-teal: #077b9f;
