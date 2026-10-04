@@ -602,14 +602,14 @@ window.renderBorelogChart = function(containerId, geoJsonData) {
                 circle.setAttribute("cx", `${x}%`);
                 circle.setAttribute("cy", y);
                 circle.setAttribute("r", "5");
-                circle.setAttribute("fill", "#ef4444");
+                circle.setAttribute("fill", "#ff1493");
                 labSvg.appendChild(circle);
                 
                 const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
                 label.setAttribute("x", `calc(${x}% + 8px)`);
                 label.setAttribute("y", y + 4);
                 label.setAttribute("font-size", "10px");
-                label.setAttribute("fill", "#ef4444");
+                label.setAttribute("fill", "#ff1493");
                 label.textContent = wl.toFixed(1);
                 labSvg.appendChild(label);
             }
@@ -620,14 +620,14 @@ window.renderBorelogChart = function(containerId, geoJsonData) {
                 rect.setAttribute("y", y - 4);
                 rect.setAttribute("width", "8");
                 rect.setAttribute("height", "8");
-                rect.setAttribute("fill", "#10b981");
+                rect.setAttribute("fill", "#9400d3");
                 labSvg.appendChild(rect);
                 
                 const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
                 label.setAttribute("x", `calc(${x}% - 8px)`);
                 label.setAttribute("y", y + 4);
                 label.setAttribute("font-size", "10px");
-                label.setAttribute("fill", "#10b981");
+                label.setAttribute("fill", "#9400d3");
                 label.setAttribute("text-anchor", "end");
                 label.textContent = wp.toFixed(1);
                 labSvg.appendChild(label);
@@ -649,7 +649,7 @@ window.renderBorelogChart = function(containerId, geoJsonData) {
             const poly = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
             poly.setAttribute("points", llPts.join(" "));
             poly.setAttribute("fill", "none");
-            poly.setAttribute("stroke", "#ef4444");
+            poly.setAttribute("stroke", "#9400d3");
             poly.setAttribute("stroke-dasharray", "2 2");
             labSvg.insertBefore(poly, labSvg.firstChild);
         }
@@ -657,7 +657,7 @@ window.renderBorelogChart = function(containerId, geoJsonData) {
             const poly = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
             poly.setAttribute("points", plPts.join(" "));
             poly.setAttribute("fill", "none");
-            poly.setAttribute("stroke", "#10b981");
+            poly.setAttribute("stroke", "#ff1493");
             poly.setAttribute("stroke-dasharray", "2 2");
             labSvg.insertBefore(poly, labSvg.firstChild);
         }
@@ -778,22 +778,22 @@ window.renderBorelogChart = function(containerId, geoJsonData) {
             let leftOffset = (colW - (150 + maxL*160))/2 + box.L * 160;
             wrapper.style.left = `${leftOffset}px`;
             wrapper.style.width = "150px";
-            wrapper.style.background = "#f8fafc";
-            wrapper.style.border = "1px solid #cbd5e1";
-            wrapper.style.borderRadius = "4px";
+            wrapper.style.background = "#ffeb11";
+            wrapper.style.border = "1px solid #0b0a0a";
+            wrapper.style.borderRadius = "3px";
             wrapper.style.padding = "6px 4px";
             wrapper.style.boxSizing = "border-box";
-            wrapper.style.boxShadow = "0 1px 2px rgba(0,0,0,0.05)";
+            wrapper.style.boxShadow = "0 1px 2px #0000000d";
             
             const dot = document.createElement('div');
             dot.style.position = "absolute";
-            dot.style.top = "-4px";
-            dot.style.left = "calc(50% - 4px)";
-            dot.style.width = "8px";
-            dot.style.height = "8px";
+            dot.style.top = "-4.5px";
+            dot.style.left = "calc(50% - 4.5px)";
+            dot.style.width = "9px";
+            dot.style.height = "9px";
             dot.style.borderRadius = "50%";
-            dot.style.background = "#3b82f6";
-            dot.style.border = "1px solid white";
+            dot.style.background = "#20b2aa";
+            dot.style.border = "1px solid #0b0a0a";
             wrapper.appendChild(dot);
             
             box.lines.forEach(line => {
@@ -1090,14 +1090,14 @@ window.downloadBorelogSVG = function(geoJsonData, uid) {
             if (!isNaN(wl)) {
                 let x = colOffsets[5] + Math.min(Math.max(wl, 0), 100) / 100 * 200;
                 llPts.push(`${x},${y}`);
-                svg += `<circle cx="${x}" cy="${y}" r="5" fill="#ef4444" />`;
-                svg += `<text x="${x + 8}" y="${y + 4}" class="plot-data" font-size="10px" fill="#ef4444">${wl.toFixed(1)}</text>`;
+                svg += `<circle cx="${x}" cy="${y}" r="5" fill="#ff1493" />`;
+                svg += `<text x="${x + 8}" y="${y + 4}" class="plot-data" font-size="10px" fill="#ff1493">${wl.toFixed(1)}</text>`;
             }
             if (!isNaN(wp)) {
                 let x = colOffsets[5] + Math.min(Math.max(wp, 0), 100) / 100 * 200;
                 plPts.push(`${x},${y}`);
-                svg += `<rect x="${x - 4}" y="${y - 4}" width="8" height="8" fill="#10b981" />`;
-                svg += `<text x="${x - 8}" y="${y + 4}" class="plot-data" font-size="10px" fill="#10b981" text-anchor="end">${wp.toFixed(1)}</text>`;
+                svg += `<rect x="${x - 4}" y="${y - 4}" width="8" height="8" fill="#9932cc" />`;
+                svg += `<text x="${x - 8}" y="${y + 4}" class="plot-data" font-size="10px" fill="#9932cc" text-anchor="end">${wp.toFixed(1)}</text>`;
             }
             if (!isNaN(wl) && !isNaN(wp)) {
                 let x1 = colOffsets[5] + Math.min(Math.max(wl, 0), 100) / 100 * 200;
@@ -1105,11 +1105,11 @@ window.downloadBorelogSVG = function(geoJsonData, uid) {
                 svg += `<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" stroke="#52525b" stroke-width="1" />`;
             }
         });
-        if (llPts.length > 0) svg += `<polyline points="${llPts.join(" ")}" fill="none" stroke="#ef4444" stroke-width="1" stroke-dasharray="2 2" />`;
-        if (plPts.length > 0) svg += `<polyline points="${plPts.join(" ")}" fill="none" stroke="#10b981" stroke-width="1" stroke-dasharray="2 2" />`;
+        if (llPts.length > 0) svg += `<polyline points="${llPts.join(" ")}" fill="none" stroke="#ff1493" stroke-width="1" stroke-dasharray="2 2" />`;
+        if (plPts.length > 0) svg += `<polyline points="${plPts.join(" ")}" fill="none" stroke="#9932cc" stroke-width="1" stroke-dasharray="2 2" />`;
         
         svg += `<rect x="${colOffsets[6] - 60}" y="${totalHeight - remarksHeight - 20}" width="50" height="15" fill="white" stroke="#e4e4e7" />`;
-        svg += `<text x="${colOffsets[6] - 35}" y="${totalHeight - remarksHeight - 9}" class="plot-data" font-size="10px" fill="#ef4444" text-anchor="middle">LL / PL</text>`;
+        svg += `<text x="${colOffsets[6] - 35}" y="${totalHeight - remarksHeight - 9}" class="plot-data" font-size="10px" fill="#ff1493" text-anchor="middle">LL / PL</text>`;
     }
     
     // CPT Charts (SVG)
@@ -1213,8 +1213,8 @@ window.downloadBorelogSVG = function(geoJsonData, uid) {
             let leftOffset = (colW - (150 + maxL*160))/2 + box.L * 160;
             let X_start = colStart + leftOffset;
             
-            svg += `<rect x="${X_start}" y="${Y_svg}" width="150" height="${box.boxHeight}" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="4" />`;
-            svg += `<circle cx="${X_start + 75}" cy="${Y_svg}" r="3" fill="#3b82f6" stroke="#ffffff" stroke-width="1" />`;
+            svg += `<rect x="${X_start-3.5}" y="${Y_svg}" width="157" height="${box.boxHeight}" fill="#ffee31" stroke="#0b0a0a" stroke-width="1" rx="3" />`;
+            svg += `<circle cx="${X_start + 75}" cy="${Y_svg}" r="5" fill="#20b2aa" stroke="#0b0a0a" stroke-width="1" />`;
             
             box.lines.forEach((line, i) => {
                 svg += `<text x="${X_start + 75}" y="${Y_svg + 16 + i*14}" class="plot-data" font-size="10px" fill="#475569" text-anchor="middle">${line}</text>`;
