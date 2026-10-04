@@ -208,7 +208,7 @@ const renderTooltipProps = (props, displayKeys, layerInfo) => {
                 return `<a href="${trimmed}" target="_blank" rel="noopener noreferrer" class="detail-link" title="${trimmed}">${linkText}</a>`;
             }
             const isBorelogLayer = layerInfo && (
-                (layerInfo.datapoint_type && layerInfo.datapoint_type.trim().toLowerCase() === 'borelogs') ||
+                (layerInfo.datatype && layerInfo.datatype.trim().toLowerCase() === 'borelogs') ||
                 (layerInfo.table && layerInfo.table.toLowerCase().includes('borelog')) ||
                 (layerInfo.name && layerInfo.name.toLowerCase().includes('borelog'))
             );
@@ -444,7 +444,7 @@ async function fetchAndRenderLayers() {
         // Build Tabs
         let uniqueTabs = [
             ...new Set(layers.map((l) => l.tab || "Uncategorized")),
-        ];
+        ].filter(t => t.toLowerCase() !== "hidden");
         uniqueTabs.push("Control Tools");
         uniqueTabs.push("About Us");
 
@@ -679,7 +679,10 @@ async function fetchAndRenderLayers() {
             item.addEventListener('touchstart', handleSlide, { passive: true });
             item.addEventListener('touchend', () => { setTimeout(handleReset, 1500); }, { passive: true });
 
-            tabContentWrappers[layerInfo.tab].appendChild(item);
+            let targetTab = layerInfo.tab || "Uncategorized";
+            if (tabContentWrappers[targetTab]) {
+                tabContentWrappers[targetTab].appendChild(item);
+            }
 
             let geoLayer = null;
 
@@ -1284,7 +1287,6 @@ document.getElementById("coord-marker-btn").addEventListener("click", async () =
     });
 
     currentMarker = L.marker([lat, lng], { icon: customIcon }).addTo(map);
-    map.setView([lat, lng], 13);
 
     try {
         let activeTables = Array.from(document.querySelectorAll('.layer-load-cb:checked'))
@@ -1306,6 +1308,28 @@ document.getElementById("coord-marker-btn").addEventListener("click", async () =
             `${API_BASE_URL}/estimate_water_levels?lat=${lat}&lng=${lng}&active_tables=${activeTables}`,
         );
         const data = await res.json();
+        
+        if (data.error) {
+            const errorRows = `<div class="est-row" style="border-bottom: none; padding: 15px 0;"><div class="est-val text-val" style="text-align: center; width: 100%; color: #ef4444; font-weight: 600;">${data.error}</div></div>`;
+            const popupContent = `
+            <div class="est-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <span>Point Data Estimator</span>
+                <img class="est-close-btn" src="resources/images/cross-nrm.svg" alt="Close" title="Close Marker" style="cursor: pointer; transition: content 0.2s; height: 1.07em;" onmouseover="this.src='resources/images/cross-cls.svg';" onmouseout="this.src='resources/images/cross-nrm.svg';" onclick="window.closeEstimatorMarker();">
+            </div>
+            ${errorRows}
+            `;
+            currentMarker
+                .bindPopup(popupContent, {
+                    className: "custom-estimator-popup",
+                    closeButton: false,
+                    offset: [0, 10],
+                    autoPan: false
+                })
+                .openPopup();
+            return;
+        }
+        
+        map.flyTo([lat, lng], 13, { duration: 1 });
 
         let allRows = [];
 
@@ -1353,7 +1377,8 @@ document.getElementById("coord-marker-btn").addEventListener("click", async () =
             .bindPopup(popupContent, {
                 className: "custom-estimator-popup",
                 closeButton: false,
-                offset: [0, 10]
+                offset: [0, 10],
+                autoPan: false
             })
             .openPopup();
     } catch (err) {
@@ -1378,7 +1403,7 @@ document.getElementById("coord-zoom-btn").addEventListener("click", async () => 
     if (currentMarker) map.removeLayer(currentMarker);
 
     // currentMarker = L.marker([lat, lng], { icon: customIcon }).addTo(map);
-    map.setView([lat, lng], 13);
+    map.flyTo([lat, lng], 13, { duration: 1 });
 
 });
 

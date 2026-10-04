@@ -2080,7 +2080,6 @@ body {
 
 .teal_button:hover {
     background: var(--accent-teal-dim);
-    /* #22bfc7; */
 }
 
 .blue_button:disabled,
