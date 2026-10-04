@@ -110,13 +110,19 @@ def slugify(text_val: str) -> str:
     return text_val.strip("_")
 
 
+CACHED_LAYERS = None
+
 @app.get("/api/layers")
 async def get_layers():
+    global CACHED_LAYERS
+    if CACHED_LAYERS is not None:
+        return CACHED_LAYERS
+
     md_path = os.path.join(
         os.path.dirname(__file__),
         "..",
         "Maps",
-        "list_of_maps_for_the_webmap_and_their_names.md",
+        "map_list.md",
     )
     layers = []
     if os.path.exists(md_path):
@@ -139,7 +145,7 @@ async def get_layers():
                 tab_name = parts[2] if len(parts) >= 3 and parts[2] else "Uncategorized"
                 show_first = (parts[3].strip().lower() in ["yes", "y"]) if len(parts) >= 4 else False
                 layer_type = parts[4].strip() if len(parts) >= 5 else "Vector"
-                datapoint_type = parts[5].strip() if len(parts) >= 6 else ""
+                data_type = parts[5].strip() if len(parts) >= 6 else ""
                 transparency_str = parts[6].strip() if len(parts) >= 7 else ""
                 transparency = None
                 if transparency_str:
@@ -201,7 +207,7 @@ async def get_layers():
                     "tab": tab_name, 
                     "show_first": show_first,
                     "type": layer_type,
-                    "datapoint_type": datapoint_type,
+                    "datatype": data_type,
                     "transparency": transparency,
                     "derive": derive,
                     "units": units,
@@ -213,6 +219,7 @@ async def get_layers():
                     "zoom_level": zoom_level,
                     "classify_with": classify_with
                 })
+    CACHED_LAYERS = layers
     return layers
 
 @app.get("/api/about_us")
@@ -304,6 +311,30 @@ async def get_estimate(lat: float, lng: float, active_tables: str = "", db: Asyn
     active_tables_list = active_tables.split(",") if active_tables else []
     try:
         layers = await get_layers()
+        
+        # Check bounds first
+        bounds_table = None
+        for lyr in layers:
+            if lyr.get("datatype", "").strip().lower() == "bounds":
+                bounds_table = lyr["table"]
+                break
+                
+        if bounds_table:
+            bounds_query = text(f"""
+                SELECT EXISTS(
+                    SELECT 1 FROM "{bounds_table}"
+                    WHERE ST_Intersects(geom, ST_SetSRID(ST_MakePoint(:lng, :lat), 4326))
+                )
+            """)
+            try:
+                # We use begin_nested in case of transaction issues if table is missing
+                async with db.begin_nested():
+                    is_inside = await db.scalar(bounds_query, {"lat": lat, "lng": lng})
+                if not is_inside:
+                    return {"error": "Point is outside legitimate bounds."}
+            except Exception as e:
+                print("Error checking bounds:", e)
+
         estimates = {}
         nearby_features = {}
         
@@ -326,6 +357,8 @@ async def get_estimate(lat: float, lng: float, active_tables: str = "", db: Asyn
                 derive_list = [(None, lyr["name"])]
                 
             units_list = [u.strip() for u in lyr.get("units", "").split(",")] if lyr.get("units") else []
+            if "WindSpeed" in lyr.get("filename", ""):
+                print("DEBUG UNITS for", lyr.get("filename"), "is:", repr(lyr.get("units")), "list:", units_list)
             
             if is_estimate:
                 if layer_type == "raster":
@@ -379,6 +412,7 @@ async def get_estimate(lat: float, lng: float, active_tables: str = "", db: Asyn
                 if rows:
                     for i, (field, display) in enumerate(derive_list):
                         feature_names = set()
+                        unit_str = units_list[i] if i < len(units_list) else (units_list[-1] if units_list else "")
                         for r in rows:
                             props = r[0]
                             if not props: continue
@@ -387,7 +421,11 @@ async def get_estimate(lat: float, lng: float, active_tables: str = "", db: Asyn
                             else:
                                 val = props.get("f_class_name") or props.get("name") or props.get("Type") or props.get("type") or props.get("feature_name") or props.get("road_name") or props.get("river_name")
                             if val:
-                                feature_names.add(str(val))
+                                val_str = str(val)
+                                print("DEBUG NEARBY val:", repr(val_str), "unit:", repr(unit_str))
+                                if unit_str:
+                                    val_str = f"{val_str} {unit_str}"
+                                feature_names.add(val_str)
                         if feature_names:
                             nearby_features[display] = ", <br>".join(feature_names)
                         

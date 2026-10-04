@@ -182,7 +182,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Load GeoJSON maps into PostGIS')
     parser.add_argument('--db', type=str, default=default_db_url, help='Database URL')
     parser.add_argument('--maps-dir', type=str, default='Maps', help='Directory containing the map files')
-    parser.add_argument('--list-file', type=str, default='Maps/list_of_maps_for_the_webmap_and_their_names.md', help='Markdown file listing the maps')
+    parser.add_argument('--list-file', type=str, default='Maps/map_list.md', help='Markdown file listing the maps')
 
     args = parser.parse_args()
 

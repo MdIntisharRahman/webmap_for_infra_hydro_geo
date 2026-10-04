@@ -18,7 +18,7 @@ The application is composed of three tightly integrated components:
 
 ### 1. Data Ingestion Pipeline
 The application uses a unique configuration-as-documentation approach.
-* **The Source of Truth**: The file `Maps/list_of_maps_for_the_webmap_and_their_names.md` acts as the manifest for the entire application. It contains a markdown table mapping raw GeoJSON/Raster filenames to human-readable layer names, alongside extended configurations like `Show First`, `Transparency`, and `Credit Page`.
+* **The Source of Truth**: The file `Maps/map_list.md` acts as the manifest for the entire application. It contains a markdown table mapping raw GeoJSON/Raster filenames to human-readable layer names, alongside extended configurations like `Show First`, `Transparency`, and `Credit Page`.
 * **`import_local_maps.py`**: This script reads the markdown manifest, iterates through the `Maps/` folder, and uses `geopandas` and `geoalchemy2` to parse the GeoJSON files. It dynamically creates tables in PostGIS (slugifying the layer names), validates the geometry, and sets up geospatial indices. Large Raster files (`.tif`) are intelligently skipped by this script, as they are served directly to the frontend bypassing the database.
 
 ### 2. The Backend API (`backend/main.py`)
@@ -81,7 +81,7 @@ Run `./first_run.sh` to setup the environment variables, update the maps—basic
 
 ## Deployment & Development
 
-* **Local Development**: Run `./start.sh` to spin up a local Uvicorn backend on port `8484` and a Python HTTP server on `8383`. To add a new layer, insert a row in the `Maps/list_of_maps_for_the_webmap_and_their_names.md` file so that the script knows which GeoJSON files are to be loaded and relates names to their corresponding GeoJSON files. Run `./update_Maps.sh` whenever you add new GeoJSON files. 
+* **Local Development**: Run `./start.sh` to spin up a local Uvicorn backend on port `8484` and a Python HTTP server on `8383`. To add a new layer, insert a row in the `Maps/map_list.md` file so that the script knows which GeoJSON files are to be loaded and relates names to their corresponding GeoJSON files. Run `./update_Maps.sh` whenever you add new GeoJSON files. 
 * **Production Deployment**: For execution in the web servers, a complete `docker-compose.yml` is provided. Read **`web-deployment-instructions.md`** for secure production setup instructions.
 
 ### Docker Configuration Notes (Nginx & Volumes)
@@ -119,7 +119,7 @@ When rendering the interactive popup/tooltip for a feature, the application uses
 
 ## Adding New Maps (The Manifest File)
 
-The entire webmap is driven by a central configuration file located at `Maps/list_of_maps_for_the_webmap_and_their_names.md`. To add a new map layer, you simply add a new row to the Markdown table in this file, and the application will dynamically parse it, ingest it, and render it.
+The entire webmap is driven by a central configuration file located at `Maps/map_list.md`. To add a new map layer, you simply add a new row to the Markdown table in this file, and the application will dynamically parse it, ingest it, and render it.
 
 ### Column Definitions
 
