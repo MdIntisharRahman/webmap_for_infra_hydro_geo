@@ -29,14 +29,19 @@
     --font-mono: 'JetBrains Mono', monospace;
     --font-subhead: 'ITC Stone Sans', sans-serif;
 
-    /* Accent Button Colors */#e07e00;
-    --accent-orange: #eb6404;
-    --accent-orange-dim: #f3fa1f;
-    --accent-green: #089a2d;
-    --accent-green-dim: #1ed88b;
-    --accent-teal: #077b9f;
-    --accent-teal-dim: #7ed4ee;
-
+    /* Accent Button Colors */
+    --accent-violet: #9400d3;               /* darkviolet */
+    --accent-violet-dim: #ee82ee;           /* violet */
+    --accent-orange: #ff6347;               /* tomato     */
+    --accent-orange-dim: #ffa500;           /* orange */
+    --accent-green: #089a2d;                /* forestgreen */
+    --accent-green-dim: #1ed88b;            /* mediumseagreen */
+    --accent-teal: #077b9f;                 /* steelblue */
+    --accent-teal-dim: #7ed4ee;             /* lightseagreen */
+    --accent-magenta: #8b008b;              /* darkmagenta */
+    --accent-magenta-dim: #ff69b4;          /* hotpink */
+    --accent-slateblue: #6a5acd;            /* slateblue */
+    --accent-slateblue-dim: #7b68ee;        /*  mediumslateblue */
     /* border-radius control */
     --button-border-radius: 0px;
     --layer-item-border-radius: 0px;
@@ -1763,7 +1768,7 @@ body {
         width: 44px;
         height: 44px;
     }
-    
+
     .iframe-modal-close {
         min-width: 44px;
         min-height: 44px;
@@ -1984,83 +1989,98 @@ body {
 .orange_button,
 .green_button,
 .teal_button,
+.violet_button,
+.magenta_button,
+.slateblue_button,
 .management-btn {
     padding: 7px 17px;
     white-space: nowrap;
     /* flex-shrink: 0; */
 }
 
-
-.blue_button {
+.blue_button,
+.orange_button,
+.green_button,
+.teal_button,
+.violet_button,
+.magenta_button,
+.slateblue_button {
     width: 100%;
     /* padding: 8px 16px; */
-    background: var(--accent-blue);
     color: white;
     border: none;
     border-radius: var(--button-border-radius);
     cursor: pointer;
     font-weight: bold;
     transition: background 0.2s;
+}
+
+.blue_button:hover,
+.orange_button:hover,
+.green_button:hover,
+.teal_button:hover,
+.violet_button:hover,
+.magenta_button:hover,
+.slateblue_button:hover {
+    color: var(--text-main);
+}
+
+
+.blue_button {
+    background: var(--accent-blue);
 }
 
 .blue_button:hover {
     background: #33b3f9;
-    /* #22bfc7; */
-    color: var(--text-main);
+}
+
+.violet_button {
+    background: var(--accent-violet);
+}
+
+.violet_button:hover {
+    background: var(--accent-violet-dim);
+}
+
+.magenta_button {
+    background: var(--accent-magenta);
+}
+
+.magenta_button:hover {
+    background: var(--accent-magenta-dim);
+}
+
+.slateblue_button {
+    background: var(--accent-slateblue);
+}
+
+.slateblue_button:hover {
+    background: var(--accent-slateblue-dim);
 }
 
 .orange_button {
-    width: 100%;
-    /* padding: 8px 16px; */
     background: var(--accent-orange);
-    color: white;
-    border: none;
-    border-radius: var(--button-border-radius);
-    cursor: pointer;
-    font-weight: bold;
-    transition: background 0.2s;
 }
 
 .orange_button:hover {
     background: var(--accent-orange-dim);
-    /* #f97316; */
-    color: var(--text-main);
 }
 
 .green_button {
-    width: 100%;
-    /* padding: 8px 16px; */
     background: var(--accent-green);
-    color: white;
-    border: none;
-    border-radius: var(--button-border-radius);
-    cursor: pointer;
-    font-weight: bold;
-    transition: background 0.2s;
 }
 
 .green_button:hover {
     background: var(--accent-green-dim);
-    /* #41ff54; */
-    color: var(--text-main);
 }
 
 .teal_button {
-    width: 100%;
-    /* padding: 8px 16px; */
     background: var(--accent-teal);
-    color: white;
-    border: none;
-    border-radius: var(--button-border-radius);
-    cursor: pointer;
-    font-weight: bold;
-    transition: background 0.2s;
 }
 
 .teal_button:hover {
     background: var(--accent-teal-dim);
     /* #22bfc7; */
-    color: var(--text-main);
 }
 
 .blue_button:disabled,
@@ -2072,10 +2092,6 @@ body {
     cursor: not-allowed !important;
     box-shadow: none !important;
 }
-
-
-
-
 
 
 

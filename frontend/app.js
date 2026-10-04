@@ -171,9 +171,9 @@ const getHighlightStyle = (feature, color) => {
 // TOOLTIP RENDERING
 // ============================================================================
 
-window.openImodal = function (targetID, val, isAwaitingBorelog = false) {
+window.openImodal = function (targetID, val, options={isAwaitingBorelog:false, isApprovedBorelog:true}) {
     if (targetID === 'borelog-modal' && typeof window.openBorelogVisualizer === 'function') {
-        window.openBorelogVisualizer(val, isAwaitingBorelog);
+        window.openBorelogVisualizer(val, options);
     } else {
         const modal = document.getElementById(targetID);
         if (modal) {
@@ -213,9 +213,11 @@ const renderTooltipProps = (props, displayKeys, layerInfo) => {
                 (layerInfo.name && layerInfo.name.toLowerCase().includes('borelog'))
             );
             if (isBorelogLayer && trimmed.toLowerCase().endsWith('.json')) {
-                const isAwaitingBorelog = layerInfo && layerInfo.name && layerInfo.name.toLowerCase().includes("awaiting");
-                return `<a href="javascript:void(0)" onclick="if(window.openBorelogVisualizer) { window.openBorelogVisualizer('${trimmed}', ${isAwaitingBorelog}) } 
-                else { alert('Visualizer not loaded.') }" style="color:#2563eb; font-weight:bold; text-decoration:underline; font-size:inherit; cursor:pointer;">[borelog - ${isAwaitingBorelog} - ${layerInfo ? layerInfo.name : "null"}]</a>`;
+                const isAwaitingBorelogFlag = layerInfo && layerInfo.name && layerInfo.name.toLowerCase().includes("awaiting");
+                const isApprovedBorelogFlag = layerInfo && layerInfo.name && layerInfo.name.toLowerCase().includes("approved");
+                const needsReviewFlag = layerInfo && layerInfo.name && layerInfo.name.toLowerCase().includes("review");
+                return `<a href="javascript:void(0)" onclick="if(window.openBorelogVisualizer) { window.openBorelogVisualizer('${trimmed}', ${JSON.stringify({ isAwaitingBorelog: isAwaitingBorelogFlag, isApprovedBorelog: isApprovedBorelogFlag, needsReview: needsReviewFlag }).replace(/\"/g, '&quot;')}) } 
+                else { alert('Visualizer not loaded.') }" style="color:#2563eb; font-weight:bold; text-decoration:underline; font-size:inherit; cursor:pointer;">[borelog - ${isAwaitingBorelogFlag} - ${layerInfo ? layerInfo.name : "null"}]</a>`;
             }
         }
         return value;
@@ -260,16 +262,18 @@ const renderTooltipProps = (props, displayKeys, layerInfo) => {
                     let targetID = rParts[2] || '';
 
                     let linkText = mask ? mask : val;
+                    let options = {isAwaitingBorelog: false, isApprovedBorelog: true, needsReview: false};
 
                     if (typeFormat.type === 'link' || typeFormat.type === 'file') {
                         if (target === 'newtab') {
                             formattedVal = `<a href="${val}" target="_blank" style="color:var(--accent-blue); text-decoration:underline;">${linkText}</a>`;
                         } else if (target === 'imodal') {
-                            let isAwaitingBorelog = false;
+                            let isAwaitingBorelogFlag = false;
                             if (targetID === 'borelog-modal') {
-                                isAwaitingBorelog = layerInfo && layerInfo.name && layerInfo.name.toLowerCase().includes("awaiting") ? true : false;
+                                isAwaitingBorelogFlag = layerInfo && layerInfo.name && layerInfo.name.toLowerCase().includes("awaiting") ? true : false;
                             }
-                            formattedVal = `<a href="javascript:void(0)" onclick="openImodal('${targetID}', '${val}', ${isAwaitingBorelog})" style="color:var(--accent-blue); text-decoration:underline;">${linkText}</a>`;
+                            options.isAwaitingBorelog = isAwaitingBorelogFlag;
+                            formattedVal = `<a href=\"javascript:void(0)\" onclick=\"openImodal('${targetID}', '${val}', ${JSON.stringify(options).replace(/\"/g, '&quot;')})\" style=\"color:var(--accent-blue); text-decoration:underline;\">${linkText}</a>`;
                         }
                     }
                 }
@@ -558,7 +562,7 @@ async function fetchAndRenderLayers() {
                     <button onclick="window.open('borelog-entry.html', '_blank')" class="management-btn submit-btn blue_button">
                         Submit Borelog
                     </button>
-                    <button onclick="openApprovalLogin()" class="management-btn approve-btn orange_button">
+                    <button onclick="openApprovalLogin()" class="management-btn approve-btn violet_button">
                         Approve Borelogs
                     </button>
                     
@@ -1441,7 +1445,7 @@ if (iframeModal) {
 
 
 
-window.openBorelogVisualizer = async (f_file, isAwaiting = false) => {
+window.openBorelogVisualizer = async (f_file, options) => {
     document.getElementById('borelog-modal').classList.remove('hidden');
     const modalContent = document.querySelector('#borelog-modal .approval-modal-content');
     // if (modalContent) modalContent.style.overflowY = 'hidden';
@@ -1452,12 +1456,12 @@ window.openBorelogVisualizer = async (f_file, isAwaiting = false) => {
     rootNode.innerHTML = "<div style='padding: 20px;'>Loading borelog data...</div>";
 
     try {
-        let fetchPath = isAwaiting ? `${API_BASE_URL.replace("/api", "")}/staged-borelogs/${f_file}` : `${API_BASE_URL.replace("/api", "")}/borelogs/${f_file}`;
+        let fetchPath = options.isAwaitingBorelog ? `${API_BASE_URL.replace("/api", "")}/staged-borelogs/${f_file}` : `${API_BASE_URL.replace("/api", "")}/borelogs/${f_file}`;
         let res = await fetch(fetchPath);
 
         // Bulletproof Fallback: if we get a 404, try the other directory automatically!
         // if (!res.ok) {
-        //     fetchPath = isAwaiting ? `${API_BASE_URL.replace("/api", "")}/borelogs/${f_file}` : `${API_BASE_URL.replace("/api", "")}/staged-borelogs/${f_file}`;
+        //     fetchPath = options.isAwaitingBorelog ? `${API_BASE_URL.replace("/api", "")}/borelogs/${f_file}` : `${API_BASE_URL.replace("/api", "")}/staged-borelogs/${f_file}`;
         //     res = await fetch(fetchPath);
         //     if (res.ok) {
         //         // If we found it in the alternate directory, update the isAwaiting flag so the Approve button logic correctly follows!
@@ -1501,7 +1505,7 @@ window.openBorelogVisualizer = async (f_file, isAwaiting = false) => {
             document.getElementById("borelog-visualizer-container").innerHTML = "<p style='color:red;'>Chart renderer not loaded.</p>";
         }
 
-        if (isAwaiting) {
+        if (options.isAwaitingBorelog) {
             const btnContainer = rootNode.querySelector('#visualizer-action-buttons');
             if (btnContainer) {
                 const approveBtn = document.createElement('button');
