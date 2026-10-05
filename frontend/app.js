@@ -1281,9 +1281,9 @@ document.getElementById("coord-marker-btn").addEventListener("click", async () =
     const customIcon = L.icon({
         iconUrl: "resources/images/placemarker.svg",
         iconSize: [78, 78],
-        iconAnchor: [39, 78],
-        tooltipAnchor: [0, -78],
-        popupAnchor: [0, -78],
+        iconAnchor: [39, 63],
+        tooltipAnchor: [0, -63],
+        popupAnchor: [0, -63],
     });
 
     currentMarker = L.marker([lat, lng], { icon: customIcon }).addTo(map);
@@ -1329,7 +1329,7 @@ document.getElementById("coord-marker-btn").addEventListener("click", async () =
             return;
         }
         
-        map.flyTo([lat, lng], 13, { duration: 1 });
+        map.flyTo([lat, lng], 13, {  easeLinearity: 0.29 });
 
         let allRows = [];
 
@@ -1403,7 +1403,7 @@ document.getElementById("coord-zoom-btn").addEventListener("click", async () => 
     if (currentMarker) map.removeLayer(currentMarker);
 
     // currentMarker = L.marker([lat, lng], { icon: customIcon }).addTo(map);
-    map.flyTo([lat, lng], 13, { duration: 1 });
+    map.flyTo([lat, lng], 13, { easeLinearity: 0.29});
 
 });
 
