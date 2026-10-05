@@ -331,7 +331,7 @@ async def get_estimate(lat: float, lng: float, active_tables: str = "", db: Asyn
                 async with db.begin_nested():
                     is_inside = await db.scalar(bounds_query, {"lat": lat, "lng": lng})
                 if not is_inside:
-                    return {"error": "Point is outside legitimate bounds."}
+                    return {"error": "This point is outside national bounds."}
             except Exception as e:
                 print("Error checking bounds:", e)
 
