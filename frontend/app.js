@@ -1287,6 +1287,7 @@ document.getElementById("coord-marker-btn").addEventListener("click", async () =
     });
 
     currentMarker = L.marker([lat, lng], { icon: customIcon }).addTo(map);
+    map.flyTo([lat, lng], 13, { easeLinearity: 0.29 });
 
     try {
         let activeTables = Array.from(document.querySelectorAll('.layer-load-cb:checked'))
@@ -1328,8 +1329,6 @@ document.getElementById("coord-marker-btn").addEventListener("click", async () =
                 .openPopup();
             return;
         }
-        
-        map.flyTo([lat, lng], 13, {  easeLinearity: 0.29 });
 
         let allRows = [];
 
