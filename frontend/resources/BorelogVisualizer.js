@@ -1,5 +1,27 @@
 
 
+
+function stringToRGBA(colorStr, opacity) {
+    let r = 255, g = 255, b = 255;
+    if (!colorStr) return `rgba(255, 255, 255, ${opacity})`;
+    colorStr = colorStr.trim();
+    if (colorStr.startsWith('#')) {
+        let hex = colorStr.replace('#', '');
+        if (hex.length === 3) hex = hex.split('').map(c => c+c).join('');
+        if (hex.length === 6) {
+            r = parseInt(hex.substring(0,2), 16);
+            g = parseInt(hex.substring(2,4), 16);
+            b = parseInt(hex.substring(4,6), 16);
+        }
+    } else if (colorStr.startsWith('rgb')) {
+        const matches = colorStr.match(/\d+/g);
+        if (matches && matches.length >= 3) {
+            r = matches[0]; g = matches[1]; b = matches[2];
+        }
+    }
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+}
+
 const extraTestLabels = {
     'normal_stress_kpa': { label: "σ'_{n}", unit: 'kPa' },
     'shear_stress_kpa': { label: 'τ', unit: 'kPa' },
@@ -425,12 +447,17 @@ window.renderBorelogChart = function(containerId, geoJsonData) {
         cols[0].appendChild(tick);
     }
     
+
+    let depthWiseColors = [];
     strata.forEach(s => {
         const top = parseFloat(s.top_m) || 0;
         const bot = parseFloat(s.bottom_m) || 0;
         const h = (bot - top) * PIXELS_PER_METER;
         const y = top * PIXELS_PER_METER;
         
+        depthWiseColors.push([top, bot, getColorForClass(s.class || s.uscs_class)]);
+
+
         const rect = document.createElement('div');
         rect.style.position = "absolute";
         rect.style.top = `${y}px`;
@@ -470,6 +497,8 @@ window.renderBorelogChart = function(containerId, geoJsonData) {
         cols[2].appendChild(desc);
     });
     
+
+
     sptData.forEach(spt => {
         const y = (parseFloat(spt.depth_m) || 0) * PIXELS_PER_METER;
         const b1 = spt.blows_0_150 ?? spt.blows_150 ?? "";
@@ -753,7 +782,7 @@ window.renderBorelogChart = function(containerId, geoJsonData) {
                 let lines = wrapTextPairs(vals, 26);
                 let boxHeight = 12 + lines.length * 14;
                 let Y = (parseFloat(test.depth_m) || 0) * PIXELS_PER_METER;
-                boxes.push({ lines, Y, boxHeight });
+                boxes.push({ lines, Y, boxHeight, testDepth: parseFloat(test.depth_m) || 0 });
             }
         });
         
@@ -772,15 +801,26 @@ window.renderBorelogChart = function(containerId, geoJsonData) {
         });
         
         boxes.forEach(box => {
+
+            
             const wrapper = document.createElement('div');
             wrapper.style.position = "absolute";
             wrapper.style.top = `${box.Y}px`;
             let leftOffset = (colW - (150 + maxL*160))/2 + box.L * 160;
             wrapper.style.left = `${leftOffset}px`;
             wrapper.style.width = "150px";
-            wrapper.style.background = "#ffeb11";
+            
+            
+            depthWiseColors.forEach(([top, bot, fillColor]) => {
+                // Process each depth-wise color entry
+                if (box.testDepth >= top && box.testDepth <= bot) {
+                    wrapper.style.background = fillColor ? stringToRGBA(fillColor, 0.47) : stringToRGBA("rgba(255, 255, 255, 0.47)", 0.47);
+                }
+            });
+
+            // wrapper.style.background = "#ebff09";
             wrapper.style.border = "1px solid #0b0a0a";
-            wrapper.style.borderRadius = "3px";
+            wrapper.style.borderRadius = "0px";
             wrapper.style.padding = "6px 4px";
             wrapper.style.boxSizing = "border-box";
             wrapper.style.boxShadow = "0 1px 2px #0000000d";
@@ -1016,6 +1056,7 @@ window.downloadBorelogSVG = function(geoJsonData, uid) {
         svg += `<text x="30" y="${textY}" class="plot-data" font-size="12px" font-weight="500" fill="#71717a" text-anchor="middle">${i.toFixed(1)}</text>`;
     }
     
+    let depthWiseColors = []
     strata.forEach(s => {
         const top = parseFloat(s.top_m) || 0;
         const bot = parseFloat(s.bottom_m) || 0;
@@ -1023,6 +1064,7 @@ window.downloadBorelogSVG = function(geoJsonData, uid) {
         const y = headerHeight + top * PIXELS_PER_METER;
         
         const color = getColorForClass(s.class || s.uscs_class);
+        depthWiseColors.push({top, bot, color});
         svg += `<rect x="${colOffsets[1] + 8}" y="${y}" width="64" height="${h}" fill="${color}" stroke="rgba(0,0,0,0.1)" stroke-width="1" />`;
         svg += `<text x="${colOffsets[1] + 40}" y="${y + h/2 + 4}" class="plot-data" font-size="12px" font-weight="bold" fill="#333" text-anchor="middle">${s.class || s.uscs_class || ""}</text>`;
         
@@ -1189,8 +1231,9 @@ window.downloadBorelogSVG = function(geoJsonData, uid) {
             if (vals.length > 0) {
                 let lines = wrapTextPairs(vals, 26);
                 let boxHeight = 12 + lines.length * 14;
-                let Y = (parseFloat(test.depth_m) || 0) * PIXELS_PER_METER;
-                boxes.push({ lines, Y, boxHeight });
+                let testDepth = parseFloat(test.depth_m) || 0;
+                let Y = testDepth * PIXELS_PER_METER;
+                boxes.push({ lines, Y, boxHeight, testDepth });
             }
         });
         
@@ -1212,8 +1255,13 @@ window.downloadBorelogSVG = function(geoJsonData, uid) {
             let Y_svg = headerHeight + box.Y;
             let leftOffset = (colW - (150 + maxL*160))/2 + box.L * 160;
             let X_start = colStart + leftOffset;
+            let fillColor = "rgba(255, 255, 255, 0.47)";
+            if (box.testDepth !== undefined) {
+                const depthColor = depthWiseColors.find(d => box.testDepth >= d.top && box.testDepth <= d.bot);
+                fillColor = depthColor ? stringToRGBA(depthColor.color, 0.47) : "rgba(255, 255, 255, 0.47)";
+            }
             
-            svg += `<rect x="${X_start-3.5}" y="${Y_svg}" width="157" height="${box.boxHeight}" fill="#ffee31" stroke="#0b0a0a" stroke-width="1" rx="3" />`;
+            svg += `<rect x="${X_start-3.5}" y="${Y_svg}" width="157" height="${box.boxHeight}" fill="${fillColor}" stroke="#0b0a0a" stroke-width="1" rx="1" />`;
             svg += `<circle cx="${X_start + 75}" cy="${Y_svg}" r="5" fill="#20b2aa" stroke="#0b0a0a" stroke-width="1" />`;
             
             box.lines.forEach((line, i) => {
