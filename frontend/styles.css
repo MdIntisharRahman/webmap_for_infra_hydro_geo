@@ -99,10 +99,10 @@ body {
 }
 
 .logo img {
-    height: 55px;
+    height: 63px;
     width: auto;
     object-fit: contain;
-    cursor: pointer;
+    /* cursor: pointer; */
     /* filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1)); */
     /* transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), filter 0.3s cubic-bezier(0.16, 1, 0.3, 1); */
     pointer-events: none;
