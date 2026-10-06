@@ -89,26 +89,34 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #fff;
+    /* color: #fff;
     font-family: var(--font-display);
     font-weight: 800;
-    font-size: var(--text-xl);
-    border-radius: 0px;
-    letter-spacing: 1px;
+    font-size: var(--text-xl); */
+    /* border-radius: 0px; */
+    /* letter-spacing: 1px; */
+    
 }
 
 .logo img {
     height: 55px;
     width: auto;
     object-fit: contain;
+    cursor: pointer;
     /* filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1)); */
     /* transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), filter 0.3s cubic-bezier(0.16, 1, 0.3, 1); */
-    pointer-events: none;
+    /* pointer-events: none;
     user-select: none;
     -webkit-user-drag: none;
     -moz-user-drag: none;
     -webkit-user-select: none;
-    -moz-user-select: none;
+    -moz-user-select: none; */
+}
+
+
+.logo img:active {
+    transform: scale(0.95);
+    transition: transform 0.23s cubic-bezier(0.17, 1, 0.3, 1), filter 0.3s cubic-bezier(0.17, 1, 0.3, 1);
 }
 
 /* .logo img:hover {

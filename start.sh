@@ -1,5 +1,5 @@
 #!/bin/bash
-
+cd "$(dirname "${BASH_SOURCE[0]}")" && pwd
 echo "Starting Webmap Environment..."
 
 # 1. We no longer need to manually activate venv since we use uv

@@ -1,3 +1,5 @@
+!/bin/bash
+cd "$(dirname "${BASH_SOURCE[0]}")" && pwd
 echo "Starting Webmap Environment..."
 
 # Update the PostgreSQL database directly
