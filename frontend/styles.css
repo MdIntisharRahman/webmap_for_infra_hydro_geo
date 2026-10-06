@@ -89,12 +89,12 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    /* color: #fff;
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: var(--text-xl); */
+    /* color: #fff; */
+    /* font-family: var(--font-display); */
+    /* font-weight: 800; */
+    /* font-size: var(--text-xl); */
     /* border-radius: 0px; */
-    /* letter-spacing: 1px; */
+    letter-spacing: 1px;
     
 }
 
