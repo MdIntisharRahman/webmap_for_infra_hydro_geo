@@ -78,7 +78,7 @@
         }
 
         form {
-            padding: 40px;
+            /* padding: 40px; */
         }
 
         .section {
@@ -544,7 +544,7 @@
 
 
             .section {
-                padding: 20px;
+                padding: 0.75rem;
             }
 
             .btn {
@@ -609,6 +609,7 @@
                 color: var(--text-muted);
                 flex: 0 0 40%;
                 text-align: left;
+                text-wrap: balance;
             }
 
             table td input, table td select {
@@ -635,6 +636,14 @@
 
             .form-group {
                 margin-bottom: 16px;
+            }
+
+            borelog-form {
+                padding: 0;
+            }
+
+            body {
+                padding: max(3rem, env(safe-area-inset-top)) max(1.5rem, env(safe-area-inset-right)) max(3rem, env(safe-area-inset-bottom)) max(1.5rem, env(safe-area-inset-left));
             }
         }
 
