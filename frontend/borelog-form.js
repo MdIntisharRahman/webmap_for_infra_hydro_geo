@@ -92,13 +92,23 @@ const getRowHTML = (type) => {
                     </div>
                 </td>
             `;
+
+                                // <th id="essential">Depth (m)</th>
+                                // <th id="essential">Normal Stress (kPa)</th>
+                                // <th id="essential">Shear Stress (kPa)</th>
+                                // <th id="essential">Cohesion (kPa)</th>
+                                // <th id="essential">Fric. Angle (deg)</th>
+
+
+
+
         case 'shear':
             return `
-                <td><input required aria-required="true" type="number" step="any" class="f-depth"></td>
-                <td><input required aria-required="true" type="number" step="any" class="f-normal"></td>
-                <td><input required aria-required="true" type="number" step="any" class="f-shear"></td>
-                <td><input required aria-required="true" type="number" step="any" class="f-cohesion"></td>
-                <td><input required aria-required="true" type="number" step="any" class="f-friction"></td>
+                <td data-label="Depth (m)"><input required aria-required="true" type="number" step="any" class="f-depth"></td>
+                <td data-label="Normal Stress (kPa)"><input required aria-required="true" type="number" step="any" class="f-normal"></td>
+                <td data-label="Shear Stress (kPa)"><input required aria-required="true" type="number" step="any" class="f-shear"></td>
+                <td data-label="Cohesion (kPa)"><input required aria-required="true" type="number" step="any" class="f-cohesion"></td>
+                <td data-label="Fric. Angle (deg)"><input required aria-required="true" type="number" step="any" class="f-friction"></td>
                 <td data-label="Actions" class="action-pill-td">
                     <span class="empty-table-row-filler" title="Type into any field to begin"><img src="resources/images/enter-svgrepo.svg"></span>
                     <div class="action-pill">                    
@@ -107,10 +117,18 @@ const getRowHTML = (type) => {
                     </div>
                 </td>
             `;
+
+
+                                // <th id="essential">Depth (m)</th>
+                                // <th id="essential">Type (CU/CD)</th>
+                                // <th id="essential">Confining Stress σ'₃ (kPa)</th>
+                                // <th id="essential">Peak Deviator Stress q_f (kPa)</th>
+                                // <th id="essential">Secant Modulus E₅₀ (MPa)</th>
+
         case 'triaxial':
             return `
-                <td><input required type="number" step="any" class="f-depth"></td>
-                <td>
+                <td data-label="Depth (m)"><input required type="number" step="any" class="f-depth"></td>
+                <td data-label="Type">
                     <select required class="f-type" style="padding: 11px; border: 1px solid var(--border-color); width: 100%;">
                         <option value="" disabled selected>Type</option>
                         <option value="CD">CD</option>
@@ -118,9 +136,9 @@ const getRowHTML = (type) => {
                         <option value="UU">UU</option>
                     </select>
                 </td>
-                <td><input required type="number" step="any" class="f-confining"></td>
-                <td><input required type="number" step="any" class="f-deviator"></td>
-                <td><input required type="number" step="any" class="f-e50"></td>
+                <td data-label="Confining Stress σ'₃ (kPa)"><input required type="number" step="any" class="f-confining"></td>
+                <td data-label="Peak Deviator Stress q_f (kPa)"><input required type="number" step="any" class="f-deviator"></td>
+                <td data-label="Secant Modulus E₅₀ (MPa)"><input required type="number" step="any" class="f-e50"></td>
                 <td data-label="Actions" class="action-pill-td">
                     <span class="empty-table-row-filler" title="Type into any field to begin"><img src="resources/images/enter-svgrepo.svg"></span>
                     <div class="action-pill">                    
@@ -128,15 +146,15 @@ const getRowHTML = (type) => {
                         <button type="button" class="del-btn" onclick="deleteRow(this)" title="Delete Row">𐩃</button>
                     </div>
                 </td>
-            `;
+            `;                              
         case 'consolidation':
             return `
-                <td><input required type="number" step="any" class="f-depth"></td>
-                <td><input required type="number" step="any" class="f-stress"></td>
-                <td><input required type="number" step="any" class="f-eoed"></td>
-                <td><input required type="number" step="any" class="f-cc"></td>
-                <td><input required type="number" step="any" class="f-cr"></td>
-                <td><input required type="number" step="any" class="f-pc"></td>
+                <td data-label="Depth (m)"><input required type="number" step="any" class="f-depth"></td>
+                <td data-label="Eff. Stress σ'v  (kPa)"><input required type="number" step="any" class="f-stress"></td>
+                <td data-label="Constrained Modulus E_oed (MPa)"><input required type="number" step="any" class="f-eoed"></td>
+                <td data-label="Comp. Index (C_c)"><input required type="number" step="any" class="f-cc"></td>
+                <td data-label="Recomp. Index (C_r)"><input required type="number" step="any" class="f-cr"></td>
+                <td data-label="Precons. Pressure (kPa)"><input required type="number" step="any" class="f-pc"></td>
                 <td data-label="Actions" class="action-pill-td">
                     <span class="empty-table-row-filler" title="Type into any field to begin"><img src="resources/images/enter-svgrepo.svg"></span>
                     <div class="action-pill"> 
