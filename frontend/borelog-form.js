@@ -65,10 +65,25 @@ const getRowHTML = (type) => {
         case 'atterberg':
             return `
                 <td data-label="Depth (m)"><input type="number" step="any" class="f-depth" required></td>
-                <td data-label="WL (%)"><input type="number" step="any" class="f-wl" required></td>
-                <td data-label="WP (%)"><input type="number" step="any" class="f-wp" required></td>
-                <td data-label="IP (%)"><input type="number" step="any" class="f-ip" required></td>
-                <td data-label="LI"><input type="number" step="any" class="f-li" required></td>
+                <td data-label="WC (%)"><input type="number" step="0.01" class="f-wc" required></td>
+                <td data-label="LL (%)"><input type="number" step="0.01" class="f-ll" required></td>
+                <td data-label="PL (%)"><input type="number" step="0.01" class="f-pl" required></td>
+                <td data-label="PI"><input type="number" step="0.001" class="f-pi"></td>
+                <td data-label="LI"><input type="number" step="0.001" class="f-li"></td>
+                <td data-label="Actions" class="action-pill-td">
+                    <span class="empty-table-row-filler" title="Type into any field to begin"><img src="resources/images/enter-svgrepo.svg"></span>
+                    <div class="action-pill">                    
+                        <button type="button" class="insert-btn" onclick="insertRowAfter(this)" title="Insert Row Below">🞣</button>
+                        <button type="button" class="del-btn" onclick="deleteRow(this)" title="Delete Row">𐩃</button>
+                    </div>
+                </td>
+            `;
+        case 'grain_size':
+            return `
+                <td data-label="Depth (m)"><input type="number" step="any" class="f-depth" required></td>
+                <td data-label="Sand (%)"><input type="number" step="0.01" class="f-sand" required></td>
+                <td data-label="Silt (%)"><input type="number" step="0.01" class="f-silt" required></td>
+                <td data-label="Clay (%)"><input type="number" step="0.01" class="f-clay" required></td>
                 <td data-label="Actions" class="action-pill-td">
                     <span class="empty-table-row-filler" title="Type into any field to begin"><img src="resources/images/enter-svgrepo.svg"></span>
                     <div class="action-pill">                    
@@ -92,16 +107,6 @@ const getRowHTML = (type) => {
                     </div>
                 </td>
             `;
-
-                                // <th id="essential">Depth (m)</th>
-                                // <th id="essential">Normal Stress (kPa)</th>
-                                // <th id="essential">Shear Stress (kPa)</th>
-                                // <th id="essential">Cohesion (kPa)</th>
-                                // <th id="essential">Fric. Angle (deg)</th>
-
-
-
-
         case 'shear':
             return `
                 <td data-label="Depth (m)"><input required aria-required="true" type="number" step="any" class="f-depth"></td>
@@ -117,14 +122,6 @@ const getRowHTML = (type) => {
                     </div>
                 </td>
             `;
-
-
-                                // <th id="essential">Depth (m)</th>
-                                // <th id="essential">Type (CU/CD)</th>
-                                // <th id="essential">Confining Stress σ'₃ (kPa)</th>
-                                // <th id="essential">Peak Deviator Stress q_f (kPa)</th>
-                                // <th id="essential">Secant Modulus E₅₀ (MPa)</th>
-
         case 'triaxial':
             return `
                 <td data-label="Depth (m)"><input required type="number" step="any" class="f-depth"></td>
@@ -242,7 +239,7 @@ const showToast = (message, isError = false) => {
 
 // Initialize with one row each
 window.onload = () => {
-    ['strata', 'spt', 'atterberg', 'shear', 'consolidation', 'triaxial', 'cpt'].forEach(type => {
+    ['strata', 'spt', 'atterberg', 'grain_size', 'shear', 'consolidation', 'triaxial', 'cpt'].forEach(type => {
         addRow(`${type}-body`);
     });
 };
@@ -303,10 +300,16 @@ function gatherBorelogData() {
 
             atterberg_test_data: Array.from(document.querySelectorAll('#atterberg-body tr')).filter(row => row.querySelector('.f-depth').value.trim() !== '').map(row => ({
                 depth_m: parseFloat(row.querySelector('.f-depth').value),
-                wl: parseFloat(row.querySelector('.f-wl').value),
-                wp: parseFloat(row.querySelector('.f-wp').value),
-                ip: parseFloat(row.querySelector('.f-ip').value),
-                li: parseFloat(row.querySelector('.f-li').value)
+                wc: parseFloat(row.querySelector('.f-wc').value),
+                ll: parseFloat(row.querySelector('.f-ll').value),
+                pl: parseFloat(row.querySelector('.f-pl').value)
+            })),
+
+            grain_size_analysis_data: Array.from(document.querySelectorAll('#grain_size-body tr')).filter(row => row.querySelector('.f-depth').value.trim() !== '').map(row => ({
+                depth_m: parseFloat(row.querySelector('.f-depth').value),
+                sand: parseFloat(row.querySelector('.f-sand').value),
+                silt: parseFloat(row.querySelector('.f-silt').value),
+                clay: parseFloat(row.querySelector('.f-clay').value)
             })),
 
             cpt_data: Array.from(document.querySelectorAll('#cpt-body tr')).filter(row => row.querySelector('.f-depth').value.trim() !== '').map(row => ({
@@ -432,7 +435,7 @@ document.getElementById('borelogForm').addEventListener('submit', async (e) => {
             document.getElementById('borelogForm').reset();
             // Clear arrays
             document.querySelectorAll('tbody').forEach(tbody => tbody.innerHTML = '');
-            ['strata', 'spt', 'atterberg', 'shear', 'consolidation', 'triaxial', 'cpt'].forEach(type => {
+            ['strata', 'spt', 'atterberg', 'grain_size', 'shear', 'consolidation', 'triaxial', 'cpt'].forEach(type => {
                 addRow(`${type}-body`);
             });
         } else {
@@ -568,7 +571,7 @@ function populateFormFromJson(geoJson) {
     setVal('comments', props.comments);
 
     // Clear existing tables
-    ['strata', 'spt', 'atterberg', 'shear', 'consolidation', 'triaxial', 'cpt'].forEach(type => {
+    ['strata', 'spt', 'atterberg', 'grain_size', 'shear', 'consolidation', 'triaxial', 'cpt'].forEach(type => {
         document.getElementById(`${type}-body`).innerHTML = '';
     });
 
@@ -603,10 +606,33 @@ function populateFormFromJson(geoJson) {
             const tr = addRow('atterberg-body');
             const inputs = tr.querySelectorAll('input');
             inputs[0].value = s.depth_m !== undefined ? s.depth_m : '';
-            inputs[1].value = s.wl !== undefined ? s.wl : (s.liquid_limit !== undefined ? s.liquid_limit : '');
-            inputs[2].value = s.wp !== undefined ? s.wp : (s.plastic_limit !== undefined ? s.plastic_limit : '');
-            inputs[3].value = s.ip !== undefined ? s.ip : (s.plasticity_index !== undefined ? s.plasticity_index : '');
-            inputs[4].value = s.li !== undefined ? s.li : (s.liquidity_index !== undefined ? s.liquidity_index : '');
+            inputs[1].value = s.wc !== undefined ? s.wc : (s.water_content !== undefined ? s.water_content: '');
+            inputs[2].value = s.ll !== undefined ? s.ll : (s.liquid_limit !== undefined ? s.liquid_limit : '');
+            inputs[3].value = s.pl !== undefined ? s.pl : (s.plastic_limit !== undefined ? s.plastic_limit : '');
+            
+            const wc = parseFloat(inputs[1].value);
+            const ll = parseFloat(inputs[2].value);
+            const pl = parseFloat(inputs[3].value);
+            
+            if (!isNaN(ll) && !isNaN(pl)) {
+                const pi = ll - pl;
+                inputs[4].value = pi.toFixed(2);
+                if (!isNaN(wc) && pi !== 0) {
+                    inputs[5].value = ((wc - pl) / pi).toFixed(3);
+                }
+            }
+        });
+    }
+
+    const grainSizeData = props.grain_size_analysis_data || props.grain_size_analysis;
+    if (grainSizeData) {
+        grainSizeData.forEach(s => {
+            const tr = addRow('grain_size-body');
+            const inputs = tr.querySelectorAll('input');
+            inputs[0].value = s.depth_m !== undefined ? s.depth_m : '';
+            inputs[1].value = s.sand !== undefined ? s.sand : '';
+            inputs[2].value = s.silt !== undefined ? s.silt : '';
+            inputs[3].value = s.clay !== undefined ? s.clay : '';
         });
     }
 
@@ -661,7 +687,7 @@ function populateFormFromJson(geoJson) {
     }
 
     // Always append one empty row at the end of every table to act as the filler/entry row
-    ['strata', 'spt', 'atterberg', 'shear', 'consolidation', 'triaxial', 'cpt'].forEach(type => {
+    ['strata', 'spt', 'atterberg', 'grain_size', 'shear', 'consolidation', 'triaxial', 'cpt'].forEach(type => {
         const tr = addRow(`${type}-body`);
         const inputs = tr.querySelectorAll('input, select');
         inputs.forEach(i => i.value = '');
@@ -798,6 +824,63 @@ document.addEventListener('change', (e) => {
                         target.value = prevDepth;
                     }
                 }
+            }
+        }
+    }
+});
+
+document.addEventListener('input', function(e) {
+    if (e.target.matches('#atterberg-body .f-wc, #atterberg-body .f-ll, #atterberg-body .f-pl')) {
+        const tr = e.target.closest('tr');
+        const wc = parseFloat(tr.querySelector('.f-wc').value);
+        const ll = parseFloat(tr.querySelector('.f-ll').value);
+        const pl = parseFloat(tr.querySelector('.f-pl').value);
+        
+        const piInput = tr.querySelector('.f-pi');
+        const liInput = tr.querySelector('.f-li');
+        
+        if (!isNaN(ll) && !isNaN(pl)) {
+            const pi = ll - pl;
+            piInput.value = pi.toFixed(2);
+            if (!isNaN(wc) && pi !== 0) {
+                const li = (wc - pl) / pi;
+                liInput.value = li.toFixed(3);
+            } else {
+                liInput.value = '';
+            }
+        } else {
+            piInput.value = '';
+            liInput.value = '';
+        }
+    }
+});
+
+// Auto-calculate PI and LI for Atterberg limits table
+document.addEventListener('input', (e) => {
+    if (e.target.classList.contains('f-wc') || 
+        e.target.classList.contains('f-ll') || 
+        e.target.classList.contains('f-pl')) {
+        const row = e.target.closest('tr');
+        if (row) {
+            const wc = parseFloat(row.querySelector('.f-wc').value);
+            const ll = parseFloat(row.querySelector('.f-ll').value);
+            const pl = parseFloat(row.querySelector('.f-pl').value);
+            const piField = row.querySelector('.f-pi');
+            const liField = row.querySelector('.f-li');
+
+            let pi = NaN;
+            if (!isNaN(ll) && !isNaN(pl)) {
+                pi = ll - pl;
+                piField.value = pi.toFixed(2);
+            } else {
+                piField.value = '';
+            }
+
+            if (!isNaN(pi) && pi !== 0 && !isNaN(wc) && !isNaN(pl)) {
+                const li = (wc - pl) / pi;
+                liField.value = li.toFixed(3);
+            } else {
+                liField.value = '';
             }
         }
     }

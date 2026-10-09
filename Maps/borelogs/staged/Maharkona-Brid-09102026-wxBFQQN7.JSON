@@ -1,0 +1,258 @@
+{
+  "type": "Feature",
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      24.942769,
+      90.733814
+    ]
+  },
+  "properties": {
+    "borelog_id": "Maharkona-Bridge-BH1-Netrokona",
+    "client": "Road Division, RHD, Netrokona",
+    "project": "IGI: I Am Goin In",
+    "location": "Maharkona, Netrokona",
+    "drilling_team": "FSA Engineering",
+    "supervisor": "Anya",
+    "drill_rig": "Percussion Drilling",
+    "tbm_no": "1",
+    "date_of_starting_boring": "",
+    "date_of_ending_boring": "",
+    "rl_m": 5.2,
+    "depth_m": 30,
+    "water_table_m": 3.6,
+    "comments": "## This borelog is done for Abutment 1 \n\n?\n\n`alt er`",
+    "strata": [
+      {
+        "top_m": 0,
+        "bottom_m": 3,
+        "class": "CH",
+        "description": "Brown, Soft in consistency, silty clay, AC2."
+      },
+      {
+        "top_m": 3,
+        "bottom_m": 6,
+        "class": "CH",
+        "description": "Gray, Soft in consistency, Silty Clay, AC2."
+      },
+      {
+        "top_m": 6,
+        "bottom_m": 9,
+        "class": "CH",
+        "description": "Gray, Stiff in consistency, Silty Clay, AC4."
+      },
+      {
+        "top_m": 9,
+        "bottom_m": 13.5,
+        "class": "SM",
+        "description": "Gray, Medium dense in consistency, Silty Sand, AS3."
+      },
+      {
+        "top_m": 13.5,
+        "bottom_m": 19.5,
+        "class": "SM",
+        "description": "Gray, Dense in consistency, Silty Sand, AS4."
+      },
+      {
+        "top_m": 13.5,
+        "bottom_m": 30,
+        "class": "SM",
+        "description": "Gray, Very Dense in consistency, Silty Sand, AS5."
+      }
+    ],
+    "spt_data": [
+      {
+        "depth_m": 1.5,
+        "blows_0_150": 1,
+        "blows_150_300": 1,
+        "blows_300_450": 2,
+        "n_value": "3"
+      },
+      {
+        "depth_m": 3,
+        "blows_0_150": 1,
+        "blows_150_300": 1,
+        "blows_300_450": 2,
+        "n_value": "3"
+      },
+      {
+        "depth_m": 4.5,
+        "blows_0_150": 2,
+        "blows_150_300": 2,
+        "blows_300_450": 2,
+        "n_value": "4"
+      },
+      {
+        "depth_m": 6,
+        "blows_0_150": 2,
+        "blows_150_300": 2,
+        "blows_300_450": 2,
+        "n_value": "4"
+      },
+      {
+        "depth_m": 7.5,
+        "blows_0_150": 2,
+        "blows_150_300": 4,
+        "blows_300_450": 6,
+        "n_value": "10"
+      },
+      {
+        "depth_m": 9,
+        "blows_0_150": 3,
+        "blows_150_300": 5,
+        "blows_300_450": 8,
+        "n_value": "13"
+      },
+      {
+        "depth_m": 10.5,
+        "blows_0_150": 3,
+        "blows_150_300": 6,
+        "blows_300_450": 9,
+        "n_value": "15"
+      },
+      {
+        "depth_m": 12,
+        "blows_0_150": 4,
+        "blows_150_300": 7,
+        "blows_300_450": 8,
+        "n_value": "13"
+      },
+      {
+        "depth_m": 13.5,
+        "blows_0_150": 4,
+        "blows_150_300": 8,
+        "blows_300_450": 10,
+        "n_value": "18"
+      },
+      {
+        "depth_m": 15,
+        "blows_0_150": 5,
+        "blows_150_300": 12,
+        "blows_300_450": 20,
+        "n_value": "32"
+      },
+      {
+        "depth_m": 16.5,
+        "blows_0_150": 9,
+        "blows_150_300": 18,
+        "blows_300_450": 25,
+        "n_value": "43"
+      },
+      {
+        "depth_m": 18,
+        "blows_0_150": 11,
+        "blows_150_300": 22,
+        "blows_300_450": 26,
+        "n_value": "48"
+      },
+      {
+        "depth_m": 19.5,
+        "blows_0_150": 13,
+        "blows_150_300": 23,
+        "blows_300_450": 27,
+        "n_value": "50"
+      },
+      {
+        "depth_m": 21,
+        "blows_0_150": 16,
+        "blows_150_300": 26,
+        "blows_300_450": 26,
+        "n_value": "50"
+      },
+      {
+        "depth_m": 22.5,
+        "blows_0_150": 17,
+        "blows_150_300": 28,
+        "blows_300_450": 25,
+        "n_value": "50"
+      },
+      {
+        "depth_m": 24,
+        "blows_0_150": 17,
+        "blows_150_300": 27,
+        "blows_300_450": 26,
+        "n_value": "50"
+      },
+      {
+        "depth_m": 25.5,
+        "blows_0_150": 18,
+        "blows_150_300": 30,
+        "blows_300_450": 25,
+        "n_value": "50"
+      },
+      {
+        "depth_m": 27,
+        "blows_0_150": 19,
+        "blows_150_300": 28,
+        "blows_300_450": 25,
+        "n_value": "50"
+      },
+      {
+        "depth_m": 28.5,
+        "blows_0_150": 14,
+        "blows_150_300": 29,
+        "blows_300_450": 26,
+        "n_value": "50"
+      },
+      {
+        "depth_m": 30,
+        "blows_0_150": 16,
+        "blows_150_300": 20,
+        "blows_300_450": 25,
+        "n_value": "50"
+      }
+    ],
+    "atterberg_test_data": [
+      {
+        "depth_m": 3,
+        "wc": 31.38,
+        "ll": 41.7,
+        "pl": 17.37
+      },
+      {
+        "depth_m": 7.5,
+        "wc": 32.78,
+        "ll": 42.77,
+        "pl": 26.16
+      }
+    ],
+    "grain_size_analysis_data": [
+      {
+        "depth_m": 3,
+        "sand": 0.39,
+        "silt": 68.96,
+        "clay": 30.65
+      },
+      {
+        "depth_m": 7.5,
+        "sand": 0.17,
+        "silt": 70.52,
+        "clay": 29.3
+      },
+      {
+        "depth_m": 18,
+        "sand": 78.71,
+        "silt": 20.01,
+        "clay": 0
+      },
+      {
+        "depth_m": 25,
+        "sand": 87.88,
+        "silt": 11.81,
+        "clay": 0
+      }
+    ],
+    "cpt_data": [],
+    "direct_shear_test_data": [],
+    "consolidation_test_data": [],
+    "triaxial_test_data": [
+      {
+        "depth_m": 12,
+        "test_type": "CD",
+        "effective_confining_stress_kpa": 100,
+        "peak_deviator_stress_kpa": 150,
+        "secant_modulus_e50_mpa": 25
+      }
+    ]
+  }
+}
