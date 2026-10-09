@@ -742,7 +742,7 @@ window.renderBorelogChart = function(containerId, geoJsonData) {
                 let llAnchor = "start";
                 let llDx = "5px";
                 let llY = y + 3;
-                if (llVal > 80) {
+                if (llVal > 65) {
                     llAnchor = "end";
                     llDx = "-5px";
                     llY = y - 6;
@@ -774,7 +774,7 @@ window.renderBorelogChart = function(containerId, geoJsonData) {
                 let plAnchor = "end";
                 let plDx = "-5px";
                 let plY = y + 3;
-                if (plVal < 20) {
+                if (plVal < 35) {
                     plAnchor = "start";
                     plDx = "5px";
                     plY = y - 6;
@@ -1395,7 +1395,7 @@ window.downloadBorelogSVG = function(geoJsonData, uid) {
                 let llX = x + 6;
                 let llAnchor = "start";
                 let llY = y + 3;
-                if (llVal > 80) {
+                if (llVal > 65) {
                     llX = x - 6;
                     llAnchor = "end";
                     llY = y - 6;
@@ -1411,7 +1411,7 @@ window.downloadBorelogSVG = function(geoJsonData, uid) {
                 let plX = x - 6;
                 let plAnchor = "end";
                 let plY = y + 3;
-                if (plVal < 20) {
+                if (plVal < 35) {
                     plX = x + 6;
                     plAnchor = "start";
                     plY = y - 6;
