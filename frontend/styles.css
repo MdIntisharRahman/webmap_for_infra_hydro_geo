@@ -2324,3 +2324,23 @@ body {
 .search-fields-list.hidden {
     display: none;
 }
+
+.search-reset-btn {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    font-size: 18px;
+    color: #999;
+    cursor: pointer;
+    line-height: 1;
+    padding: 2px 4px;
+}
+.search-reset-btn:hover {
+    color: #333;
+}
+.search-reset-btn.hidden {
+    display: none;
+}
