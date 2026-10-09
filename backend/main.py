@@ -160,6 +160,7 @@ async def get_layers():
                 credit_page = parts[10].strip() if len(parts) >= 11 else ""
                 zoom_level = parts[11].strip() if len(parts) >= 12 else ""
                 classify_with = parts[12].strip() if len(parts) >= 13 else ""
+                search_on = parts[13].strip() if len(parts) >= 14 else ""
                 
                 filename = parts[0]
                 rendered_filename = None
@@ -217,7 +218,8 @@ async def get_layers():
                     "color_map": color_map if layer_type.lower() == "raster" else None,
                     "credit_page": credit_page,
                     "zoom_level": zoom_level,
-                    "classify_with": classify_with
+                    "classify_with": classify_with,
+                    "search_on": search_on
                 })
     CACHED_LAYERS = layers
     return layers

@@ -84,6 +84,15 @@ if (rightPinBtn && rightPanelContainer) {
 }
 
 // ============================================================================
+// PANEL HOVER STATE (PREVENT MAP INTERACTION BLEED)
+// ============================================================================
+window.isOverPanel = false;
+document.querySelectorAll('.side-panel-container, .right-panel-container').forEach(panel => {
+    panel.addEventListener('mouseenter', () => { window.isOverPanel = true; });
+    panel.addEventListener('mouseleave', () => { window.isOverPanel = false; });
+});
+
+// ============================================================================
 // FEATURE STYLING FUNCTIONS
 // ============================================================================
 
@@ -1070,7 +1079,7 @@ async function fetchAndRenderLayers() {
                                         if (tooltip) tooltip.style.transform = `translate3d(${e.originalEvent.pageX + 15}px, ${e.originalEvent.pageY + 15}px, 0)`;
                                     },
                                     mouseover: (e) => {
-                                        if (window.featureTooltipLocked) return;
+                                        if (window.featureTooltipLocked || window.isOverPanel) return;
                                         if (window.tooltipHideTimeout) clearTimeout(window.tooltipHideTimeout);
                                         layer.setStyle(getHighlightStyle(feature, color, layerInfo.transparency));
                                         layer.bringToFront();
@@ -1091,6 +1100,12 @@ async function fetchAndRenderLayers() {
                                     },
                                     mousemove: (e) => {
                                         if (window.featureTooltipLocked) return;
+                                        if (window.isOverPanel) {
+                                            geoLayer.resetStyle(layer);
+                                            const tooltip = document.getElementById("tooltip");
+                                            if (tooltip) tooltip.classList.remove("visible");
+                                            return;
+                                        }
                                         const tooltip = document.getElementById("tooltip");
                                         if (tooltip) tooltip.style.transform = `translate3d(${e.originalEvent.pageX + 15}px, ${e.originalEvent.pageY + 15}px, 0)`;
                                     },
@@ -1945,3 +1960,235 @@ window.handleApproveFromMap = async (f_file, event) => {
         approveBtn.disabled = false;
     }
 };
+
+// ============================================================================
+// SEARCH FUNCTIONALITY
+// ============================================================================
+
+document.addEventListener("DOMContentLoaded", () => {
+    const searchFloatingBtn = document.getElementById("search-floating-btn");
+    const searchModal = document.getElementById("search-modal");
+    const searchDrawerToggle = document.getElementById("search-drawer-toggle");
+    const searchDrawer = document.getElementById("search-drawer");
+    const searchLayerList = document.getElementById("search-layer-list");
+    const searchFieldsList = document.getElementById("search-fields-list");
+    const searchFieldsCheckboxes = document.getElementById("search-fields-checkboxes");
+    const searchInput = document.getElementById("search-input");
+    const searchSuggestions = document.getElementById("search-suggestions");
+
+    let activeSearchLayerName = null;
+
+    // Toggle Modal
+    if (searchFloatingBtn) {
+        searchFloatingBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            searchModal.classList.toggle("hidden");
+            if (!searchModal.classList.contains("hidden")) {
+                populateSearchLayers();
+            }
+        });
+    }
+
+    // Close Modal on outside click
+    document.addEventListener("click", (e) => {
+        if (!searchModal.classList.contains("hidden") && 
+            !searchModal.contains(e.target) && 
+            !searchFloatingBtn.contains(e.target)) {
+            searchModal.classList.add("hidden");
+        }
+    });
+
+    // Toggle Drawer
+    if (searchDrawerToggle) {
+        searchDrawerToggle.addEventListener("click", () => {
+            searchDrawer.classList.toggle("hidden");
+            searchDrawerToggle.classList.toggle("expanded");
+            document.querySelector('.search-modal-content').classList.toggle("drawer-open");
+        });
+    }
+
+    function populateSearchLayers() {
+        searchLayerList.innerHTML = "";
+        const loadedLayerNames = Object.keys(loadedLayers);
+        let hasSearchableLayers = false;
+
+        loadedLayerNames.forEach(layerName => {
+            const config = window.allLayerConfigs.find(c => c.name === layerName);
+            if (config && config.search_on && config.search_on.trim() !== "") {
+                hasSearchableLayers = true;
+                const label = document.createElement("label");
+                label.className = "search-layer-option";
+                
+                const radio = document.createElement("input");
+                radio.type = "radio";
+                radio.name = "searchLayer";
+                radio.value = layerName;
+                radio.addEventListener("change", () => {
+                    activeSearchLayerName = layerName;
+                    populateSearchFields(config);
+                    resetLayerSearch(layerName);
+                });
+
+                label.appendChild(radio);
+                label.appendChild(document.createTextNode(layerName));
+                searchLayerList.appendChild(label);
+            }
+        });
+
+        if (!hasSearchableLayers) {
+            searchLayerList.innerHTML = "<p style='font-size: 12px; color: #888;'>No loaded layers have search configured.</p>";
+        }
+    }
+
+    function populateSearchFields(config) {
+        searchFieldsCheckboxes.innerHTML = "";
+        searchFieldsList.classList.remove("hidden");
+        const fields = config.search_on.split(",").map(f => f.trim()).filter(f => f);
+        
+        fields.forEach(field => {
+            const label = document.createElement("label");
+            label.className = "search-field-option";
+            
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.value = field;
+            checkbox.checked = true; // default to checked
+            checkbox.addEventListener("change", () => {
+                // re-evaluate search if input is active
+            });
+
+            label.appendChild(checkbox);
+            label.appendChild(document.createTextNode(field));
+            searchFieldsCheckboxes.appendChild(label);
+        });
+    }
+
+    function getSelectedFields() {
+        const checkboxes = searchFieldsCheckboxes.querySelectorAll("input[type='checkbox']:checked");
+        return Array.from(checkboxes).map(cb => cb.value);
+    }
+
+    function resetLayerSearch(layerName) {
+        const geoLayer = loadedLayers[layerName];
+        if (!geoLayer) return;
+        if (geoLayer.allFeatureLayers) {
+            geoLayer.clearLayers();
+            geoLayer.allFeatureLayers.forEach(l => geoLayer.addLayer(l));
+        }
+        searchInput.value = "";
+    }
+
+    // Handle typing and suggestions
+    if (searchInput) {
+        searchInput.addEventListener("input", (e) => {
+            const query = e.target.value.toLowerCase().trim();
+            if (!query || !activeSearchLayerName) {
+                searchSuggestions.classList.add("hidden");
+                if (activeSearchLayerName) resetLayerSearch(activeSearchLayerName);
+                return;
+            }
+
+            const selectedFields = getSelectedFields();
+            if (selectedFields.length === 0) return;
+
+            const geoLayer = loadedLayers[activeSearchLayerName];
+            if (!geoLayer) return;
+
+            if (!geoLayer.allFeatureLayers) {
+                geoLayer.allFeatureLayers = geoLayer.getLayers();
+            }
+
+            const suggestions = new Set();
+            geoLayer.allFeatureLayers.forEach(layer => {
+                const props = layer.feature.properties;
+                selectedFields.forEach(field => {
+                    const val = props[field];
+                    if (val !== undefined && val !== null) {
+                        const strVal = String(val);
+                        if (strVal.toLowerCase().includes(query)) {
+                            suggestions.add(`${field}: ${strVal}`);
+                        }
+                    }
+                });
+            });
+
+            renderSuggestions(Array.from(suggestions).slice(0, 10));
+        });
+
+        searchInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+                searchSuggestions.classList.add("hidden");
+                executeSearch(searchInput.value);
+            }
+        });
+    }
+
+    function renderSuggestions(suggestionsList) {
+        if (suggestionsList.length === 0) {
+            searchSuggestions.classList.add("hidden");
+            return;
+        }
+
+        searchSuggestions.innerHTML = "";
+        suggestionsList.forEach(sugg => {
+            const div = document.createElement("div");
+            div.className = "suggestion-item";
+            
+            const parts = sugg.split(": ");
+            const fieldPart = parts[0];
+            const valPart = parts.slice(1).join(": ");
+            
+            div.innerHTML = `<span class="field-name">${fieldPart}:</span>${valPart}`;
+            div.addEventListener("click", () => {
+                searchInput.value = valPart; // Fill with the value
+                searchSuggestions.classList.add("hidden");
+                executeSearch(valPart);
+            });
+            searchSuggestions.appendChild(div);
+        });
+        searchSuggestions.classList.remove("hidden");
+    }
+
+    function executeSearch(query) {
+        query = query.toLowerCase().trim();
+        if (!activeSearchLayerName || !query) return;
+
+        const geoLayer = loadedLayers[activeSearchLayerName];
+        if (!geoLayer || !geoLayer.allFeatureLayers) return;
+
+        const selectedFields = getSelectedFields();
+        let matchCount = 0;
+
+        geoLayer.clearLayers();
+        geoLayer.allFeatureLayers.forEach(layer => {
+            let isMatch = false;
+            const props = layer.feature.properties;
+            
+            for (let i = 0; i < selectedFields.length; i++) {
+                const val = props[selectedFields[i]];
+                if (val !== undefined && val !== null) {
+                    if (String(val).toLowerCase().includes(query)) {
+                        isMatch = true;
+                        break;
+                    }
+                }
+            }
+
+            if (isMatch) {
+                geoLayer.addLayer(layer);
+                matchCount++;
+            }
+        });
+
+        if (matchCount === 0) {
+            alert("Search yields no result.");
+            // Restore all
+            resetLayerSearch(activeSearchLayerName);
+        } else {
+            // Optional: zoom to bounds of matched features
+            try {
+                map.fitBounds(geoLayer.getBounds(), { maxZoom: 14 });
+            } catch(e) {}
+        }
+    }
+});

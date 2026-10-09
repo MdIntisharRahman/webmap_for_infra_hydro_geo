@@ -18,6 +18,34 @@
 </head>
 <body>
     <div id="map"></div>
+    
+    <!-- Search Floating Button -->
+    <div id="search-floating-btn" class="search-floating-btn" title="Search Features">
+        <img src="resources/images/search-svgrepo-com.svg" alt="Search">
+    </div>
+
+    <!-- Search Modal -->
+    <div id="search-modal" class="search-modal hidden">
+        <div class="search-modal-content">
+            <div class="search-input-group">
+                <button id="search-drawer-toggle" class="drawer-toggle">&gt;</button>
+                <div class="search-input-wrapper">
+                    <input type="text" id="search-input" placeholder="Search feature attributes..." autocomplete="off">
+                    <div id="search-suggestions" class="search-suggestions hidden"></div>
+                </div>
+            </div>
+            <div id="search-drawer" class="search-drawer hidden">
+                <p>Select a layer to search:</p>
+                <div id="search-layer-list">
+                    <!-- Layer radio buttons will be generated here -->
+                </div>
+                <div id="search-fields-list" class="search-fields-list hidden">
+                    <p>Select fields to search:</p>
+                    <div id="search-fields-checkboxes"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Small Header -->
 
