@@ -2076,12 +2076,29 @@ document.addEventListener("DOMContentLoaded", () => {
             geoLayer.allFeatureLayers.forEach(l => geoLayer.addLayer(l));
         }
         searchInput.value = "";
+        const resetBtn = document.getElementById("search-reset-btn");
+        if (resetBtn) resetBtn.classList.add("hidden");
+    }
+
+    const searchResetBtn = document.getElementById("search-reset-btn");
+    if (searchResetBtn) {
+        searchResetBtn.addEventListener("click", () => {
+            if (activeSearchLayerName) {
+                resetLayerSearch(activeSearchLayerName);
+            }
+            searchInput.focus();
+        });
     }
 
     // Handle typing and suggestions
     if (searchInput) {
         searchInput.addEventListener("input", (e) => {
             const query = e.target.value.toLowerCase().trim();
+            if (searchResetBtn) {
+                if (query) searchResetBtn.classList.remove("hidden");
+                else searchResetBtn.classList.add("hidden");
+            }
+            
             if (!query || !activeSearchLayerName) {
                 searchSuggestions.classList.add("hidden");
                 if (activeSearchLayerName) resetLayerSearch(activeSearchLayerName);
@@ -2141,6 +2158,7 @@ document.addEventListener("DOMContentLoaded", () => {
             div.innerHTML = `<span class="field-name">${fieldPart}:</span>${valPart}`;
             div.addEventListener("click", () => {
                 searchInput.value = valPart; // Fill with the value
+                if (searchResetBtn) searchResetBtn.classList.remove("hidden");
                 searchSuggestions.classList.add("hidden");
                 executeSearch(valPart);
             });
@@ -2187,7 +2205,7 @@ document.addEventListener("DOMContentLoaded", () => {
         } else {
             // Optional: zoom to bounds of matched features
             try {
-                map.fitBounds(geoLayer.getBounds(), { maxZoom: 14 });
+                map.flyToBounds(geoLayer.getBounds(), { maxZoom: 14, duration: 1.5 });
             } catch(e) {}
         }
     }
