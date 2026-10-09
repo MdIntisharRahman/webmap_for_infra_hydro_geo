@@ -115,8 +115,8 @@ CACHED_LAYERS = None
 @app.get("/api/layers")
 async def get_layers():
     global CACHED_LAYERS
-    if CACHED_LAYERS is not None:
-        return CACHED_LAYERS
+    # if CACHED_LAYERS is not None:
+    #     return CACHED_LAYERS
 
     md_path = os.path.join(
         os.path.dirname(__file__),
