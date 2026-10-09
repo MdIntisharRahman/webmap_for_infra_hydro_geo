@@ -2152,10 +2152,10 @@ body {
     position: absolute;
     top: 20px;
     right: 20px;
-    width: 40px;
-    height: 40px;
-    background: white;
-    border-radius: 4px;
+    width: 41px;
+    height: 41px;
+    background: var(--panel-bg);
+    /* border-radius: 4px; */
     box-shadow: 0 2px 6px rgba(0,0,0,0.3);
     z-index: 1000; /* above map */
     display: flex;
@@ -2163,7 +2163,8 @@ body {
     align-items: center;
     cursor: pointer;
     transition: transform 0.2s, background-color 0.2s;
-    border: 2px solid rgba(0,0,0,0.2);
+    /* border: 2px solid rgba(0,0,0,0.2); */
+    backdrop-filter: blur(11px);
 }
 
 .search-floating-btn:hover {
@@ -2172,8 +2173,8 @@ body {
 }
 
 .search-floating-btn img {
-    width: 24px;
-    height: 24px;
+    width: 27px;
+    height: 27px;
 }
 
 .search-modal {
@@ -2188,7 +2189,7 @@ body {
 }
 
 .search-modal-content {
-    background: white;
+    background: var(--panel-bg);
     border-radius: 4px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     overflow: visible;
@@ -2200,8 +2201,9 @@ body {
 .search-input-group {
     display: flex;
     align-items: center;
-    padding: 8px;
-    border-bottom: 1px solid transparent;
+    padding: 0 7px 0 1px;
+    /* border-bottom: 1px solid transparent; */
+    height: 41px;
 }
 
 .search-modal-content.drawer-open .search-input-group {
@@ -2214,9 +2216,12 @@ body {
     font-size: 18px;
     font-weight: bold;
     cursor: pointer;
-    padding: 4px 8px;
+    padding: 0px 5px;
     color: #555;
     transition: transform 0.3s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .drawer-toggle.expanded {
@@ -2236,7 +2241,7 @@ body {
     font-size: 14px;
     width: 250px;
     outline: none;
-    margin-left: 8px;
+    /* margin-left: 7px; */
 }
 
 #search-input:focus {
