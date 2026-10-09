@@ -12,7 +12,7 @@
         "xcoord": 90.4125,
         "ycoord": 23.81032,
         "keys": "'[Name, Place], [xcoord, Easting], [ycoord, Northing], [f_file(=>{type:file, format:JSON}, See Borelog, imodal, borelog-modal=>),Details]'",
-        "f_class_color": "#2196f3",
+        "f_class_color": "#ff4053",
         "f_file": "PL-11-SQTRS-09.json",
         "UID": "PL-11-SQTRS-09"
       },
@@ -34,7 +34,7 @@
         "xcoord": 90.436514,
         "ycoord": 23.828162,
         "keys": "'[Name, Place], [xcoord, Easting], [ycoord, Northing], [f_file(=>{type:file, format:JSON}, See Borelog, imodal, borelog-modal=>),Details]'",
-        "f_class_color": "#3b82f6",
+        "f_class_color": "#ff4053",
         "f_file": "IGI-2-Covert-S-01102026-zEOtjjz9.JSON",
         "UID": "IGI-2-Covert-S-01102026-zEOtjjz9"
       },
@@ -56,7 +56,7 @@
         "xcoord": 90.733814,
         "ycoord": 24.942769,
         "keys": "'[Name, Place], [xcoord, Easting], [ycoord, Northing], [f_file(=>{type:file, format:JSON}, See Borelog, imodal, borelog-modal=>),Details]'",
-        "f_class_color": "#3b82f6",
+        "f_class_color": "#ff4053",
         "UID": "Maharkona-Brid-09102026-wxBFQQN7",
         "f_file": "Maharkona-Brid-09102026-wxBFQQN7.JSON"
       },

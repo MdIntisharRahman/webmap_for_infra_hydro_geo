@@ -524,7 +524,7 @@ async def stage_borelog(request: Request, db: AsyncSession = Depends(get_db)):
     # Static Keys Convention
     keys_str = "'[Name, Place], [xcoord, Easting], [ycoord, Northing], [f_file(=>/{ type:file, format:JSON /}, See Borelog, imodal, borelog-modal=>),Details]'"
 
-    f_class_color = "#3b82f6"
+    f_class_color = "#ff4053"
     
     query = text("""
         INSERT INTO awaiting_borelogs (geom, borelog_id, project, client, f_file, "Name", "keys", "f_class_color", "xcoord", "ycoord")
