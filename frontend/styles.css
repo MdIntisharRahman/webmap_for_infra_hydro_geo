@@ -732,27 +732,29 @@ body {
 }
 
 .see-more-btn {
-    background: #f1f5f9;
-    border: 1px solid #cbd5e1;
+    background: transparent;
+     /* #f1f5f9; */
+    border: 0.1px solid #cbd5e1;
     color: var(--accent-blue);
-    font-size: var(--text-xs);
+    font-size: x-small;
     font-weight: 700;
     text-transform: uppercase;
     cursor: pointer;
-    margin-top: 8px;
+    margin-top: 9px;
     text-align: center;
     width: 100%;
     padding: 6px;
     /* border-radius: 6px; */
     transition: all 0.2s ease;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    /* box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); */
+    font-family: var(--font-body);
 }
 
 .see-more-btn:hover {
     background: var(--accent-blue);
     border-color: var(--accent-blue);
     color: white;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    /* box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); */
 }
 
 /* Leaflet UI Overrides */

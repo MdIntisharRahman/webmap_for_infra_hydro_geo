@@ -358,38 +358,59 @@
     "atterberg_test_data": [
       {
         "depth_m": 10,
-        "wl": 35,
-        "wp": 20,
-        "ip": 15,
-        "li": 0.43
+        "wc": 21,
+        "ll": 35,
+        "pl": 20
       },
       {
         "depth_m": 17.5,
-        "wl": 38,
-        "wp": 22,
-        "ip": 16,
-        "li": 0.42
+        "wc": 23,
+        "ll": 38,
+        "pl": 22
       },
       {
         "depth_m": 19.5,
-        "wl": 40,
-        "wp": 24,
-        "ip": 16,
-        "li": 0.4
+        "wc": 21,
+        "ll": 40,
+        "pl": 24
       },
       {
         "depth_m": 21.5,
-        "wl": 42,
-        "wp": 26,
-        "ip": 16,
-        "li": 0.38
+        "wc": 24,
+        "ll": 42,
+        "pl": 26
       },
       {
         "depth_m": 23.5,
-        "wl": 44,
-        "wp": 28,
-        "ip": 16,
-        "li": 0.36
+        "ll": 44,
+        "pl": 28,
+        "wc": null
+      }
+    ],
+    "grain_size_analysis_data": [
+      {
+        "depth_m": 3,
+        "sand": 0.39,
+        "silt": 68.96,
+        "clay": 30.65
+      },
+      {
+        "depth_m": 7.5,
+        "sand": 0.17,
+        "silt": 70.52,
+        "clay": 29.3
+      },
+      {
+        "depth_m": 18,
+        "sand": 78.71,
+        "silt": 20.01,
+        "clay": 0
+      },
+      {
+        "depth_m": 25,
+        "sand": 87.88,
+        "silt": 11.81,
+        "clay": 0
       }
     ],
     "cpt_data": [],
@@ -433,40 +454,40 @@
     "consolidation_test_data": [
       {
         "depth_m": 10,
-        "vertical_effective_stress_kpa": 100.0,
-        "constrained_modulus_eoed_mpa": 25.0,
+        "vertical_effective_stress_kpa": 100,
+        "constrained_modulus_eoed_mpa": 25,
         "compression_index": 0.2,
         "recompression_index": 0.04,
         "preconsolidation_pressure_kpa": 120.5
       },
       {
         "depth_m": 12.5,
-        "vertical_effective_stress_kpa": 100.0,
-        "constrained_modulus_eoed_mpa": 25.0,
+        "vertical_effective_stress_kpa": 100,
+        "constrained_modulus_eoed_mpa": 25,
         "compression_index": 0.2,
         "recompression_index": 0.04,
         "preconsolidation_pressure_kpa": 120.5
       },
       {
         "depth_m": 17.5,
-        "vertical_effective_stress_kpa": 100.0,
-        "constrained_modulus_eoed_mpa": 25.0,
+        "vertical_effective_stress_kpa": 100,
+        "constrained_modulus_eoed_mpa": 25,
         "compression_index": 0.2,
         "recompression_index": 0.04,
         "preconsolidation_pressure_kpa": 120.5
       },
       {
         "depth_m": 21.5,
-        "vertical_effective_stress_kpa": 100.0,
-        "constrained_modulus_eoed_mpa": 25.0,
+        "vertical_effective_stress_kpa": 100,
+        "constrained_modulus_eoed_mpa": 25,
         "compression_index": 0.2,
         "recompression_index": 0.04,
         "preconsolidation_pressure_kpa": 120.5
       },
       {
         "depth_m": 23.5,
-        "vertical_effective_stress_kpa": 100.0,
-        "constrained_modulus_eoed_mpa": 25.0,
+        "vertical_effective_stress_kpa": 100,
+        "constrained_modulus_eoed_mpa": 25,
         "compression_index": 0.2,
         "recompression_index": 0.04,
         "preconsolidation_pressure_kpa": 120.5
@@ -474,11 +495,11 @@
     ],
     "triaxial_test_data": [
       {
-        "depth_m": 12.0,
+        "depth_m": 12,
         "test_type": "CD",
-        "effective_confining_stress_kpa": 100.0,
-        "peak_deviator_stress_kpa": 150.0,
-        "secant_modulus_e50_mpa": 25.0
+        "effective_confining_stress_kpa": 100,
+        "peak_deviator_stress_kpa": 150,
+        "secant_modulus_e50_mpa": 25
       }
     ]
   }

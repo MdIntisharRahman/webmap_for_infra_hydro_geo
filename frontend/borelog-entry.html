@@ -82,8 +82,8 @@
         }
 
         .section {
-            margin-bottom: 48px;
-            padding: 24px;
+            margin-bottom: 4rem;
+            padding: 2rem;
             /* border-radius: 7px; */
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
             border: 1px solid rgba(0, 0, 0, 0.05);
@@ -109,6 +109,10 @@
 
         .atterberg-section {
             background: linear-gradient(rgba(255, 255, 255, 0.89), rgba(255, 255, 255, 0.97)), url('resources/images/bg-atterberg.jpg') center/cover repeat;
+        }
+
+        .grain_size-section {
+            background: linear-gradient(rgba(255, 255, 255, 0.89), rgba(255, 255, 255, 0.97)), url('resources/images/bg-grain-size.jpg') center/cover repeat;
         }
 
         .shear-section {
@@ -283,6 +287,17 @@
             z-index: 11;
         }
 
+        
+
+        .btn-holder {
+            display: flex;
+            margin-top: -1rem;
+            margin-bottom: 3rem;
+            justify-content: space-around;
+            padding: 0 2rem;
+            gap: 11px;
+        }
+        
         .btn {
             position: relative;
             display: inline-flex;
@@ -547,8 +562,13 @@
                 padding: 0.75rem;
             }
 
+            
+            .btn-holder {
+                padding: 0.75rem;
+            }
+
             .btn {
-                padding: 12px 16px;
+                padding: 12px 7px;
                 min-height: 44px;
                 /* Larger touch targets */
             }
@@ -733,11 +753,11 @@
         <form id="borelogForm">
 
             <div class="section"
-                style="padding: 15px; margin-bottom: 24px; border-color: rgba(37, 99, 235, 0.2);  border-radius: 0px;">
+                style="padding: 1rem; margin-bottom: 24px; border-color: rgba(37, 99, 235, 0.2);  border-radius: 0px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
                     <div style="font-size: var(--text-base); font-weight: 600; font-family: var(--font-body-special);">Fast Entry
                     </div>
-                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <div style="display: flex; gap: 9px; flex-wrap: nowrap; justify-content: space-around;">
                         <button type="button" class="btn btn-outline"
                             onclick="window.location.href = (window.location.port === '8383' ? 'http://localhost:8484' : '') + '/maps/borelogs/samples/sample_files.zip'">Samples</button>
                         <!-- <button type="button" class="btn btn-outline" onclick="window.location.href = (window.location.port === '8383' ? 'http://localhost:8484' : '') + '/resources/sample/sample_files.zip'">Samples</button> -->
@@ -856,14 +876,37 @@
                         <thead>
                             <tr>
                                 <th id="essential">Depth (m)</th>
-                                <th id="essential">WL (%)</th>
-                                <th id="essential">WP (%)</th>
-                                <th id="essential">IP (%)</th>
-                                <th id="essential">LI</th>
+                                <th id="essential">Water Content w_c (%)</th>
+                                <th id="essential">Liquid Limit (%)</th>
+                                <th id="essential">Plastic Limit (%)</th>
+                                <th id="essential">Plasticity Index</th>
+                                <th id="essential">Liquidity Index</th>
                                 <th style="width:50px;"></th>
                             </tr>
                         </thead>
                         <tbody id="atterberg-body" data-type="atterberg"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Grain Size Analysis -->
+            <div class="section grain_size-section">
+                <div class="section-header">
+                    <h2>Grain Size Analysis</h2>
+                    <button type="button" class="btn btn-outline" onclick="addRow('grain_size-body')">+ Add Sample</button>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th id="essential">Depth (m)</th>
+                                <th id="essential">Sand (%)</th>
+                                <th id="essential">Silt (%)</th>
+                                <th id="essential">Clay (%)</th>
+                                <th style="width:50px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="grain_size-body" data-type="grain_size"></tbody>
                     </table>
                 </div>
             </div>
@@ -976,7 +1019,7 @@
             </div>
 
 
-            <div style="display: flex; gap: 11px; margin-top: 24px; justify-content: center;">
+            <div class="btn-holder">
                 <button type="button" id="preview-btn" class="btn">
                     Preview Borelog
                 </button>
@@ -991,8 +1034,8 @@
     <div id="status-toast"></div>
 
     <script src="resources/MultiTab_XLSX_Export_Engine.js"></script>
-    <script src="resources/BorelogVisualizer.js"></script>
-    <script src="borelog-form.js?v=3"></script>
+    <script src="resources/BorelogVisualizer.js?v=15"></script>
+    <script src="borelog-form.js?v=7"></script>
 
 
     <!-- Preview Modal -->

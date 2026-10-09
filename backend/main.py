@@ -522,7 +522,8 @@ async def stage_borelog(request: Request, db: AsyncSession = Depends(get_db)):
     client = props.get("client", "")
     
     # Static Keys Convention
-    keys_str = "[Name, Place], [xcoord, Easting], [ycoord, Northing], [f_file, See Details]"
+    keys_str = "'[Name, Place], [xcoord, Easting], [ycoord, Northing], [f_file(=>/{ type:file, format:JSON /}, See Borelog, imodal, borelog-modal=>),Details]'"
+
     f_class_color = "#3b82f6"
     
     query = text("""

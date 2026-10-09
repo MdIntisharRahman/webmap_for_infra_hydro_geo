@@ -351,38 +351,59 @@
     "atterberg_test_data": [
       {
         "depth_m": 10,
-        "wl": 35,
-        "wp": 20,
-        "ip": 15,
-        "li": 0.43
+        "wc": 35,
+        "ll": 20,
+        "pl": 15
       },
       {
         "depth_m": 17.5,
-        "wl": 38,
-        "wp": 22,
-        "ip": 16,
-        "li": 0.42
+        "wc": 38,
+        "ll": 22,
+        "pl": 16
       },
       {
         "depth_m": 19.5,
-        "wl": 40,
-        "wp": 24,
-        "ip": 16,
-        "li": 0.4
+        "wc": 40,
+        "ll": 24,
+        "pl": 16
       },
       {
         "depth_m": 21.5,
-        "wl": 42,
-        "wp": 26,
-        "ip": 16,
-        "li": 0.38
+        "wc": 42,
+        "ll": 26,
+        "pl": 16
       },
       {
         "depth_m": 23.5,
-        "wl": 44,
-        "wp": 28,
-        "ip": 16,
-        "li": 0.36
+        "wc": 44,
+        "ll": 28,
+        "pl": 16
+      }
+    ],
+    "grain_size_analysis_data": [
+      {
+        "depth_m": 3,
+        "sand": 0.39,
+        "silt": 68.96,
+        "clay": 30.65
+      },
+      {
+        "depth_m": 7.5,
+        "sand": 0.17,
+        "silt": 70.52,
+        "clay": 29.30
+      },
+      {
+        "depth_m": 18,
+        "sand": 78.71,
+        "silt": 20.01,
+        "clay": 0
+      },
+      {
+        "depth_m": 25,
+        "sand": 87.88,
+        "silt": 11.81,
+        "clay": 0
       }
     ],
     "cpt_data": [

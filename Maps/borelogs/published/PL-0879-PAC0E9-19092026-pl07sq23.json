@@ -23,7 +23,7 @@
     "strata": [
       {
         "stratum": 1,
-        "top_m": 0.0,
+        "top_m": 0,
         "bottom_m": 8.5,
         "class": "SM",
         "description": "Gray, loose to medium dense, Silty Sand, SM."
@@ -73,27 +73,27 @@
       {
         "stratum": 8,
         "top_m": 25.2,
-        "bottom_m": 28.0,
+        "bottom_m": 28,
         "class": "SM",
         "description": "Gray, medium dense, Silty Sand, SM."
       },
       {
         "stratum": 9,
-        "top_m": 28.0,
-        "bottom_m": 39.0,
+        "top_m": 28,
+        "bottom_m": 39,
         "class": "CL",
         "description": "Gray to Reddish Brown, very stiff to hard, Lean Clay, CL."
       },
       {
         "stratum": 10,
-        "top_m": 39.0,
-        "bottom_m": 45.0,
+        "top_m": 39,
+        "bottom_m": 45,
         "class": "SM",
         "description": "Reddish Brown, very dense, Silty Sand, SM."
       },
       {
         "stratum": 11,
-        "top_m": 45.0,
+        "top_m": 45,
         "bottom_m": 46.5,
         "class": "ML",
         "description": "Reddish Brown, very dense, Sandy Silt, ML."
@@ -115,7 +115,7 @@
         "n_value": "13"
       },
       {
-        "depth_m": 3.0,
+        "depth_m": 3,
         "blows_150": 2,
         "blows_300": 4,
         "blows_450": 6,
@@ -129,7 +129,7 @@
         "n_value": "5"
       },
       {
-        "depth_m": 6.0,
+        "depth_m": 6,
         "blows_150": 2,
         "blows_300": 3,
         "blows_450": 3,
@@ -143,7 +143,7 @@
         "n_value": "6"
       },
       {
-        "depth_m": 9.0,
+        "depth_m": 9,
         "blows_150": 2,
         "blows_300": 2,
         "blows_450": 3,
@@ -157,7 +157,7 @@
         "n_value": "4"
       },
       {
-        "depth_m": 12.0,
+        "depth_m": 12,
         "blows_150": 3,
         "blows_300": 4,
         "blows_450": 5,
@@ -171,7 +171,7 @@
         "n_value": "8"
       },
       {
-        "depth_m": 15.0,
+        "depth_m": 15,
         "blows_150": 4,
         "blows_300": 4,
         "blows_450": 6,
@@ -185,7 +185,7 @@
         "n_value": "28"
       },
       {
-        "depth_m": 18.0,
+        "depth_m": 18,
         "blows_150": 8,
         "blows_300": 15,
         "blows_450": 19,
@@ -199,7 +199,7 @@
         "n_value": "32"
       },
       {
-        "depth_m": 21.0,
+        "depth_m": 21,
         "blows_150": 6,
         "blows_300": 9,
         "blows_450": 11,
@@ -213,7 +213,7 @@
         "n_value": "18"
       },
       {
-        "depth_m": 24.0,
+        "depth_m": 24,
         "blows_150": 6,
         "blows_300": 10,
         "blows_450": 12,
@@ -227,7 +227,7 @@
         "n_value": "17"
       },
       {
-        "depth_m": 27.0,
+        "depth_m": 27,
         "blows_150": 7,
         "blows_300": 8,
         "blows_450": 11,
@@ -241,7 +241,7 @@
         "n_value": "25"
       },
       {
-        "depth_m": 30.0,
+        "depth_m": 30,
         "blows_150": 8,
         "blows_300": 12,
         "blows_450": 15,
@@ -255,7 +255,7 @@
         "n_value": "25"
       },
       {
-        "depth_m": 33.0,
+        "depth_m": 33,
         "blows_150": 8,
         "blows_300": 10,
         "blows_450": 14,
@@ -269,7 +269,7 @@
         "n_value": "26"
       },
       {
-        "depth_m": 36.0,
+        "depth_m": 36,
         "blows_150": 6,
         "blows_300": 8,
         "blows_450": 11,
@@ -283,7 +283,7 @@
         "n_value": "43"
       },
       {
-        "depth_m": 39.0,
+        "depth_m": 39,
         "blows_150": 12,
         "blows_300": 23,
         "blows_450": 27,
@@ -297,7 +297,7 @@
         "n_value": "50/250"
       },
       {
-        "depth_m": 42.0,
+        "depth_m": 42,
         "blows_150": 17,
         "blows_300": 33,
         "blows_450": 17,
@@ -311,7 +311,7 @@
         "n_value": "50/200"
       },
       {
-        "depth_m": 45.0,
+        "depth_m": 45,
         "blows_150": 26,
         "blows_300": 50,
         "blows_450": 50,
@@ -325,7 +325,7 @@
         "n_value": "50/180"
       },
       {
-        "depth_m": 48.0,
+        "depth_m": 48,
         "blows_150": 20,
         "blows_300": 46,
         "blows_450": 4,
@@ -339,7 +339,7 @@
         "n_value": "50/170"
       },
       {
-        "depth_m": 51.0,
+        "depth_m": 51,
         "blows_150": 30,
         "blows_300": 50,
         "blows_450": 50,
@@ -349,38 +349,59 @@
     "atterberg_test_data": [
       {
         "depth_m": 15.5,
-        "wl": 35.0,
-        "wp": 20.0,
-        "ip": 15.0,
-        "li": 0.43
+        "ll": 35,
+        "pl": 20,
+        "wc": null
       },
       {
         "depth_m": 17.5,
-        "wl": 38.0,
-        "wp": 22.0,
-        "ip": 16.0,
-        "li": 0.42
+        "ll": 38,
+        "pl": 22,
+        "wc": null
       },
       {
         "depth_m": 19.5,
-        "wl": 40.0,
-        "wp": 24.0,
-        "ip": 16.0,
-        "li": 0.4
+        "ll": 40,
+        "pl": 24,
+        "wc": null
       },
       {
         "depth_m": 21.5,
-        "wl": 42.0,
-        "wp": 26.0,
-        "ip": 16.0,
-        "li": 0.38
+        "ll": 42,
+        "pl": 26,
+        "wc": null
       },
       {
         "depth_m": 23.5,
-        "wl": 44.0,
-        "wp": 28.0,
-        "ip": 16.0,
-        "li": 0.36
+        "ll": 44,
+        "pl": 28,
+        "wc": null
+      }
+    ],
+    "grain_size_analysis_data": [
+      {
+        "depth_m": 3,
+        "sand": 0.39,
+        "silt": 68.96,
+        "clay": 30.65
+      },
+      {
+        "depth_m": 7.5,
+        "sand": 0.17,
+        "silt": 70.52,
+        "clay": 29.3
+      },
+      {
+        "depth_m": 18,
+        "sand": 78.71,
+        "silt": 20.01,
+        "clay": 0
+      },
+      {
+        "depth_m": 25,
+        "sand": 87.88,
+        "silt": 11.81,
+        "clay": 0
       }
     ],
     "direct_shear_test_data": [
@@ -422,41 +443,41 @@
     ],
     "consolidation_test_data": [
       {
-        "depth_m": 10.0,
-        "vertical_effective_stress_kpa": 100.0,
-        "constrained_modulus_eoed_mpa": 25.0,
+        "depth_m": 10,
+        "vertical_effective_stress_kpa": 100,
+        "constrained_modulus_eoed_mpa": 25,
         "compression_index": 0.2,
         "recompression_index": 0.04,
         "preconsolidation_pressure_kpa": 120.5
       },
       {
         "depth_m": 12.5,
-        "vertical_effective_stress_kpa": 100.0,
-        "constrained_modulus_eoed_mpa": 25.0,
+        "vertical_effective_stress_kpa": 100,
+        "constrained_modulus_eoed_mpa": 25,
         "compression_index": 0.2,
         "recompression_index": 0.04,
         "preconsolidation_pressure_kpa": 120.5
       },
       {
         "depth_m": 17.5,
-        "vertical_effective_stress_kpa": 100.0,
-        "constrained_modulus_eoed_mpa": 25.0,
+        "vertical_effective_stress_kpa": 100,
+        "constrained_modulus_eoed_mpa": 25,
         "compression_index": 0.2,
         "recompression_index": 0.04,
         "preconsolidation_pressure_kpa": 120.5
       },
       {
         "depth_m": 21.5,
-        "vertical_effective_stress_kpa": 100.0,
-        "constrained_modulus_eoed_mpa": 25.0,
+        "vertical_effective_stress_kpa": 100,
+        "constrained_modulus_eoed_mpa": 25,
         "compression_index": 0.2,
         "recompression_index": 0.04,
         "preconsolidation_pressure_kpa": 120.5
       },
       {
         "depth_m": 23.5,
-        "vertical_effective_stress_kpa": 100.0,
-        "constrained_modulus_eoed_mpa": 25.0,
+        "vertical_effective_stress_kpa": 100,
+        "constrained_modulus_eoed_mpa": 25,
         "compression_index": 0.2,
         "recompression_index": 0.04,
         "preconsolidation_pressure_kpa": 120.5
@@ -465,11 +486,11 @@
     "comments": "The borehole PL-07 was drilled to a depth of 51.29 meters at the Purbachal site for the Dhaka Mass Rapid Transit Development Project (MRT Line 1). The soil profile consists of various strata including silty sand, fat clay, high plastic organic clay, lean clay, and sandy silt. The SPT records indicate varying N-values throughout the depth, reflecting changes in soil density and consistency. Laboratory tests such as Atterberg limits, direct shear tests, and consolidation tests were conducted to determine the engineering properties of the soils encountered.",
     "triaxial_test_data": [
       {
-        "depth_m": 12.0,
+        "depth_m": 12,
         "test_type": "CD",
-        "effective_confining_stress_kpa": 100.0,
-        "peak_deviator_stress_kpa": 150.0,
-        "secant_modulus_e50_mpa": 25.0
+        "effective_confining_stress_kpa": 100,
+        "peak_deviator_stress_kpa": 150,
+        "secant_modulus_e50_mpa": 25
       }
     ]
   }
