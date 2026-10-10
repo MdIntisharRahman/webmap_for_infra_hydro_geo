@@ -87,7 +87,7 @@ if (rightPinBtn && rightPanelContainer) {
 // PANEL HOVER STATE (PREVENT MAP INTERACTION BLEED)
 // ============================================================================
 window.isOverPanel = false;
-document.querySelectorAll('.side-panel-container, .right-panel-container').forEach(panel => {
+document.querySelectorAll('.side-panel-container, .right-panel-container, #search-modal').forEach(panel => {
     panel.addEventListener('mouseenter', () => { window.isOverPanel = true; });
     panel.addEventListener('mouseleave', () => { window.isOverPanel = false; });
 });
@@ -1088,7 +1088,7 @@ async function fetchAndRenderLayers() {
                                         populateTooltip(e);
                                     },
                                     mouseout: (e) => {
-                                        if (window.featureTooltipLocked) return;
+                                        if (window.featureTooltipLocked || window.isOverPanel) return;
                                         geoLayer.resetStyle(layer);
                                         window.tooltipHideTimeout = setTimeout(() => {
                                             if (!window.featureTooltipLocked) {
@@ -1099,13 +1099,7 @@ async function fetchAndRenderLayers() {
                                         }, 250);
                                     },
                                     mousemove: (e) => {
-                                        if (window.featureTooltipLocked) return;
-                                        if (window.isOverPanel) {
-                                            geoLayer.resetStyle(layer);
-                                            const tooltip = document.getElementById("tooltip");
-                                            if (tooltip) tooltip.classList.remove("visible");
-                                            return;
-                                        }
+                                        if (window.featureTooltipLocked || window.isOverPanel) return;
                                         const tooltip = document.getElementById("tooltip");
                                         if (tooltip) tooltip.style.transform = `translate3d(${e.originalEvent.pageX + 15}px, ${e.originalEvent.pageY + 15}px, 0)`;
                                     },
