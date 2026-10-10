@@ -8,7 +8,9 @@
     ]
   },
   "properties": {
-    "borelog_id": "IGI-2-Covert-Strike-2010",
+    "borelog_name": "IGI-2-Covert-Strike-r3KdHj2Us7",
+    "borelog_id": "01102026zEOtjjz9",
+    "uid":"IGI-2-Covert-Strike-r3KdHj2Us7-01102026-zEOtjjz9",
     "client": "Yousef Priboy Consortium",
     "project": "IGI: Covert Strike",
     "location": "Romanian Border",
@@ -363,7 +365,7 @@
       },
       {
         "depth_m": 23.5,
-        "wc":30,
+        "wc": 30,
         "ll": 44,
         "pl": 28
       }
@@ -379,7 +381,7 @@
         "depth_m": 7.5,
         "sand": 0.17,
         "silt": 70.52,
-        "clay": 29.30
+        "clay": 29.3
       },
       {
         "depth_m": 18,

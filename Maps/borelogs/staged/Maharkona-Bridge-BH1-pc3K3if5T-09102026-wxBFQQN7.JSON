@@ -8,9 +8,11 @@
     ]
   },
   "properties": {
-    "borelog_id": "Maharkona-Bridge-BH1-Netrokona",
+    "borelog_name": "Maharkona-Bridge-BH1-pc3K3if5T",
+    "borelog_id": "09102026wxBFQQN7",
+    "uid":"Maharkona-Bridge-BH1-pc3K3if5T-09102026-wxBFQQN7",
     "client": "Road Division, RHD, Netrokona",
-    "project": "IGI: I Am Goin In",
+    "project": "PMP 2026-27",
     "location": "Maharkona, Netrokona",
     "drilling_team": "FSA Engineering",
     "supervisor": "Anya",
@@ -27,7 +29,7 @@
         "top_m": 0,
         "bottom_m": 3,
         "class": "CH",
-        "description": "Brown, Soft in consistency, silty clay, AC2."
+        "description": "Brown, Soft in consistency, Silty Clay, AC2."
       },
       {
         "top_m": 3,

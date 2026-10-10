@@ -8,7 +8,9 @@
     ]
   },
   "properties": {
-    "borehole_id": "PL-09-SPSGXPC9",
+    "borelog_name": "PL-09-SPSGXPC9-yp2eK6dHm2UsRa7",
+    "borelog_id": "20092026b2vzHZKf",
+    "uid": "PL-09-SPSGXPC9-yp2eK6dHm2UsRa7-20092026-b2vzHZKf",
     "client": "SPG Consortium",
     "project": "IPT-09",
     "location": "Purbachal",
@@ -360,7 +362,7 @@
         "depth_m": 7.5,
         "sand": 0.17,
         "silt": 70.52,
-        "clay": 29.30
+        "clay": 29.3
       },
       {
         "depth_m": 18,

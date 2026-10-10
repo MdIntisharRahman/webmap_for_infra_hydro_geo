@@ -1028,7 +1028,7 @@ async function fetchAndRenderLayers() {
                                             let hasNameInKeys = false;
                                             for (let i = 0; i < parsedKeys.length; i++) {
                                                 const fieldName = parsedKeys[i][0].toLowerCase();
-                                                if (["name", "title", "road_name", "river_name", "locality"].includes(fieldName)) {
+                                                if (["name", "title", "road_name", "river_name", "locality", "borelog_name"].includes(fieldName)) {
                                                     hasNameInKeys = true;
                                                     break;
                                                 }
@@ -1038,8 +1038,8 @@ async function fetchAndRenderLayers() {
                                                 let hVal = props[parsedKeys[0][0]];
                                                 headerValue = hVal !== undefined && hVal !== null && hVal !== "" ? hVal : " ";
                                                 displayKeys = parsedKeys.slice(1);
-                                            } else if (props.Name || props.name || props.road_name || props.river_name || props.locality) {
-                                                headerValue = props.Name || props.name || props.road_name || props.river_name || props.locality;
+                                            } else if (props.Name || props.name || props.borelog_name || props.road_name || props.river_name || props.locality) {
+                                                headerValue = props.Name || props.name || props.borelog_name || props.road_name || props.river_name || props.locality;
                                                 displayKeys = parsedKeys;
                                             } else {
                                                 let hVal = props[parsedKeys[0][0]];
@@ -1048,7 +1048,7 @@ async function fetchAndRenderLayers() {
                                             }
                                         }
                                     } else {
-                                        headerValue = props.contour !== undefined && props.contour !== null ? `Contour: ${props.contour} m` : props.name || props.road_name || props.river_name || props.locality || " ";
+                                        headerValue = props.contour !== undefined && props.contour !== null ? `Contour: ${props.contour} m` : props.name || props.borelog_name || props.road_name || props.river_name || props.locality || " ";
                                     }
                                     const tooltipName = document.getElementById("tooltip-name");
                                     const tooltipLayer = document.getElementById("tooltip-layer");
