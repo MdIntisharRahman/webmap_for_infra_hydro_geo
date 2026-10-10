@@ -265,3 +265,19 @@ User interactions are accompanied by highly polished toast notifications. Utiliz
 
 
 
+
+### Advanced Search & Attribute Filtering
+
+The platform integrates a powerful, dynamic client-side search engine capable of parsing thousands of GeoJSON features instantly without backend round-trips.
+
+#### 1. Dynamic Layer & Field Indexing
+Users can click the floating search button to open a sleek, smoothly animated dropdown drawer. The UI automatically populates the searchable scope by dynamically reading all active vector layers. Users can select a specific map layer and granularly check/uncheck which exact attribute fields they want to search against.
+
+#### 2. Fuzzy Autocomplete & Highlighting
+As the user types into the search bar, the engine instantly queries the selected vector layer's underlying GeoJSON properties. It renders a clean, dropdown suggestion box beneath the input. Each suggestion intelligently displays the matching text alongside the specific field name in a subtle gray badge, ensuring context is never lost. 
+
+#### 3. Spatial Zoom Integration
+When a user clicks on a search suggestion, the webmap seamlessly intercepts the selection, extracts the precise geographical coordinates of that specific feature (whether it's a Point, LineString, or Polygon), and triggers a Leaflet `flyToBounds()` or `flyTo()` animation. This brings the map directly to the feature while instantly opening its popup tooltip for immediate inspection.
+
+#### 4. Responsive & Unobtrusive UI
+To maintain impeccable UX standards across all devices, the search tools are heavily optimized for mobile. On narrow screens (`max-width: 768px`), the search input intelligently expands its viewport width (`65vw`) to remain usable, while the floating toggle buttons and dropdown modals are surgically pushed down via CSS `env(safe-area-inset-top)` calculations to perfectly clear the sticky mobile banner without overlapping.
