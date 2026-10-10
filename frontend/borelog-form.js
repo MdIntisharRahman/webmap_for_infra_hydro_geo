@@ -268,7 +268,7 @@ function gatherBorelogData() {
             coordinates: [lat, lng]
         },
         properties: {
-            borelog_id: document.getElementById('borelog_id').value,
+            borelog_name: document.getElementById('borelog_name').value,
             client: document.getElementById('client').value,
             project: document.getElementById('project').value,
             location: document.getElementById('location').value,
@@ -545,7 +545,7 @@ function populateFormFromJson(geoJson) {
 
     const setVal = (id, val) => { if (document.getElementById(id)) document.getElementById(id).value = val || ''; };
 
-    setVal('borelog_id', props.borelog_id);
+    setVal('borelog_name', props.borelog_name);
     let lat = coords[0];
     let lng = coords[1];
 
