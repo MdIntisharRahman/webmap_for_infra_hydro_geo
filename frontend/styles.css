@@ -2245,7 +2245,8 @@ body {
 
 .search-input-wrapper {
     position: relative;
-    display: contents;
+    display: flex;
+    flex: 1;
     align-items: center;
 }
 
@@ -2268,8 +2269,9 @@ body {
 .search-suggestions {
     position: absolute;
     top: 100%;
-    left: 8px;
+    left: 0;
     right: 0;
+    margin-top: 2px;
     background: white;
     border: 1px solid #ccc;
     border-top: none;
