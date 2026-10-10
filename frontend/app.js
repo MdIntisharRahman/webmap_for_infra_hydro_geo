@@ -2077,6 +2077,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const searchResetBtn = document.getElementById("search-reset-btn");
     if (searchResetBtn) {
         searchResetBtn.addEventListener("click", () => {
+            searchInput.value = "";
+            searchResetBtn.classList.add("hidden");
+            if (searchSuggestions) searchSuggestions.classList.add("hidden");
             if (activeSearchLayerName) {
                 resetLayerSearch(activeSearchLayerName);
             }
