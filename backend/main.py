@@ -491,29 +491,43 @@ async def stage_borelog(request: Request, db: AsyncSession = Depends(get_db)):
     payload = await request.json()
     
     props = payload.get("properties", {})
-    borelog_id = str(props.get("borelog_id", "UNKNOWN"))
+    original_borelog_id = str(props.get("borelog_id", "UNKNOWN"))
     
     # 1. Parse Name
-    b_name = re.sub(r'[\\/*?:"<>|]', '_', borelog_id)
-    if len(b_name) > 14:
-        b_name = b_name[:14]
-    else:
-        b_name = b_name.ljust(14, 'x')
-        
+    b_name = re.sub(r'[\\/*?:"<>|]', '_', original_borelog_id)
+    if len(b_name) > 30:
+        b_name = b_name[:30]
+    elif len(b_name) < 30:
+        needed = 30 - len(b_name) - 1
+        if needed > 0:
+            b_name = b_name + "-" + "".join(random.choices(string.ascii_letters + string.digits, k=needed))
+        else:
+            b_name = b_name + "".join(random.choices(string.ascii_letters + string.digits, k=1))
+            
     # 2. Date in ddMMyyyy
     date_str = datetime.now().strftime("%d%m%Y")
     
-    # 3. Random 8 chars
-    rand_str = generate_borelog_id()
-    
-    # 4. UID and f_file
-    uid = f"{b_name}-{date_str}-{rand_str}"
-    f_file = f"{uid}.JSON"
-    
     staged_dir = os.path.join(os.path.dirname(__file__), "..", "Maps", "borelogs", "staged")
+    pub_dir = os.path.join(os.path.dirname(__file__), "..", "Maps", "borelogs", "published")
     os.makedirs(staged_dir, exist_ok=True)
+    os.makedirs(pub_dir, exist_ok=True)
     
-    file_path = os.path.join(staged_dir, f_file)
+    # 3. Random 8 chars + Duplication Check
+    while True:
+        rand_str = generate_borelog_id()
+        new_borelog_id = date_str + rand_str
+        uid = f"{b_name}-{date_str}-{rand_str}"
+        f_file = f"{uid}.JSON"
+        file_path = os.path.join(staged_dir, f_file)
+        pub_path = os.path.join(pub_dir, f_file)
+        
+        if not os.path.exists(file_path) and not os.path.exists(pub_path):
+            break
+            
+    # Update payload
+    payload["properties"]["borelog_id"] = new_borelog_id
+    borelog_id = new_borelog_id
+    
     with open(file_path, "w", encoding="utf-8") as f:
         json.dump(payload, f, indent=2)
         
@@ -618,11 +632,33 @@ async def approve_staged_borelog(f_file: str, db: AsyncSession = Depends(get_db)
     coords = data.get("geometry", {}).get("coordinates", [0, 0])
     lat, lon = coords[0], coords[1]
     
-    # move
-    shutil.move(file_path, os.path.join(published_dir, f_file))
-    
-    # Extract attributes
     uid = f_file.replace(".JSON", "")
+    
+    # check collision and move
+    if os.path.exists(os.path.join(published_dir, f_file)):
+        # base_name_and_date should have 30 + 1 + 8 chars
+        parts = uid.split("-")
+        base_name_and_date = "-".join(parts[:-1])
+        date_str = parts[-2] if len(parts) >= 2 else datetime.now().strftime("%d%m%Y")
+        
+        while True:
+            new_rand = generate_borelog_id()
+            new_uid = f"{base_name_and_date}-{new_rand}"
+            new_f_file = f"{new_uid}.JSON"
+            if not os.path.exists(os.path.join(published_dir, new_f_file)):
+                break
+                
+        f_file = new_f_file
+        uid = new_uid
+        borelog_id = date_str + new_rand
+        data["properties"]["borelog_id"] = borelog_id
+        
+        with open(os.path.join(published_dir, f_file), "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2)
+        os.remove(file_path)
+    else:
+        shutil.move(file_path, os.path.join(published_dir, f_file))
+    
     keys_str = "[Name, Place], [xcoord, Easting], [ycoord, Northing], [f_file, See Details]"
     f_class_color = "#3b82f6"
 
