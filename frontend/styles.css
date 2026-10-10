@@ -2173,8 +2173,8 @@ body {
 }
 
 .search-floating-btn img {
-    width: 27px;
-    height: 27px;
+    height: 37px;
+    width: auto;
 }
 
 .search-modal {

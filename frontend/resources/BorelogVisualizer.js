@@ -327,7 +327,7 @@ window.renderBorelogChart = function(containerId, geoJsonData) {
     const metaDiv = document.createElement('div');
     metaDiv.innerHTML = `
     <div style="padding: 16px 24px; background: white; border-bottom: 2px solid #d4d4d8; font-size: 13px; color: #3f3f46; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-        <div><strong>Borelog ID:</strong> ${properties.borelog_id || properties.borehole_id || properties.Name || ""}</div>
+        <div><strong>Borelog ID:</strong> ${properties.borelog_name || properties.borehole_name || properties.Name || ""}</div>
         <div><strong>Project:</strong> ${properties.project || ""}</div>
         <div><strong>Client:</strong> ${properties.client || ""}</div>
         <div><strong>Location (EPSG:4326):</strong> ${properties.location || ""} ${coordStr}</div>
@@ -1222,7 +1222,7 @@ window.downloadBorelogSVG = function(geoJsonData, uid) {
 </defs>`;
     
     svg += `<rect x="0" y="0" width="${totalWidth}" height="${metaHeight}" fill="#ffffff" />`;
-    svg += `<text class="meta-text" x="24" y="24" font-size="14px" font-weight="bold" fill="#3f3f46">Borelog ID:</text><text class="meta-text" x="130" y="24" font-size="14px" fill="#3f3f46">${properties.borelog_id || properties.borehole_id || properties.Name || ""}</text>`;
+    svg += `<text class="meta-text" x="24" y="24" font-size="14px" font-weight="bold" fill="#3f3f46">Borelog Name:</text><text class="meta-text" x="130" y="24" font-size="14px" fill="#3f3f46">${properties.borelog_Name || properties.borehole_name || properties.Name || ""}</text>`;
     svg += `<text class="meta-text" x="24" y="44" font-size="14px" font-weight="bold" fill="#3f3f46">Project:</text><text class="meta-text" x="130" y="44" font-size="14px" fill="#3f3f46">${properties.project || ""}</text>`;
     svg += `<text class="meta-text" x="24" y="64" font-size="14px" font-weight="bold" fill="#3f3f46">Client:</text><text class="meta-text" x="130" y="64" font-size="14px" fill="#3f3f46">${properties.client || ""}</text>`;
     svg += `<text class="meta-text" x="24" y="84" font-size="14px" font-weight="bold" fill="#3f3f46">Location:</text><text class="meta-text" x="130" y="84" font-size="14px" fill="#3f3f46">${properties.location || ""} ${coordStr}</text>`;
@@ -1592,7 +1592,7 @@ window.downloadBorelogSVG = function(geoJsonData, uid) {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `Borelog_${properties.borelog_id || 'Vector'}.svg`;
+    link.download = `${properties.borelog_name || 'Vector'}.svg`;
     link.click();
     URL.revokeObjectURL(url);
 };
