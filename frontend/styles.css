@@ -761,10 +761,9 @@ body {
 .leaflet-control-zoom {
     border: none !important;
     background: var(--panel-bg) !important;
-    /* background: none !important; */
-    backdrop-filter: blur(12px);
+    backdrop-filter: blur(11px) !important;
     /* border: 2px solid var(--panel-border) !important; */
-    /* border-radius: 7px !important; */
+    border-radius: 4px !important;
     overflow: hidden;
     margin-right: 20px !important;
     margin-bottom: 29px !important;
@@ -773,7 +772,6 @@ body {
     display: grid;
     gap: 5px;
     padding: 9px 5px !important;
-    border-radius: 0px !important;
 }
 
 .leaflet-control-zoom a {
@@ -1204,7 +1202,7 @@ body {
         bottom: 0;
         left: 0;
         right: 0;
-        transform: translateY(calc(100% - 130px));
+        transform: translateY(calc(93%));
         width: 100%;
         height: 55vh;
         max-height: 55vh;
@@ -1236,9 +1234,14 @@ body {
         padding: 24px 16px 16px 16px;
     }
 
+    .side-header {
+        margin-bottom: 7px;
+    }
+
     /* Tabs Horizontal Scroll */
     .tabs-and-content {
         flex-direction: column;
+        margin-bottom: 3px;
     }
 
     .fluid-tabs.vertical-tabs {
@@ -1248,7 +1251,7 @@ body {
         overflow-y: hidden;
         border-right: none;
         border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-        margin-bottom: 8px;
+        margin-bottom: 5px;
         padding: 0 4px;
         -webkit-overflow-scrolling: touch;
     }
@@ -1271,6 +1274,14 @@ body {
         display: flex;
         flex-direction: column;
         min-height: 0;
+    }
+
+    .coord-tool {
+        padding-top: 7px;
+    }
+
+    .coord-tool h3 {
+        margin: 0 0 5px 0;
     }
 
     /* Right Panel (Extended Legend) -> Bottom Sheet */
@@ -1322,8 +1333,8 @@ body {
     }
 
     .leaflet-control-zoom {
-        margin-bottom: 60px !important;
-        margin-right: 12px !important;
+        margin-bottom: 7vh !important;
+        margin-right: 17px !important;
     }
 
     .custom-estimator-popup .leaflet-popup-content {
@@ -1466,7 +1477,7 @@ body {
 
     input[type=checkbox],
     input[type=radio] {
-        --active: #275EFE;
+        --active: #025ec7;
         --active-inner: #fff;
         --focus: 2px rgba(39, 94, 254, .3);
         --border: #BBC1E1;
@@ -1627,7 +1638,8 @@ body {
     box-sizing: inherit;
 }
 
-@media (max-width: 800px) {}
+
+
 
 .layer-sub-legend {
     display: flex;
@@ -2155,9 +2167,9 @@ body {
     width: 41px;
     height: 41px;
     background: var(--panel-bg);
-    /* border-radius: 4px; */
+    border-radius: 4px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-    z-index: 1000; /* above map */
+    z-index: 1001; /* above map */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -2182,6 +2194,7 @@ body {
     top: 20px;
     right: 70px; /* next to the search button */
     z-index: 1001; /* above map */
+    width: 25vw;
 }
 
 .search-modal.hidden {
@@ -2204,6 +2217,8 @@ body {
     padding: 0 7px 0 1px;
     /* border-bottom: 1px solid transparent; */
     height: 41px;
+    width: 100%;
+    flex-direction: row;
 }
 
 .search-modal-content.drawer-open .search-input-group {
@@ -2230,7 +2245,7 @@ body {
 
 .search-input-wrapper {
     position: relative;
-    display: flex;
+    display: contents;
     align-items: center;
 }
 
@@ -2239,8 +2254,9 @@ body {
     border-radius: 4px;
     padding: 6px 12px;
     font-size: 14px;
-    width: 250px;
+    min-width: 0;
     outline: none;
+    flex: 1;
     /* margin-left: 7px; */
 }
 
@@ -2291,14 +2307,23 @@ body {
 
 .search-drawer {
     padding: 12px;
-    background: #f9fafb;
+    background: var(--panel-bg);
     border-radius: 0 0 4px 4px;
     max-height: 300px;
     overflow-y: auto;
+    opacity: 1;
+    transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: top;
 }
 
 .search-drawer.hidden {
-    display: none;
+    max-height: 0;
+    opacity: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    overflow: hidden;
+    pointer-events: none;
+    border: none;
 }
 
 .search-drawer p {
@@ -2324,10 +2349,21 @@ body {
     margin-top: 12px;
     padding-top: 12px;
     border-top: 1px solid #e5e7eb;
+    max-height: 200px;
+    opacity: 1;
+    overflow: hidden;
+    transition: max-height 0.3s ease, opacity 0.3s ease, padding 0.3s ease, margin 0.3s ease;
 }
 
 .search-fields-list.hidden {
-    display: none;
+    max-height: 0;
+    opacity: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+    border-top: none;
+    pointer-events: none;
 }
 
 .search-reset-btn {
@@ -2348,4 +2384,72 @@ body {
 }
 .search-reset-btn.hidden {
     display: none;
+}
+
+
+@media (min-width: 750px) and (max-width: 850px) {
+    .search-modal {
+        max-width: 21vw;
+    }
+}
+
+/* ============================================================================
+   RESPONSIVE ADJUSTMENTS FOR SEARCH & BOTTOM PANEL (MOBILE/NARROW SCREENS)
+   ============================================================================ */
+@media (max-width: 768px) {
+    /* Prevent search elements from overlapping the banner */
+    .search-floating-btn {
+        top: max(85px, calc(env(safe-area-inset-top) + 65px));
+        right: 17px;
+        /* transform: scale(0.9); */
+    }
+    /* .search-floating-btn:hover { */
+        /* transform: scale(0.95); */
+    /* } */
+    .search-modal {
+        top: max(85px, calc(env(safe-area-inset-top) + 65px));
+        right: 65px;
+        width: 25vw;
+    }
+    
+    /* Shorten fonts in the bottom panels (side panels turn into bottom panels on mobile) */
+    .side-panel-container .side-header h2,
+    .right-panel-container .side-header h2 {
+        font-size: var(--text-sm, 13px) !important;
+    }
+    .side-panel-container .fluid-tabs.vertical-tabs .tab {
+        font-size: var(--text-xs, 11px) !important;
+        padding: 8px 12px;
+    }
+    .side-panel-container .layer-item,
+    .right-panel-container .layer-item {
+        font-size: var(--text-xs, 12px) !important;
+        padding: 10px 14px;
+        margin-bottom: 4px;
+    }
+    .side-panel-container .coord-tool h3 {
+        font-size: var(--text-sm, 13px) !important;
+    }
+    .side-panel-container .coord-inputs input {
+        font-size: var(--text-xs, 12px) !important;
+        padding: 6px 10px;
+    }
+    .side-panel-container .coord-action-btns button {
+        font-size: var(--text-xs, 11px) !important;
+        padding: 6px 10px;
+    }
+    .search-drawer p {
+        font-size: var(--text-xs, 12px);
+    }
+    .search-layer-option, .search-field-option {
+        font-size: var(--text-xs, 12px);
+    }
+    #search-input {
+        font-size: var(--text-xs, 12px);
+        padding: 4px 10px;
+    }
+    .suggestion-item {
+        font-size: var(--text-xs, 12px);
+        padding: 6px 10px;
+    }
 }

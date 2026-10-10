@@ -8,7 +8,9 @@
     ]
   },
   "properties": {
-    "borehole_id": "PL-07",
+    "borelog_name": "PL-0879-PAC0E9-pr2eK3dHm2Usea7",
+    "borelog_id": "19092026pl07sq23",
+    "uid": "PL-0879-PAC0E9-pr2eK3dHm2Usea7-19092026-pl07sq23",
     "client": "SPG Consortium",
     "project": "IPT-09",
     "drilling_team": "T_21",

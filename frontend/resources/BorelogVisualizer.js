@@ -327,7 +327,7 @@ window.renderBorelogChart = function(containerId, geoJsonData) {
     const metaDiv = document.createElement('div');
     metaDiv.innerHTML = `
     <div style="padding: 16px 24px; background: white; border-bottom: 2px solid #d4d4d8; font-size: 13px; color: #3f3f46; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-        <div><strong>Borelog ID:</strong> ${properties.borelog_name || properties.borehole_name || properties.Name || ""}</div>
+        <div><strong>Borelog Name:</strong> ${properties.borelog_name || properties.borehole_name || properties.name || ""}</div>
         <div><strong>Project:</strong> ${properties.project || ""}</div>
         <div><strong>Client:</strong> ${properties.client || ""}</div>
         <div><strong>Location (EPSG:4326):</strong> ${properties.location || ""} ${coordStr}</div>
@@ -1116,24 +1116,8 @@ window.downloadBorelogSVG = function(geoJsonData, uid) {
     });
     maxDepth = Math.ceil(maxDepth) + 1;
     
-    const remarksRaw = properties.comments || properties.remarks || properties.notes || "";
-    const remarksHtml = parseMarkdown(remarksRaw);
-    let remarksHeight = 0;
-    if (remarksRaw) {
-        const lines = remarksRaw.split('\n').length;
-        remarksHeight = Math.max(100, lines * 20 + 60);
-    }
-    
-    let dateStr = properties.date_of_starting_boring || properties.date_of_boring || "";
-    if (properties.date_of_ending_boring && properties.date_of_ending_boring !== dateStr) {
-        dateStr += " - " + properties.date_of_ending_boring;
-    }
-    const metaHeight = 120;
-    const headerHeight = 40 + metaHeight;
-    
     const PIXELS_PER_METER = 60;
-    const totalHeight = headerHeight + maxDepth * PIXELS_PER_METER + remarksHeight;
-    
+
     const baseWidths = { depth: 60, stratum: 80, desc: 250, sptText: 140, sptGraph: 215, testsGraph: 300, grainGraph: 150, cptGraph: 600 };
     if (strata.length === 0) { baseWidths.stratum = 0; baseWidths.desc = 0; }
     if (sptData.length === 0) { baseWidths.sptText = 0; baseWidths.sptGraph = 0; }
@@ -1174,12 +1158,46 @@ window.downloadBorelogSVG = function(geoJsonData, uid) {
             laneEndY[L] = box.Y + box.boxHeight + 8;
         });
         
-        // base width is 200. box width is 150. shifted box adds 160px per lane.
         return Math.max(200, 160 + maxL * 160);
     });
     
     const extraTotalWidth = extraColWidths.reduce((sum, w) => sum + w, 0);
     const totalWidth = baseWidth + extraTotalWidth;
+
+    const remarksRaw = properties.comments || properties.remarks || properties.notes || "";
+    const remarksHtml = parseMarkdown(remarksRaw);
+    let remarksHeight = 0;
+    
+    // Calculate wrapped remarks lines based on totalWidth
+    const maxChars = Math.max(20, Math.floor((totalWidth - 32) / 6.5)); // ~6.5px per char for size 13
+    const wrappedRemarksLines = [];
+    if (remarksRaw) {
+        const rawLines = remarksRaw.split('\n');
+        rawLines.forEach(rLine => {
+            let temp = "";
+            let words = rLine.split(' ');
+            words.forEach(w => {
+                if ((temp + w).length > maxChars && temp.length > 0) {
+                    wrappedRemarksLines.push(temp.trim());
+                    temp = w + " ";
+                } else {
+                    temp += w + " ";
+                }
+            });
+            if (temp.trim().length > 0 || (words.length === 1 && words[0] === "")) {
+                wrappedRemarksLines.push(temp.trim());
+            }
+        });
+        remarksHeight = Math.max(100, wrappedRemarksLines.length * 20 + 60);
+    }
+    
+    let dateStr = properties.date_of_starting_boring || properties.date_of_boring || "";
+    if (properties.date_of_ending_boring && properties.date_of_ending_boring !== dateStr) {
+        dateStr += " - " + properties.date_of_ending_boring;
+    }
+    const metaHeight = 120;
+    const headerHeight = 40 + metaHeight;
+    const totalHeight = headerHeight + maxDepth * PIXELS_PER_METER + remarksHeight;
     
     const colOffsets = [0];
     const widths = [baseWidths.depth, baseWidths.stratum, baseWidths.desc, baseWidths.sptText, baseWidths.sptGraph, baseWidths.testsGraph, baseWidths.grainGraph, baseWidths.cptGraph];
@@ -1222,7 +1240,7 @@ window.downloadBorelogSVG = function(geoJsonData, uid) {
 </defs>`;
     
     svg += `<rect x="0" y="0" width="${totalWidth}" height="${metaHeight}" fill="#ffffff" />`;
-    svg += `<text class="meta-text" x="24" y="24" font-size="14px" font-weight="bold" fill="#3f3f46">Borelog Name:</text><text class="meta-text" x="130" y="24" font-size="14px" fill="#3f3f46">${properties.borelog_Name || properties.borehole_name || properties.Name || ""}</text>`;
+    svg += `<text class="meta-text" x="24" y="24" font-size="14px" font-weight="bold" fill="#3f3f46">Borelog Name:</text><text class="meta-text" x="130" y="24" font-size="14px" fill="#3f3f46">${properties.borelog_name || properties.borehole_name || properties.name || ""}</text>`;
     svg += `<text class="meta-text" x="24" y="44" font-size="14px" font-weight="bold" fill="#3f3f46">Project:</text><text class="meta-text" x="130" y="44" font-size="14px" fill="#3f3f46">${properties.project || ""}</text>`;
     svg += `<text class="meta-text" x="24" y="64" font-size="14px" font-weight="bold" fill="#3f3f46">Client:</text><text class="meta-text" x="130" y="64" font-size="14px" fill="#3f3f46">${properties.client || ""}</text>`;
     svg += `<text class="meta-text" x="24" y="84" font-size="14px" font-weight="bold" fill="#3f3f46">Location:</text><text class="meta-text" x="130" y="84" font-size="14px" fill="#3f3f46">${properties.location || ""} ${coordStr}</text>`;
@@ -1579,9 +1597,10 @@ window.downloadBorelogSVG = function(geoJsonData, uid) {
         svg += `<text class="meta-text" x="16" y="${bgY + 24}" font-size="13" font-weight="bold" fill="#3f3f46">Notes / Remarks:</text>`;
         
         let lineY = bgY + 44;
-        const lines = remarksRaw.split('\n');
-        lines.forEach(line => {
-            svg += `<text class="meta-text" x="16" y="${lineY}" font-size="13" fill="#3f3f46">${line || ' '}</text>`;
+        wrappedRemarksLines.forEach(line => {
+            // Escape XML entities for valid SVG
+            const safeLine = (line || ' ').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+            svg += `<text class="meta-text" x="16" y="${lineY}" font-size="13" fill="#3f3f46">${safeLine}</text>`;
             lineY += 20;
         });
     }
