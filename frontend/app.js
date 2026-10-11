@@ -87,7 +87,7 @@ if (rightPinBtn && rightPanelContainer) {
 // PANEL HOVER STATE (PREVENT MAP INTERACTION BLEED)
 // ============================================================================
 window.isOverPanel = false;
-document.querySelectorAll('.side-panel-container, .right-panel-container, #search-modal').forEach(panel => {
+document.querySelectorAll('.side-panel-container, .right-panel-container, #search-container, #search-modal').forEach(panel => {
     panel.addEventListener('mouseenter', () => { window.isOverPanel = true; });
     panel.addEventListener('mouseleave', () => { window.isOverPanel = false; });
 });
@@ -1976,9 +1976,13 @@ document.addEventListener("DOMContentLoaded", () => {
     if (searchFloatingBtn) {
         searchFloatingBtn.addEventListener("click", (e) => {
             e.stopPropagation();
+            const willOpen = searchModal.classList.contains("hidden");
             searchModal.classList.toggle("hidden");
-            if (!searchModal.classList.contains("hidden")) {
+            if (willOpen) {
                 populateSearchLayers();
+                setTimeout(() => { if (searchInput) searchInput.focus(); }, 150);
+            } else {
+                if (searchSuggestions) searchSuggestions.classList.add("hidden");
             }
         });
     }
@@ -1989,6 +1993,7 @@ document.addEventListener("DOMContentLoaded", () => {
             !searchModal.contains(e.target) && 
             !searchFloatingBtn.contains(e.target)) {
             searchModal.classList.add("hidden");
+            if (searchSuggestions) searchSuggestions.classList.add("hidden");
         }
     });
 

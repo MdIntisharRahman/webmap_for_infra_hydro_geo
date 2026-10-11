@@ -84,3 +84,6 @@ Logic changes about how the additional info are presented.md
 
 # Temporary directory
 tmp/
+
+# vs code worksapce user file
+Webmap.code-workspace

@@ -2160,27 +2160,42 @@ body {
    SEARCH FEATURE UI
    ============================================================================ */
 
-.search-floating-btn {
+.search-container {
     position: absolute;
     top: 20px;
     right: 20px;
-    width: 41px;
-    height: 41px;
-    background: var(--panel-bg);
-    border-radius: 4px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
     z-index: 1001; /* above map */
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    pointer-events: none;
+    background: var(--panel-bg);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+}
+
+.search-floating-btn {
+    position: relative;
+    width: auto;
+    height: auto;
+    /* background: #ffeb3b4d; */
+    border-radius: 50%;
+    /* box-shadow: 0 2px 6px rgba(0,0,0,0.3); */
+    z-index: 1003; /* stays on top of search-modal so the modal folds under it */
     display: flex;
     justify-content: center;
     align-items: center;
     cursor: pointer;
     transition: transform 0.2s, background-color 0.2s;
-    /* border: 2px solid rgba(0,0,0,0.2); */
-    backdrop-filter: blur(11px);
+    /* backdrop-filter: blur(11px); */
+    -webkit-backdrop-filter: blur(11px);
+    pointer-events: auto;
+    flex-shrink: 0;
+    
 }
 
-.search-floating-btn:hover {
-    background: #f0f0f0;
+.search-floating-btn img:hover {
+    /* background: #f0f0f0; */
     transform: scale(1.05);
 }
 
@@ -2190,44 +2205,63 @@ body {
 }
 
 .search-modal {
-    position: absolute;
-    top: 20px;
-    right: 70px; /* next to the search button */
-    z-index: 1001; /* above map */
+    display: flex;
+    position: relative;
+    z-index: 1002; /* sits underneath search-floating-btn */
     width: 25vw;
-    display: block;
+    /* min-width: 260px; */
+    max-width: 420px;
+    /* margin-right: 9px; */
     opacity: 1;
     transform: translateX(0);
-    transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), display 0.3s allow-discrete;
+    transform-origin: right center;
+    pointer-events: auto;
+    overflow: visible;
+    transition: width 0.38s cubic-bezier(0.16, 1, 0.3, 1),
+                min-width 0.38s cubic-bezier(0.16, 1, 0.3, 1),
+                max-width 0.38s cubic-bezier(0.16, 1, 0.3, 1),
+                margin-right 0.38s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.38s cubic-bezier(0.16, 1, 0.3, 1),
+                opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .search-modal.hidden {
-    display: none;
-    opacity: 0;
-    transform: translateX(20px);
-}
-
-@starting-style {
-    .search-modal {
-        opacity: 0;
-        transform: translateX(20px);
-    }
+    width: 0 !important;
+    min-width: 0 !important;
+    max-width: 0 !important;
+    margin-right: 0 !important;
+    opacity: 0 !important;
+    transform: translateX(50px) !important;
+    overflow: hidden !important;
+    pointer-events: none !important;
 }
 
 .search-modal-content {
-    background: var(--panel-bg);
-    border-radius: 4px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    position: relative;
+    /* background: var(--panel-bg); */
+    /* border-radius: 4px; */
+    /* box-shadow: 0 4px 12px rgba(0,0,0,0.3); */
     overflow: visible;
-    border: 1px solid rgba(0,0,0,0.1);
+    /* border: 1px solid rgba(0,0,0,0.1); */
     display: flex;
     flex-direction: column;
+    width: 100%;
+    /* min-width: 260px; */
+    /* backdrop-filter: blur(11px); */
+    -webkit-backdrop-filter: blur(11px);
+    transition: box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.search-modal.hidden .search-modal-content {
+    box-shadow: none !important;
+    border-color: transparent !important;
+    overflow: hidden !important;
 }
 
 .search-input-group {
     display: flex;
     align-items: center;
-    padding: 0 7px 0 1px;
+    padding: 0 5px 0 0px;
     /* border-bottom: 1px solid transparent; */
     height: 41px;
     width: 100%;
@@ -2258,7 +2292,7 @@ body {
 
 .search-input-wrapper {
     position: relative;
-    display: flex;
+    display: contents;
     flex: 1;
     align-items: center;
 }
@@ -2266,7 +2300,7 @@ body {
 #search-input {
     border: 1px solid #ccc;
     border-radius: 4px;
-    padding: 6px 12px;
+    padding: 4px 9px;
     font-size: 14px;
     min-width: 0;
     outline: none;
@@ -2321,14 +2355,22 @@ body {
 }
 
 .search-drawer {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
     padding: 12px;
-    background: var(--panel-bg);
+    background: #ffffffde;;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
     border-radius: 0 0 4px 4px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     max-height: 300px;
     overflow-y: auto;
     opacity: 1;
     transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     transform-origin: top;
+    /* margin: 0 7px 0 0; */
 }
 
 .search-drawer.hidden {
@@ -2410,7 +2452,9 @@ body {
 
 @media (min-width: 750px) and (max-width: 850px) {
     .search-modal {
-        max-width: 21vw;
+        width: 27vw;
+        max-width: 28vw;
+        /* min-width: 220px; */
     }
 }
 
@@ -2419,18 +2463,24 @@ body {
    ============================================================================ */
 @media (max-width: 768px) {
     /* Prevent search elements from overlapping the banner */
-    .search-floating-btn {
+    .search-container {
         top: max(85px, calc(env(safe-area-inset-top) + 65px));
-        right: 17px;
-        /* transform: scale(0.9); */
+        right: 16px;
     }
-    /* .search-floating-btn:hover { */
-        /* transform: scale(0.95); */
-    /* } */
+
     .search-modal {
-        top: max(85px, calc(env(safe-area-inset-top) + 65px));
-        right: 65px;
-        width: 25vw;
+        width: 27vw;
+        /* min-width: 200px; */
+        max-width: calc(100vw - 80px);
+    }
+
+    .search-modal-content {
+        /* min-width: 200px; */
+    }
+
+    .search-input-group {
+        width: 100%;
+        height: 37px;
     }
     
     /* Shorten fonts in the bottom panels (side panels turn into bottom panels on mobile) */
@@ -2467,7 +2517,7 @@ body {
     }
     #search-input {
         font-size: var(--text-xs, 12px);
-        padding: 4px 10px;
+        /* padding: 4px 10px; */
     }
     .suggestion-item {
         font-size: var(--text-xs, 12px);
