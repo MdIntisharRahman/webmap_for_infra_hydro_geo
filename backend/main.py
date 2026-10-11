@@ -539,7 +539,7 @@ async def stage_borelog(request: Request, db: AsyncSession = Depends(get_db)):
     client = props.get("client", "")
     
     # Static Keys Convention
-    keys_str = "'[borelog_name, Borelog Name], [borelog_id, ID], [xcoord, Easting], [ycoord, Northing], [f_file(=>/{ type:file, format:JSON /}, See Borelog, imodal, borelog-modal=>),Details]'"
+    keys_str = "'[borelog_name, Borelog Name], [borelog_id, ID], [xcoord, Easting], [ycoord, Northing], [f_file(=>{type:file, format:JSON, location: `./Maps/borelogs/staged/`}, See Borelog, imodal, borelog-modal=>),Details]'"
 
     f_class_color = "#ff4053"
     
@@ -663,7 +663,7 @@ async def approve_staged_borelog(f_file: str, db: AsyncSession = Depends(get_db)
     else:
         shutil.move(file_path, os.path.join(published_dir, f_file))
     
-    keys_str = "'[borelog_name, Borelog Name], [borelog_id, ID], [xcoord, Easting], [ycoord, Northing], [f_file(=>/{ type:file, format:JSON /}, See Borelog, imodal, borelog-modal=>),Details]'"
+    keys_str = "'[borelog_name, Borelog Name], [borelog_id, ID], [xcoord, Easting], [ycoord, Northing], [f_file(=>{type:file, format:JSON, location: `./Maps/borelogs/published/`}, See Borelog, imodal, borelog-modal=>),Details]'"
     f_class_color = "#3b82f6"
 
     # update db
