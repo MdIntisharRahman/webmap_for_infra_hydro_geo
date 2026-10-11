@@ -96,19 +96,36 @@ The web map handles GeoJSON feature properties dynamically, using a `keys` array
 ### Advanced Formatted Links & Modals
 The `keys` array now supports advanced formatting syntax to seamlessly generate dynamic hyperlinks, file downloads, or trigger fully interactive in-app modals (like the Borelog Visualizer).
 
-**Syntax:** `[AttributeName(=>{type:..., format:...}, MaskString, Target, TargetID=>), Label]`
+**Syntax:** `[AttributeName(=>{type:..., format:..., location:...}, MaskString, Target, TargetID=>), Label]`
+
+#### Resolution Decision Matrix:
+1. **If `[type: file]`**:
+   - **Location check**:
+     - *Online*: If `location` starts with `http://` or `https://`, file is resolved via the web URL.
+     - *Local*: If local (e.g. `` `./Maps/borelogs/staged/` `` or `` `./prosoil-borelogs/` ``), file is normalized and served from `/maps/<location>/<filename>`.
+   - **Datapoint type check**:
+     - **If `borelogs` datatype**:
+       - `[format: JSON]`: Opens in **Borelog Visualizer** (`IModal`).
+       - `[format: pdf]`: Opens in a new tab (`newtab`).
+       - `[format: other types]`: Initiates file download.
+     - **If other datatypes**:
+       - `[newtab]`: Opens in a new tab.
+       - `[default]` / omitted: Initiates file download.
+2. **If `[type: link]`, `[type: weblink]`, or `[format: weblink]`**:
+   - `[newtab]`: Opens in a new tab (`target="_blank"`).
+   - `[default]` / omitted: Opens directly in the current window.
 
 **Example 1: External Links**
 `[description(=>{type:link, format:weblink},See Borelog,newtab=>), Link]`
-* Creates an interactive hyperlink in the tooltip.
-* The `MaskString` ("See Borelog") is the text the user will see.
-* The `Target` ("newtab") ensures the link safely opens in a new browser tab.
+* Creates an interactive hyperlink in the tooltip opening in a new tab.
 
 **Example 2: In-App Modals (e.g. Borelog Visualizer)**
-`[f_file(=>{type:file, format:JSON}, See Borelog, imodal, borelog-modal=>), Details]`
-* Automatically routes the `f_file` attribute data into a dedicated modal.
-* The `Target` ("imodal") instructs the UI to open an internal iframe/modal window.
-* The `TargetID` ("borelog-modal") specifically points to the exact modal ID to utilize in the DOM.
+`[f_file(=>{type:file, format:JSON, location: `./Maps/borelogs/staged/`}, See Borelog, imodal, borelog-modal=>), Details]`
+* Automatically routes the `f_file` JSON into the interactive Borelog Visualizer modal with approval actions if staged.
+
+**Example 3: PDF Borelogs**
+`[f_file(=>{type:file, format:pdf, location: `./prosoil-borelogs/`}, See Borelog, newtab=>), Link]`
+* Opens the locally stored PDF in a new browser tab.
 
 **Header Priority Logic:**
 When rendering the interactive popup/tooltip for a feature, the application uses the following hierarchy to determine what appears as the bold **Header Title**:

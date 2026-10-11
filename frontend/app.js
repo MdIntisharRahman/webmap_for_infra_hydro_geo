@@ -222,11 +222,14 @@ const renderTooltipProps = (props, displayKeys, layerInfo) => {
                 (layerInfo.name && layerInfo.name.toLowerCase().includes('borelog'))
             );
             if (isBorelogLayer && trimmed.toLowerCase().endsWith('.json')) {
-                const isAwaitingBorelogFlag = layerInfo && layerInfo.name && layerInfo.name.toLowerCase().includes("awaiting");
+                const isAwaitingBorelogFlag = (layerInfo && layerInfo.name && layerInfo.name.toLowerCase().includes("awaiting")) || trimmed.includes('/staged/');
                 const isApprovedBorelogFlag = layerInfo && layerInfo.name && layerInfo.name.toLowerCase().includes("approved");
                 const needsReviewFlag = layerInfo && layerInfo.name && layerInfo.name.toLowerCase().includes("review");
                 return `<a href="javascript:void(0)" onclick="if(window.openBorelogVisualizer) { window.openBorelogVisualizer('${trimmed}', ${JSON.stringify({ isAwaitingBorelog: isAwaitingBorelogFlag, isApprovedBorelog: isApprovedBorelogFlag, needsReview: needsReviewFlag }).replace(/\"/g, '&quot;')}) } 
-                else { alert('Visualizer not loaded.') }" style="color:#2563eb; font-weight:bold; text-decoration:underline; font-size:inherit; cursor:pointer;">[borelog - ${isAwaitingBorelogFlag} - ${layerInfo ? layerInfo.name : "null"}]</a>`;
+                else { alert('Visualizer not loaded.') }" class="detail-link" style="color:var(--accent-blue); text-decoration:underline; cursor:pointer;">See Borelog</a>`;
+            }
+            if (trimmed.toLowerCase().endsWith('.pdf')) {
+                return `<a href="${trimmed}" target="_blank" rel="noopener noreferrer" class="detail-link" style="color:var(--accent-blue); text-decoration:underline; cursor:pointer;">${trimmed}</a>`;
             }
         }
         return value;
@@ -257,32 +260,133 @@ const renderTooltipProps = (props, displayKeys, layerInfo) => {
                 if (match) {
                     let typeFormat = {};
                     try {
-                        let tfStr = match[1].replace(/[{}]/g, '');
-                        tfStr.split(',').forEach(kv => {
-                            let [k, v] = kv.split(':');
-                            if (k && v) typeFormat[k.trim()] = v.trim();
+                        let tfStr = match[1].replace(/^[{\s]+|[}\s]+$/g, '');
+                        let kvPairs = tfStr.match(/(?:`[^`]*`|'[^']*'|"[^"]*"|[^,])+/g) || [];
+                        kvPairs.forEach(kv => {
+                            let colonIdx = kv.indexOf(':');
+                            if (colonIdx !== -1) {
+                                let k = kv.slice(0, colonIdx).trim();
+                                let rawV = kv.slice(colonIdx + 1).trim();
+                                let cleanV = rawV.replace(/^[`'"]+|[`'"]+$/g, '').trim();
+                                typeFormat[k] = cleanV;
+                            } else {
+                                let valCandidate = kv.trim().replace(/^[`'"]+|[`'"]+$/g, '').trim();
+                                if (valCandidate.includes('/') || valCandidate.startsWith('.')) {
+                                    typeFormat['location'] = valCandidate;
+                                }
+                            }
                         });
                     } catch (e) { }
 
                     let remainingStr = match[2];
                     let rParts = remainingStr.split(',').map(s => s.trim());
                     let mask = rParts[0] || '';
-                    let target = rParts[1] || '';
-                    let targetID = rParts[2] || '';
+                    let target = rParts[1] ? rParts[1].toLowerCase().trim() : '';
+                    let targetID = rParts[2] ? rParts[2].trim() : '';
 
                     let linkText = mask ? mask : val;
                     let options = {isAwaitingBorelog: false, isApprovedBorelog: true, needsReview: false};
 
-                    if (typeFormat.type === 'link' || typeFormat.type === 'file') {
-                        if (target === 'newtab') {
-                            formattedVal = `<a href="${val}" target="_blank" style="color:var(--accent-blue); text-decoration:underline;">${linkText}</a>`;
-                        } else if (target === 'imodal') {
-                            let isAwaitingBorelogFlag = false;
-                            if (targetID === 'borelog-modal') {
-                                isAwaitingBorelogFlag = layerInfo && layerInfo.name && layerInfo.name.toLowerCase().includes("awaiting") ? true : false;
+                    let fileUrl = val;
+
+                    // Determine item type: 'file' or 'link' / 'weblink'
+                    let rawType = (typeFormat.type || '').toLowerCase().trim();
+                    let rawFormat = (typeFormat.format || '').toLowerCase().trim();
+
+                    let itemType = 'file';
+                    if (rawType === 'link' || rawType === 'weblink' || rawFormat === 'weblink') {
+                        itemType = 'link';
+                    } else if (rawType === 'file') {
+                        itemType = 'file';
+                    } else if (typeFormat.location || rawFormat || (typeof val === 'string' && val.includes('.'))) {
+                        itemType = 'file';
+                    } else if (typeof val === 'string' && (val.startsWith('http://') || val.startsWith('https://'))) {
+                        itemType = 'link';
+                    }
+
+                    if (itemType === 'file') {
+                        // Check [location]: If location is present (it may either be available locally or online)
+                        if (typeFormat.location) {
+                            let loc = typeFormat.location.trim();
+                            if (loc.startsWith("http://") || loc.startsWith("https://")) {
+                                // Online location
+                                if (!loc.endsWith('/') && !val.startsWith('/')) {
+                                    loc += '/';
+                                }
+                                fileUrl = `${loc}${val}`;
+                            } else {
+                                // Local location
+                                loc = loc.replace(/^\.\//, '');
+                                if (loc.toLowerCase().startsWith("maps/")) {
+                                    loc = loc.slice(5);
+                                } else if (loc.toLowerCase().startsWith("/maps/")) {
+                                    loc = loc.slice(6);
+                                }
+                                if (loc && !loc.endsWith('/')) {
+                                    loc += '/';
+                                }
+
+                                const basePath = (window.location.port === "8383" ? "http://localhost:8484" : "");
+                                if (loc.startsWith("/")) {
+                                    fileUrl = `${basePath}/maps${loc}${val}`;
+                                } else {
+                                    fileUrl = `${basePath}/maps/${loc}${val}`;
+                                }
                             }
-                            options.isAwaitingBorelog = isAwaitingBorelogFlag;
-                            formattedVal = `<a href=\"javascript:void(0)\" onclick=\"openImodal('${targetID}', '${val}', ${JSON.stringify(options).replace(/\"/g, '&quot;')})\" style=\"color:var(--accent-blue); text-decoration:underline;\">${linkText}</a>`;
+                        } else {
+                            // Location not explicitly specified
+                            if (typeof val === 'string' && (val.startsWith("http://") || val.startsWith("https://"))) {
+                                fileUrl = val;
+                            } else {
+                                const basePath = (window.location.port === "8383" ? "http://localhost:8484" : "");
+                                fileUrl = `${basePath}/maps/${val}`;
+                            }
+                        }
+
+                        // Check [Datapoint type]: If 'borelogs' datatype
+                        const isBorelogDatatype = (
+                            (layerInfo && layerInfo.datatype && layerInfo.datatype.trim().toLowerCase() === 'borelogs') ||
+                            (layerInfo && layerInfo.table && layerInfo.table.toLowerCase().includes('borelog')) ||
+                            (layerInfo && layerInfo.name && layerInfo.name.toLowerCase().includes('borelog')) ||
+                            fileUrl.toLowerCase().includes('borelog')
+                        );
+
+                        const rawFormat = (typeFormat.format || '').toLowerCase().trim();
+                        const ext = (fileUrl.split('?')[0].split('.').pop() || '').toLowerCase();
+                        const isJson = rawFormat === 'json' || ext === 'json';
+                        const isPdf = rawFormat === 'pdf' || ext === 'pdf';
+
+                        if (isBorelogDatatype) {
+                            if (isJson) {
+                                // [format:JSON] then IModal => [Opens in Borelog Visualizer]
+                                let isAwaitingBorelogFlag = (layerInfo && layerInfo.name && layerInfo.name.toLowerCase().includes("awaiting")) || fileUrl.includes('/staged/');
+                                options.isAwaitingBorelog = isAwaitingBorelogFlag;
+                                formattedVal = `<a href="javascript:void(0)" onclick="openImodal('borelog-modal', '${fileUrl}', ${JSON.stringify(options).replace(/"/g, '&quot;')})" class="detail-link" style="color:var(--accent-blue); text-decoration:underline; cursor:pointer;">${linkText}</a>`;
+                            } else if (isPdf) {
+                                // [format:pdf] then open in newtab
+                                formattedVal = `<a href="${fileUrl}" target="_blank" rel="noopener noreferrer" class="detail-link" style="color:var(--accent-blue); text-decoration:underline; cursor:pointer;">${linkText}</a>`;
+                            } else {
+                                // [format: other types] then download
+                                formattedVal = `<a href="${fileUrl}" download target="_blank" rel="noopener noreferrer" class="detail-link" style="color:var(--accent-blue); text-decoration:underline; cursor:pointer;">${linkText}</a>`;
+                            }
+                        } else {
+                            // If other datatypes
+                            if (target === 'newtab') {
+                                // - [newtab] open in newtab
+                                formattedVal = `<a href="${fileUrl}" target="_blank" rel="noopener noreferrer" class="detail-link" style="color:var(--accent-blue); text-decoration:underline; cursor:pointer;">${linkText}</a>`;
+                            } else if (target === 'imodal' && targetID && targetID !== 'borelog-modal') {
+                                formattedVal = `<a href="javascript:void(0)" onclick="openImodal('${targetID}', '${fileUrl}', ${JSON.stringify(options).replace(/"/g, '&quot;')})" class="detail-link" style="color:var(--accent-blue); text-decoration:underline; cursor:pointer;">${linkText}</a>`;
+                            } else {
+                                // - [default] download it
+                                formattedVal = `<a href="${fileUrl}" download target="_blank" rel="noopener noreferrer" class="detail-link" style="color:var(--accent-blue); text-decoration:underline; cursor:pointer;">${linkText}</a>`;
+                            }
+                        }
+                    } else if (itemType === 'link') {
+                        // if [type:link] ---> Check [newtab] : open in newtab, [default]: open it directly
+                        if (target === 'newtab') {
+                            formattedVal = `<a href="${fileUrl}" target="_blank" rel="noopener noreferrer" class="detail-link" style="color:var(--accent-blue); text-decoration:underline; cursor:pointer;">${linkText}</a>`;
+                        } else {
+                            formattedVal = `<a href="${fileUrl}" class="detail-link" style="color:var(--accent-blue); text-decoration:underline; cursor:pointer;">${linkText}</a>`;
                         }
                     }
                 }
@@ -1489,7 +1593,12 @@ window.openBorelogVisualizer = async (f_file, options) => {
     rootNode.innerHTML = "<div style='padding: 20px;'>Loading borelog data...</div>";
 
     try {
-        let fetchPath = options.isAwaitingBorelog ? `${API_BASE_URL.replace("/api", "")}/staged-borelogs/${f_file}` : `${API_BASE_URL.replace("/api", "")}/borelogs/${f_file}`;
+        let fetchPath;
+        if (f_file.startsWith('/') || f_file.startsWith('http://') || f_file.startsWith('https://')) {
+            fetchPath = f_file;
+        } else {
+            fetchPath = options.isAwaitingBorelog ? `${API_BASE_URL.replace("/api", "")}/staged-borelogs/${f_file}` : `${API_BASE_URL.replace("/api", "")}/borelogs/${f_file}`;
+        }
         let res = await fetch(fetchPath);
 
         // Bulletproof Fallback: if we get a 404, try the other directory automatically!
@@ -1504,7 +1613,8 @@ window.openBorelogVisualizer = async (f_file, options) => {
 
         if (!res.ok) throw new Error("Could not fetch " + f_file);
         const data = await res.json();
-        const uid = f_file.replace(/\.json$/i, "");
+        const cleanFileName = f_file.split('/').pop();
+        const uid = cleanFileName.replace(/\.json$/i, "");
 
         rootNode.innerHTML = document.getElementById("borelog-visualizer-template").innerHTML;
 
@@ -1912,6 +2022,7 @@ window.openUpdateMapsLogWindow = async () => {
 
 
 window.handleApproveFromMap = async (f_file, event) => {
+    const cleanFileName = f_file ? f_file.split('/').pop() : f_file;
     let storedHash = window.adminCredentials;
     if (!storedHash) {
         const pass = prompt("Admin Password required to approve this borelog:");
@@ -1934,7 +2045,7 @@ window.handleApproveFromMap = async (f_file, event) => {
         }
         window.adminCredentials = storedHash;
 
-        const res = await fetch(`${API_BASE_URL}/borelog/approve/${f_file}`, {
+        const res = await fetch(`${API_BASE_URL}/borelog/approve/${cleanFileName}`, {
             method: "POST",
             headers: { 'Authorization': 'Basic ' + storedHash }
         });

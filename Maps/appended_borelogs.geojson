@@ -10,7 +10,7 @@
         "client": "RHD",
         "xcoord": 90.4327915,
         "ycoord": 23.8273776,
-        "keys": "[borelog_name, Borelog Name], [xcoord, Easting], [ycoord, Northing], [f_file(=>{type:file, format:JSON}, See Borelog, imodal, borelog-modal=>),Details]",
+        "keys": "[borelog_name, Borelog Name], [xcoord, Easting], [ycoord, Northing], [f_file(=>{type:file, format:JSON, `./Maps/borelogs/published/`}, See Borelog, imodal, borelog-modal=>),Details]",
         "f_class_color": "#3b82f6",
         "uid": "PL-0879-PAC0E9-pr2eK3dHm2Usea7-19092026-pl07sq23",
         "f_file": "PL-0879-PAC0E9-pr2eK3dHm2Usea7-19092026-pl07sq23.JSON",
@@ -34,7 +34,7 @@
         "client": "RHD",
         "xcoord": 90.436514,
         "ycoord": 23.828162,
-        "keys": "[borelog_name, Borelog Name], [xcoord, Easting], [ycoord, Northing], [f_file(=>{type:file, format:JSON}, See Borelog, imodal, borelog-modal=>),Details]",
+        "keys": "[borelog_name, Borelog Name], [xcoord, Easting], [ycoord, Northing], [f_file(=>{type:file, format:JSON, `./Maps/borelogs/published/`}, See Borelog, imodal, borelog-modal=>),Details]",
         "f_class_color": "#3b82f6",
         "f_file": "PL-09-SPSGXPC9-yp2eK6dHm2UsRa7-20092026-b2vzHZKf.JSON"
       },

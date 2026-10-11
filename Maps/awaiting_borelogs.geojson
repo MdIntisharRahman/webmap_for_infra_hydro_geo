@@ -12,7 +12,7 @@
         "client": "RHD",
         "xcoord": 90.4125,
         "ycoord": 23.81032,
-        "keys": "'[borelog_name, Borelog Name], [borelog_id, ID], [xcoord, Easting], [ycoord, Northing], [f_file(=>{type:file, format:JSON}, See Borelog, imodal, borelog-modal=>),Details]'",
+        "keys": "'[borelog_name, Borelog Name], [borelog_id, ID], [xcoord, Easting], [ycoord, Northing], [f_file(=>{type:file, format:JSON, location: `./Maps/borelogs/staged/`}, See Borelog, imodal, borelog-modal=>),Details]'",
         "f_class_color": "#ff4053",
         "f_file": "PL-11-SQTRS-09Tx-29092026-ps5QrT82.JSON"
       },
@@ -34,7 +34,7 @@
         "client": "Yousef Priboy Consortium",
         "xcoord": 90.436514,
         "ycoord": 23.828162,
-        "keys": "'[borelog_name, Borelog Name], [borelog_id, ID], [xcoord, Easting], [ycoord, Northing], [f_file(=>{type:file, format:JSON}, See Borelog, imodal, borelog-modal=>),Details]'",
+        "keys": "'[borelog_name, Borelog Name], [borelog_id, ID], [xcoord, Easting], [ycoord, Northing], [f_file(=>{type:file, format:JSON, location: `./Maps/borelogs/staged/`}, See Borelog, imodal, borelog-modal=>),Details]'",
         "f_class_color": "#ff4053",
         "f_file": "IGI-2-Covert-Strike-r3KdHj2Us7-01102026-zEOtjjz9.JSON"
       },
@@ -55,7 +55,7 @@
         "client": "Road Division, RHD, Netrokona",
         "xcoord": 90.733814,
         "ycoord": 24.942769,
-        "keys": "'[borelog_name, Borelog Name], [borelog_id, ID], [xcoord, Easting], [ycoord, Northing], [f_file(=>{type:file, format:JSON}, See Borelog, imodal, borelog-modal=>),Details]'",
+        "keys": "'[borelog_name, Borelog Name], [borelog_id, ID], [xcoord, Easting], [ycoord, Northing], [f_file(=>{type:file, format:JSON, location: `./Maps/borelogs/staged/`}, See Borelog, imodal, borelog-modal=>),Details]'",
         "f_class_color": "#ff4053",
         "f_file": "Maharkona-Bridge-BH1-pc3K3if5T-09102026-wxBFQQN7.JSON",
         "uid": "Maharkona-Bridge-BH1-pc3K3if5T-09102026-wxBFQQN7"
