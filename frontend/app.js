@@ -2039,12 +2039,39 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    function parseSearchOn(searchOnStr) {
+        if (!searchOnStr || !searchOnStr.trim()) return [];
+        const results = [];
+        const bracketRegex = /\[\s*([^,\]]+?)\s*(?:,\s*([^\]]+?)\s*)?\]/g;
+        let match;
+        let hasBrackets = false;
+        while ((match = bracketRegex.exec(searchOnStr)) !== null) {
+            hasBrackets = true;
+            const fieldName = match[1].trim();
+            const maskName = match[2] ? match[2].trim() : fieldName;
+            if (fieldName) {
+                results.push({ field: fieldName, mask: maskName });
+            }
+        }
+        if (!hasBrackets) {
+            searchOnStr.split(",").forEach(item => {
+                const trimmed = item.trim();
+                if (trimmed) {
+                    results.push({ field: trimmed, mask: trimmed });
+                }
+            });
+        }
+        return results;
+    }
+
+    let currentSearchFieldsConfig = [];
+
     function populateSearchFields(config) {
         searchFieldsCheckboxes.innerHTML = "";
         searchFieldsList.classList.remove("hidden");
-        const fields = config.search_on.split(",").map(f => f.trim()).filter(f => f);
+        currentSearchFieldsConfig = parseSearchOn(config.search_on);
         
-        fields.forEach(field => {
+        currentSearchFieldsConfig.forEach(({ field, mask }) => {
             const label = document.createElement("label");
             label.className = "search-field-option";
             
@@ -2052,12 +2079,13 @@ document.addEventListener("DOMContentLoaded", () => {
             checkbox.type = "checkbox";
             checkbox.value = field;
             checkbox.checked = true; // default to checked
+            checkbox.dataset.mask = mask;
             checkbox.addEventListener("change", () => {
                 // re-evaluate search if input is active
             });
 
             label.appendChild(checkbox);
-            label.appendChild(document.createTextNode(field));
+            label.appendChild(document.createTextNode(mask));
             searchFieldsCheckboxes.appendChild(label);
         });
     }
@@ -2117,6 +2145,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 geoLayer.allFeatureLayers = geoLayer.getLayers();
             }
 
+            const fieldMaskMap = {};
+            currentSearchFieldsConfig.forEach(item => {
+                fieldMaskMap[item.field] = item.mask;
+            });
+
             const suggestions = new Set();
             geoLayer.allFeatureLayers.forEach(layer => {
                 const props = layer.feature.properties;
@@ -2125,7 +2158,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     if (val !== undefined && val !== null) {
                         const strVal = String(val);
                         if (strVal.toLowerCase().includes(query)) {
-                            suggestions.add(`${field}: ${strVal}`);
+                            const mask = fieldMaskMap[field] || field;
+                            suggestions.add(`${mask}:::${strVal}`);
                         }
                     }
                 });
@@ -2153,11 +2187,11 @@ document.addEventListener("DOMContentLoaded", () => {
             const div = document.createElement("div");
             div.className = "suggestion-item";
             
-            const parts = sugg.split(": ");
-            const fieldPart = parts[0];
-            const valPart = parts.slice(1).join(": ");
+            const parts = sugg.split(":::");
+            const maskPart = parts[0];
+            const valPart = parts.slice(1).join(":::");
             
-            div.innerHTML = `<span class="field-name">${fieldPart}:</span>${valPart}`;
+            div.innerHTML = `<span class="field-name">${maskPart}:</span>${valPart}`;
             div.addEventListener("click", () => {
                 searchInput.value = valPart; // Fill with the value
                 if (searchResetBtn) searchResetBtn.classList.remove("hidden");
