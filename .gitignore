@@ -87,3 +87,6 @@ tmp/
 
 # vs code worksapce user file
 Webmap.code-workspace
+
+# large borelogs directory
+Maps/prosoil-borelogs/
