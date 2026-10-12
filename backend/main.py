@@ -495,14 +495,14 @@ async def stage_borelog(request: Request, db: AsyncSession = Depends(get_db)):
     
     # 1. Parse Name
     b_name = re.sub(r'[\\/*?:"<>|]', '_', original_borelog_name)
-    if len(b_name) > 30:
-        b_name = b_name[:30]
-    elif len(b_name) < 30:
-        needed = 30 - len(b_name) - 1
-        if needed > 0:
-            b_name = b_name + "-" + "".join(random.choices(string.ascii_letters + string.digits, k=needed))
+    if len(b_name) > 38:
+        b_name = b_name[:38]
+    elif len(b_name) < 38:
+        needed = 38 - len(b_name)
+        if needed == 1:
+            b_name = b_name + "-"
         else:
-            b_name = b_name + "".join(random.choices(string.ascii_letters + string.digits, k=1))
+            b_name = b_name + "-" + "".join(random.choices(string.ascii_letters + string.digits, k=needed - 1))
             
     # 2. Date in ddMMyyyy
     date_str = datetime.now().strftime("%d%m%Y")
@@ -525,6 +525,7 @@ async def stage_borelog(request: Request, db: AsyncSession = Depends(get_db)):
             break
             
     # Update payload
+    payload["properties"]["borelog_name"] = b_name
     payload["properties"]["borelog_id"] = new_borelog_id
     payload["properties"]["uid"] = uid
     borelog_id = new_borelog_id
@@ -634,12 +635,12 @@ async def approve_staged_borelog(f_file: str, db: AsyncSession = Depends(get_db)
     coords = data.get("geometry", {}).get("coordinates", [0, 0])
     lat, lon = coords[0], coords[1]
     
-    uid = f_file.replace(".JSON", "")
-    b_name = props.get("borelog_name", uid[:30])
+    uid = re.sub(r'\.json$', '', f_file, flags=re.IGNORECASE)
+    b_name = props.get("borelog_name", uid[:38])
     
     # check collision and move
     if os.path.exists(os.path.join(published_dir, f_file)):
-        # base_name_and_date should have 30 + 1 + 8 chars
+        # base_name_and_date should have 38 + 1 + 8 chars
         parts = uid.split("-")
         base_name_and_date = "-".join(parts[:-1])
         date_str = parts[-2] if len(parts) >= 2 else datetime.now().strftime("%d%m%Y")
@@ -656,6 +657,7 @@ async def approve_staged_borelog(f_file: str, db: AsyncSession = Depends(get_db)
         borelog_id = date_str + new_rand
         data["properties"]["borelog_id"] = borelog_id
         data["properties"]["uid"] = uid
+        data["properties"]["borelog_name"] = b_name
         
         with open(os.path.join(published_dir, f_file), "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2)

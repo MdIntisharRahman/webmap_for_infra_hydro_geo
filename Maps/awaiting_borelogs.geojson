@@ -5,8 +5,8 @@
     {
       "type": "Feature",
       "properties": {
-        "borelog_name": "PL-11-SQTRS-09Tx",
-        "uid": "PL-11-SQTRS-09Tx-29092026-ps5QrT82",
+        "borelog_name": "PL-11-SQTRS-09TOrseg37JRER8l709x09TxTx",
+        "uid": "PL-11-SQTRS-09TOrseg37JRER8l709x09TxTx-29092026-ps5QrT82",
         "borelog_id": "29092026ps5QrT82",
         "project": "Initial",
         "client": "RHD",
@@ -14,7 +14,7 @@
         "ycoord": 23.81032,
         "keys": "'[borelog_name, Borelog Name], [borelog_id, ID], [xcoord, Easting], [ycoord, Northing], [f_file(=>{type:file, format:JSON, location: `./Maps/borelogs/staged/`}, See Borelog, imodal, borelog-modal=>),Details]'",
         "f_class_color": "#ff4053",
-        "f_file": "PL-11-SQTRS-09Tx-29092026-ps5QrT82.JSON"
+        "f_file": "PL-11-SQTRS-09TOrseg37JRER8l709x09TxTx-29092026-ps5QrT82.JSON"
       },
       "geometry": {
         "type": "Point",
@@ -27,16 +27,16 @@
     {
       "type": "Feature",
       "properties": {
-        "borelog_name": "IGI-2-Covert-Strike-r3KdHj2Us7",
+        "borelog_name": "IGI-2-Covert-Strike-r3Kd7Hr3Kj2Usj2Us7",
         "borelog_id": "01102026zEOtjjz9",
-        "uid": "IGI-2-Covert-Strike-r3KdHj2Us7-01102026-zEOtjjz9",
+        "uid": "IGI-2-Covert-Strike-r3Kd7Hr3Kj2Usj2Us7-01102026-zEOtjjz9",
         "project": "IGI: Covert Strike",
         "client": "Yousef Priboy Consortium",
         "xcoord": 90.436514,
         "ycoord": 23.828162,
         "keys": "'[borelog_name, Borelog Name], [borelog_id, ID], [xcoord, Easting], [ycoord, Northing], [f_file(=>{type:file, format:JSON, location: `./Maps/borelogs/staged/`}, See Borelog, imodal, borelog-modal=>),Details]'",
         "f_class_color": "#ff4053",
-        "f_file": "IGI-2-Covert-Strike-r3KdHj2Us7-01102026-zEOtjjz9.JSON"
+        "f_file": "IGI-2-Covert-Strike-r3Kd7Hr3Kj2Usj2Us7-01102026-zEOtjjz9.JSON"
       },
       "geometry": {
         "type": "Point",
@@ -50,15 +50,15 @@
       "type": "Feature",
       "properties": {
         "borelog_id": "09102026wxBFQQN7",
-        "borelog_name": "Maharkona-Bridge-BH1-pc3K3if5T",
+        "borelog_name": "Maharkona-Bridge-BH1-pc33ifc3ifc3K3f5T",
         "project": "PMP 2026-27",
         "client": "Road Division, RHD, Netrokona",
         "xcoord": 90.733814,
         "ycoord": 24.942769,
         "keys": "'[borelog_name, Borelog Name], [borelog_id, ID], [xcoord, Easting], [ycoord, Northing], [f_file(=>{type:file, format:JSON, location: `./Maps/borelogs/staged/`}, See Borelog, imodal, borelog-modal=>),Details]'",
         "f_class_color": "#ff4053",
-        "f_file": "Maharkona-Bridge-BH1-pc3K3if5T-09102026-wxBFQQN7.JSON",
-        "uid": "Maharkona-Bridge-BH1-pc3K3if5T-09102026-wxBFQQN7"
+        "f_file": "Maharkona-Bridge-BH1-pc33ifc3ifc3K3f5T-09102026-wxBFQQN7.JSON",
+        "uid": "Maharkona-Bridge-BH1-pc33ifc3ifc3K3f5T-09102026-wxBFQQN7"
       },
       "geometry": {
         "type": "Point",

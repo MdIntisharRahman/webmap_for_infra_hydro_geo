@@ -330,6 +330,7 @@ window.renderBorelogChart = function(containerId, geoJsonData) {
         <div><strong>Borelog Name:</strong> ${properties.borelog_name || properties.borehole_name || properties.name || ""}</div>
         <div><strong>Project:</strong> ${properties.project || ""}</div>
         <div><strong>Client:</strong> ${properties.client || ""}</div>
+        <div><strong>Engineering Team:</strong> ${properties.engineering_team || properties.drilling_team || ""}</div>
         <div><strong>Location (EPSG:4326):</strong> ${properties.location || ""} ${coordStr}</div>
         <div><strong>Date:</strong> ${dateStr}</div>
         <div><strong>RL (m):</strong> ${properties.rl_m !== undefined ? properties.rl_m : ""}</div>
@@ -1245,9 +1246,10 @@ window.downloadBorelogSVG = function(geoJsonData, uid) {
     svg += `<text class="meta-text" x="24" y="64" font-size="14px" font-weight="bold" fill="#3f3f46">Client:</text><text class="meta-text" x="130" y="64" font-size="14px" fill="#3f3f46">${properties.client || ""}</text>`;
     svg += `<text class="meta-text" x="24" y="84" font-size="14px" font-weight="bold" fill="#3f3f46">Location:</text><text class="meta-text" x="130" y="84" font-size="14px" fill="#3f3f46">${properties.location || ""} ${coordStr}</text>`;
     
-    svg += `<text class="meta-text" x="550" y="24" font-size="14px" font-weight="bold" fill="#3f3f46">Date:</text><text class="meta-text" x="660" y="24" font-size="14px" fill="#3f3f46">${dateStr}</text>`;
-    svg += `<text class="meta-text" x="550" y="44" font-size="14px" font-weight="bold" fill="#3f3f46">RL (m):</text><text class="meta-text" x="660" y="44" font-size="14px" fill="#3f3f46">${properties.rl_m !== undefined ? properties.rl_m : ""}</text>`;
-    svg += `<text class="meta-text" x="550" y="64" font-size="14px" font-weight="bold" fill="#3f3f46">Water Table (m):</text><text class="meta-text" x="680" y="64" font-size="14px" fill="#3f3f46">${properties.water_table_m !== undefined ? properties.water_table_m : ""}</text>`;
+    svg += `<text class="meta-text" x="550" y="24" font-size="14px" font-weight="bold" fill="#3f3f46">Date:</text><text class="meta-text" x="690" y="24" font-size="14px" fill="#3f3f46">${dateStr}</text>`;
+    svg += `<text class="meta-text" x="550" y="44" font-size="14px" font-weight="bold" fill="#3f3f46">RL (m):</text><text class="meta-text" x="690" y="44" font-size="14px" fill="#3f3f46">${properties.rl_m !== undefined ? properties.rl_m : ""}</text>`;
+    svg += `<text class="meta-text" x="550" y="64" font-size="14px" font-weight="bold" fill="#3f3f46">Water Table (m):</text><text class="meta-text" x="690" y="64" font-size="14px" fill="#3f3f46">${properties.water_table_m !== undefined ? properties.water_table_m : ""}</text>`;
+    svg += `<text class="meta-text" x="550" y="84" font-size="14px" font-weight="bold" fill="#3f3f46">Engineering Team:</text><text class="meta-text" x="690" y="84" font-size="14px" fill="#3f3f46">${properties.engineering_team || properties.drilling_team || ""}</text>`;
     
     svg += `<rect x="0" y="${metaHeight}" width="${totalWidth}" height="40" fill="#fafafa" stroke="#d4d4d8" stroke-width="2" />`;
     

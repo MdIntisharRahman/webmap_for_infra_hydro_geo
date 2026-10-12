@@ -16,6 +16,7 @@ window.exportBorelogToXLSX = function(feature, uid) {
     ["Borelog ID", properties.borelog_id],
     ["Project", properties.project],
     ["Client", properties.client],
+    ["Engineering Team", properties.engineering_team || properties.drilling_team || ""],
     ["Coordinates (EPSG:4326)", `${coords[1]}, ${coords[0]}`], // EPSG:4326 standard
     ["Elevation (m MSL)", properties.rl_m],
     ["Drill Rig", properties.drill_rig],

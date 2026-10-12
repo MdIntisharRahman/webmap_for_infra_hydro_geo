@@ -272,7 +272,8 @@ function gatherBorelogData() {
             client: document.getElementById('client').value,
             project: document.getElementById('project').value,
             location: document.getElementById('location').value,
-            drilling_team: document.getElementById('drilling_team').value,
+            engineering_team: (document.getElementById('engineering_team') || document.getElementById('drilling_team'))?.value || "",
+            drilling_team: (document.getElementById('engineering_team') || document.getElementById('drilling_team'))?.value || "",
             supervisor: document.getElementById('supervisor').value,
             drill_rig: document.getElementById('drill_rig').value,
             tbm_no: document.getElementById('tbm_no').value,
@@ -559,7 +560,9 @@ function populateFormFromJson(geoJson) {
     setVal('client', props.client);
     setVal('project', props.project);
     setVal('location', props.location);
-    setVal('drilling_team', props.drilling_team);
+    const engTeam = props.engineering_team || props.drilling_team || '';
+    setVal('engineering_team', engTeam);
+    setVal('drilling_team', engTeam);
     setVal('supervisor', props.supervisor);
     setVal('drill_rig', props.drill_rig);
     setVal('tbm_no', props.tbm_no);
