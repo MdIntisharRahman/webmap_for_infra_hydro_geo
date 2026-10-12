@@ -2080,6 +2080,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const searchFieldsCheckboxes = document.getElementById("search-fields-checkboxes");
     const searchInput = document.getElementById("search-input");
     const searchSuggestions = document.getElementById("search-suggestions");
+    const searchContainerStyle = document.getElementById("search-container").style
 
     let activeSearchLayerName = null;
 
@@ -2113,6 +2114,8 @@ document.addEventListener("DOMContentLoaded", () => {
         searchDrawerToggle.addEventListener("click", () => {
             searchDrawer.classList.toggle("hidden");
             searchDrawerToggle.classList.toggle("expanded");
+            searchContainerStyle.borderBottomLeftRadius=
+                (searchContainerStyle.borderBottomLeftRadius==="0px") ? searchContainerStyle.borderTopLeftRadius : "0px";
             document.querySelector('.search-modal-content').classList.toggle("drawer-open");
         });
     }
