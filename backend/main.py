@@ -486,9 +486,255 @@ def check_admin(credentials: HTTPBasicCredentials = Depends(security)):
 def generate_borelog_id():
     return "".join(random.choices(string.ascii_letters + string.digits, k=8))
 
+def validate_borelog_payload(payload: dict) -> list[str]:
+    errors = []
+    props = payload.get("properties") or {}
+    geom = payload.get("geometry") or {}
+    coords = geom.get("coordinates") or [0, 0]
+
+    try:
+        lat = float(coords[0])
+        lng = float(coords[1])
+    except (ValueError, TypeError, IndexError):
+        lat, lng = None, None
+
+    # 1. Mandatory Metadata Checks
+    borelog_name = str(props.get("borelog_name") or props.get("name") or "").strip()
+    if not borelog_name:
+        errors.append("Borelog Name is required.")
+
+    eng_team = str(props.get("engineering_team") or props.get("drilling_team") or "").strip()
+    if not eng_team:
+        errors.append("Engineering Team (or Drilling Team) is required.")
+
+    location = str(props.get("location") or "").strip()
+    if not location:
+        errors.append("Location is required.")
+
+    date_start = str(props.get("date_of_starting_boring") or "").strip()
+    if not date_start:
+        errors.append("Date of Starting Boring is required.")
+
+    date_end = str(props.get("date_of_ending_boring") or "").strip()
+    if date_start and date_end:
+        try:
+            d_start = datetime.strptime(date_start[:10], "%Y-%m-%d")
+            d_end = datetime.strptime(date_end[:10], "%Y-%m-%d")
+            if d_end < d_start:
+                errors.append(f"Date of Completion ({date_end}) cannot be earlier than Date of Starting ({date_start}).")
+        except Exception:
+            pass
+
+    if lat is None or lng is None or (lat == 0 and lng == 0):
+        errors.append("Valid borehole Coordinates (Latitude, Longitude) must be specified.")
+    else:
+        if not (-90 <= lat <= 90):
+            errors.append(f"Latitude ({lat}) must be between -90 and 90 degrees.")
+        if not (-180 <= lng <= 180):
+            errors.append(f"Longitude ({lng}) must be between -180 and 180 degrees.")
+
+    # Reduced Level (RL)
+    rl = props.get("rl_m")
+    if rl is None or rl == "":
+        errors.append("Reduced Level (RL in m) must be specified.")
+    else:
+        try:
+            float(rl)
+        except (ValueError, TypeError):
+            errors.append("Reduced Level (RL in m) must be a valid number.")
+
+    # Total Depth
+    total_depth = None
+    depth_val = props.get("depth_m")
+    if depth_val is None or depth_val == "":
+        errors.append("Total Borehole Depth (m) must be specified and strictly greater than 0.")
+    else:
+        try:
+            total_depth = float(depth_val)
+            if total_depth <= 0:
+                errors.append("Total Borehole Depth (m) must be strictly greater than 0.")
+        except (ValueError, TypeError):
+            errors.append("Total Borehole Depth (m) must be a valid number.")
+
+    # Water Table
+    wt = props.get("water_table_m")
+    if wt is not None and wt != "":
+        try:
+            if float(wt) < 0:
+                errors.append(f"Water Table Depth ({wt} m) cannot be negative.")
+        except (ValueError, TypeError):
+            pass
+
+    # 2. Sounding / Geotechnical Minimum Existence Rule
+    strata = props.get("strata") or []
+    spt = props.get("spt_data") or []
+    cpt = props.get("cpt_data") or []
+
+    if not strata:
+        errors.append("At least one Stratigraphy layer must be provided.")
+    if not spt and not cpt:
+        errors.append("Sounding data missing: At least one in-situ sounding test (SPT or CPT data) must be provided alongside Stratigraphy.")
+
+    def check_non_neg(val, name, ctx):
+        if val is not None and val != "":
+            try:
+                f = float(val)
+                if f < 0:
+                    errors.append(f"{ctx}: {name} ({val}) cannot be negative.")
+            except (ValueError, TypeError):
+                pass
+
+    def check_depth(d, ctx):
+        if d is not None and d != "":
+            try:
+                f = float(d)
+                if f < 0:
+                    errors.append(f"{ctx}: Depth ({f} m) cannot be negative.")
+                elif total_depth is not None and total_depth > 0 and f > (total_depth + 0.05):
+                    errors.append(f"{ctx}: Depth ({f} m) exceeds total borehole depth ({total_depth} m).")
+            except (ValueError, TypeError):
+                pass
+
+    # 3. Stratigraphy Integrity
+    if strata:
+        try:
+            first_top = float(strata[0].get("top_m", 0))
+            if abs(first_top) > 0.001:
+                errors.append(f"Stratigraphy must begin at ground surface (0.0 m). First layer starts at {first_top} m.")
+        except (ValueError, TypeError):
+            pass
+
+        for i, layer in enumerate(strata):
+            l_num = i + 1
+            try:
+                top = float(layer.get("top_m", 0))
+                bottom = float(layer.get("bottom_m", 0))
+                if bottom <= top:
+                    errors.append(f"Stratigraphy Layer {l_num}: Bottom depth ({bottom} m) must be strictly greater than top depth ({top} m).")
+                if total_depth is not None and total_depth > 0 and bottom > (total_depth + 0.05):
+                    errors.append(f"Stratigraphy Layer {l_num}: Bottom depth ({bottom} m) exceeds total borehole depth ({total_depth} m).")
+                if i > 0:
+                    prev_bottom = float(strata[i-1].get("bottom_m", 0))
+                    if abs(top - prev_bottom) > 0.01:
+                        errors.append(f"Stratigraphy discontinuity: Layer {l_num} starts at {top} m, but Layer {l_num-1} ends at {prev_bottom} m.")
+            except (ValueError, TypeError):
+                errors.append(f"Stratigraphy Layer {l_num}: Top and Bottom depths must be numeric.")
+
+    # 4. SPT Data Validation
+    for idx, row in enumerate(spt):
+        ctx = f"SPT Row {idx + 1}"
+        check_depth(row.get("depth_m"), ctx)
+        check_non_neg(row.get("blows_0_150"), "Blows (0-150mm)", ctx)
+        check_non_neg(row.get("blows_150_300"), "Blows (150-300mm)", ctx)
+        check_non_neg(row.get("blows_300_450"), "Blows (300-450mm)", ctx)
+        n_val = row.get("n_value")
+        if n_val is not None and str(n_val).strip() != "":
+            try:
+                if float(n_val) < 0:
+                    errors.append(f"{ctx}: N-value ({n_val}) cannot be negative.")
+            except (ValueError, TypeError):
+                pass
+
+    # 5. Atterberg Limits Validation
+    for idx, row in enumerate(props.get("atterberg_test_data") or []):
+        ctx = f"Atterberg Limits Row {idx + 1}"
+        check_depth(row.get("depth_m"), ctx)
+        check_non_neg(row.get("wc"), "Water Content", ctx)
+        check_non_neg(row.get("ll"), "Liquid Limit", ctx)
+        check_non_neg(row.get("pl"), "Plastic Limit", ctx)
+
+        ll = row.get("ll")
+        pl = row.get("pl")
+        if ll is not None and pl is not None and ll != "" and pl != "":
+            try:
+                f_ll = float(ll)
+                f_pl = float(pl)
+                if (f_ll > 0 or f_pl > 0) and f_ll <= f_pl:
+                    errors.append(f"{ctx}: Liquid Limit ({f_ll}%) must be strictly greater than Plastic Limit ({f_pl}%).")
+            except (ValueError, TypeError):
+                pass
+
+    # 6. Grain Size Analysis Validation
+    for idx, row in enumerate(props.get("grain_size_analysis_data") or []):
+        ctx = f"Grain Size Row {idx + 1}"
+        check_depth(row.get("depth_m"), ctx)
+        check_non_neg(row.get("sand"), "Sand %", ctx)
+        check_non_neg(row.get("silt"), "Silt %", ctx)
+        check_non_neg(row.get("clay"), "Clay %", ctx)
+        try:
+            sand = float(row.get("sand") or 0)
+            silt = float(row.get("silt") or 0)
+            clay = float(row.get("clay") or 0)
+            if sand > 100 or silt > 100 or clay > 100:
+                errors.append(f"{ctx}: Individual particle fractions cannot exceed 100%.")
+            if (sand + silt + clay) > 105:
+                errors.append(f"{ctx}: Sum of fractions ({sand + silt + clay:.1f}%) exceeds 100%.")
+        except (ValueError, TypeError):
+            pass
+
+    # 7. CPT Data Validation
+    for idx, row in enumerate(cpt):
+        ctx = f"CPT Row {idx + 1}"
+        check_depth(row.get("depth_m"), ctx)
+        check_non_neg(row.get("qc_mpa"), "Tip Resistance qc", ctx)
+        check_non_neg(row.get("fs_kpa"), "Sleeve Friction fs", ctx)
+        check_non_neg(row.get("rf_percent"), "Friction Ratio Rf", ctx)
+
+    # 8. Direct Shear Test Validation
+    for idx, row in enumerate(props.get("direct_shear_test_data") or []):
+        ctx = f"Direct Shear Row {idx + 1}"
+        check_depth(row.get("depth_m"), ctx)
+        check_non_neg(row.get("normal_stress_kpa"), "Normal Stress", ctx)
+        check_non_neg(row.get("shear_stress_kpa"), "Shear Stress", ctx)
+        check_non_neg(row.get("cohesion_kpa"), "Cohesion c", ctx)
+        check_non_neg(row.get("friction_angle_deg"), "Friction Angle φ", ctx)
+        fa = row.get("friction_angle_deg")
+        if fa is not None and fa != "":
+            try:
+                if float(fa) > 90:
+                    errors.append(f"{ctx}: Friction angle ({fa}°) cannot exceed 90°.")
+            except (ValueError, TypeError):
+                pass
+
+    # 9. 1-D Consolidation Test Validation
+    for idx, row in enumerate(props.get("consolidation_test_data") or []):
+        ctx = f"Consolidation Row {idx + 1}"
+        check_depth(row.get("depth_m"), ctx)
+        check_non_neg(row.get("vertical_effective_stress_kpa"), "Vertical Effective Stress", ctx)
+        check_non_neg(row.get("constrained_modulus_eoed_mpa"), "Constrained Modulus", ctx)
+        check_non_neg(row.get("compression_index"), "Compression Index Cc", ctx)
+        check_non_neg(row.get("recompression_index"), "Recompression Index Cr", ctx)
+        check_non_neg(row.get("preconsolidation_pressure_kpa"), "Preconsolidation Pressure", ctx)
+
+        cc = row.get("compression_index")
+        cr = row.get("recompression_index")
+        if cc is not None and cr is not None and cc != "" and cr != "":
+            try:
+                f_cc = float(cc)
+                f_cr = float(cr)
+                if f_cc > 0 and f_cr > 0 and f_cr >= f_cc:
+                    errors.append(f"{ctx}: Recompression Index Cr ({f_cr}) must be strictly less than Compression Index Cc ({f_cc}).")
+            except (ValueError, TypeError):
+                pass
+
+    # 10. Triaxial Test Validation
+    for idx, row in enumerate(props.get("triaxial_test_data") or []):
+        ctx = f"Triaxial Row {idx + 1}"
+        check_depth(row.get("depth_m"), ctx)
+        check_non_neg(row.get("effective_confining_stress_kpa"), "Confining Stress", ctx)
+        check_non_neg(row.get("peak_deviator_stress_kpa"), "Deviator Stress", ctx)
+        check_non_neg(row.get("secant_modulus_e50_mpa"), "Secant Modulus E50", ctx)
+
+    return errors
+
 @app.post("/api/borelog/stage")
 async def stage_borelog(request: Request, db: AsyncSession = Depends(get_db)):
     payload = await request.json()
+    
+    # Enforce Geotechnical Validation Rules
+    validation_errors = validate_borelog_payload(payload)
+    if validation_errors:
+        raise HTTPException(status_code=422, detail=validation_errors)
     
     props = payload.get("properties", {})
     original_borelog_name = str(props.get("borelog_name", props.get("name", "UNKNOWN")))

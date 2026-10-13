@@ -219,9 +219,11 @@ window.insertRowAfter = (btn) => {
     return tr;
 };
 
-const showToast = (message, isError = false) => {
+let toastTimeout = null;
+const showToast = (message, isError = false, timeoutMs = null) => {
     const toast = document.getElementById('status-toast');
-    toast.textContent = message;
+    if (!toast) return;
+    toast.innerHTML = message;
 
     // Reset classes
     toast.className = '';
@@ -232,9 +234,15 @@ const showToast = (message, isError = false) => {
     // Trigger animation
     toast.classList.add('visible');
 
-    setTimeout(() => {
+    // Allow clicking the toast to dismiss immediately
+    toast.onclick = () => {
         toast.classList.remove('visible');
-    }, 4000);
+    };
+
+    if (toastTimeout) clearTimeout(toastTimeout);
+    toastTimeout = setTimeout(() => {
+        toast.classList.remove('visible');
+    }, timeoutMs || (isError ? 10000 : 4000));
 };
 
 // Initialize with one row each
@@ -247,21 +255,271 @@ window.onload = () => {
 const parseNum = (val) => val ? parseFloat(val) : null;
 const parseIntSafe = (val) => val ? parseInt(val, 10) : null;
 
-// Parse coordinates string "lat, lng"
+// Parse coordinates string "lat, lng" safely
 const parseCoordinates = (coordString) => {
+    if (!coordString || typeof coordString !== 'string') return [NaN, NaN];
     const parts = coordString.split(',').map(s => s.trim());
-    if (parts.length !== 2) throw new Error("Coordinates must be in format 'Latitude, Longitude'");
+    if (parts.length !== 2) return [NaN, NaN];
     const lat = parseFloat(parts[0]);
     const lng = parseFloat(parts[1]);
-    if (isNaN(lat) || isNaN(lng)) throw new Error("Coordinates must be valid numbers");
-    return [lat, lng]; // We store as [lat, lng], backend expects what? Usually GeoJSON is [lng, lat], let's check
+    return [lat, lng];
 };
+
+function validateGeotechnicalRules(payload) {
+    const errors = [];
+    const props = payload.properties || {};
+    const coords = (payload.geometry && payload.geometry.coordinates) ? payload.geometry.coordinates : [NaN, NaN];
+    const lat = Number(coords[0]);
+    const lng = Number(coords[1]);
+
+    // 1. Mandatory Metadata Checks
+    const borelogName = (props.borelog_name || "").trim();
+    if (!borelogName) {
+        errors.push("Borelog Name is required.");
+    }
+
+    const engTeam = ((props.engineering_team || props.drilling_team) || "").trim();
+    if (!engTeam) {
+        errors.push("Engineering Team (or Drilling Team) is required.");
+    }
+
+    const location = (props.location || "").trim();
+    if (!location) {
+        errors.push("Location is required.");
+    }
+
+    const dateStart = (props.date_of_starting_boring || "").trim();
+    if (!dateStart) {
+        errors.push("Date of Starting Boring is required.");
+    }
+
+    const dateEnd = (props.date_of_ending_boring || "").trim();
+    if (dateStart && dateEnd) {
+        const dStart = new Date(dateStart);
+        const dEnd = new Date(dateEnd);
+        if (!isNaN(dStart.getTime()) && !isNaN(dEnd.getTime()) && dEnd < dStart) {
+            errors.push(`Date of Completion (${dateEnd}) cannot be earlier than Date of Starting (${dateStart}).`);
+        }
+    }
+
+    // Coordinates check
+    if (isNaN(lat) || isNaN(lng) || (lat === 0 && lng === 0)) {
+        errors.push("Valid borehole Coordinates (Latitude, Longitude) must be specified.");
+    } else {
+        if (lat < -90 || lat > 90) {
+            errors.push(`Latitude (${lat}) must be between -90 and 90 degrees.`);
+        }
+        if (lng < -180 || lng > 180) {
+            errors.push(`Longitude (${lng}) must be between -180 and 180 degrees.`);
+        }
+    }
+
+    // Reduced Level (RL) check (can be negative or positive elevation)
+    const rl = props.rl_m;
+    if (rl === null || rl === undefined || isNaN(rl)) {
+        errors.push("Reduced Level (RL in m) must be specified as a valid numeric elevation.");
+    }
+
+    // Total Depth check (strictly positive)
+    const totalDepth = props.depth_m;
+    if (totalDepth === null || totalDepth === undefined || isNaN(totalDepth) || totalDepth <= 0) {
+        errors.push("Total Borehole Depth (m) must be specified and strictly greater than 0.");
+    }
+
+    // Water Table Depth check (non-negative)
+    const wt = props.water_table_m;
+    if (wt !== null && wt !== undefined && !isNaN(wt) && wt < 0) {
+        errors.push(`Water Table Depth (${wt} m) cannot be negative.`);
+    }
+
+    // 2. Sounding / Geotechnical Minimum Existence Rule:
+    // Stratigraphy must be present together with EITHER SPT or CPT data
+    const strata = Array.isArray(props.strata) ? props.strata : [];
+    const spt = Array.isArray(props.spt_data) ? props.spt_data : [];
+    const cpt = Array.isArray(props.cpt_data) ? props.cpt_data : [];
+
+    if (strata.length === 0) {
+        errors.push("At least one Stratigraphy layer must be provided.");
+    }
+
+    if (spt.length === 0 && cpt.length === 0) {
+        errors.push("Sounding data missing: At least one in-situ sounding test (SPT or CPT data) must be provided alongside Stratigraphy.");
+    }
+
+    // Helper for non-negativity across numeric test fields
+    const checkNonNegative = (val, fieldName, context) => {
+        if (val !== null && val !== undefined && !isNaN(val) && val < 0) {
+            errors.push(`${context}: ${fieldName} (${val}) cannot be negative.`);
+        }
+    };
+
+    // Helper for depth exceeding borehole total depth
+    const checkDepth = (depth, context) => {
+        if (depth !== null && depth !== undefined && !isNaN(depth)) {
+            if (depth < 0) {
+                errors.push(`${context}: Depth (${depth} m) cannot be negative.`);
+            } else if (totalDepth > 0 && depth > totalDepth + 0.05) {
+                errors.push(`${context}: Depth (${depth} m) exceeds total borehole depth (${totalDepth} m).`);
+            }
+        }
+    };
+
+    // 3. Stratigraphy Integrity Rules
+    if (strata.length > 0) {
+        if (Math.abs(strata[0].top_m - 0) > 0.001) {
+            errors.push(`Stratigraphy must begin at ground surface (0.0 m). First layer starts at ${strata[0].top_m} m.`);
+        }
+        for (let i = 0; i < strata.length; i++) {
+            const layer = strata[i];
+            const layerNum = i + 1;
+            if (isNaN(layer.top_m) || isNaN(layer.bottom_m)) {
+                errors.push(`Stratigraphy Layer ${layerNum}: Top and Bottom depths must be numeric.`);
+                continue;
+            }
+            if (layer.bottom_m <= layer.top_m) {
+                errors.push(`Stratigraphy Layer ${layerNum}: Bottom depth (${layer.bottom_m} m) must be strictly greater than top depth (${layer.top_m} m).`);
+            }
+            if (totalDepth > 0 && layer.bottom_m > totalDepth + 0.05) {
+                errors.push(`Stratigraphy Layer ${layerNum}: Bottom depth (${layer.bottom_m} m) exceeds total borehole depth (${totalDepth} m).`);
+            }
+            if (i > 0) {
+                const prevBottom = strata[i - 1].bottom_m;
+                if (Math.abs(layer.top_m - prevBottom) > 0.01) {
+                    errors.push(`Stratigraphy discontinuity: Layer ${layerNum} starts at ${layer.top_m} m, but Layer ${layerNum - 1} ends at ${prevBottom} m.`);
+                }
+            }
+        }
+    }
+
+    // 4. SPT Data Validation
+    spt.forEach((row, idx) => {
+        const rowNum = idx + 1;
+        const ctx = `SPT Row ${rowNum}`;
+        checkDepth(row.depth_m, ctx);
+        checkNonNegative(row.blows_0_150, "Blows (0-150mm)", ctx);
+        checkNonNegative(row.blows_150_300, "Blows (150-300mm)", ctx);
+        checkNonNegative(row.blows_300_450, "Blows (300-450mm)", ctx);
+        if (row.n_value !== undefined && row.n_value !== null && row.n_value !== "") {
+            const nVal = parseFloat(row.n_value);
+            if (!isNaN(nVal) && nVal < 0) {
+                errors.push(`${ctx}: N-value (${row.n_value}) cannot be negative.`);
+            }
+        }
+    });
+
+    // 5. Atterberg Limits Validation
+    const atterberg = Array.isArray(props.atterberg_test_data) ? props.atterberg_test_data : [];
+    atterberg.forEach((row, idx) => {
+        const rowNum = idx + 1;
+        const ctx = `Atterberg Limits Row ${rowNum}`;
+        checkDepth(row.depth_m, ctx);
+        checkNonNegative(row.wc, "Water Content", ctx);
+        checkNonNegative(row.ll, "Liquid Limit", ctx);
+        checkNonNegative(row.pl, "Plastic Limit", ctx);
+
+        // Liquid Limit strictly greater than Plastic Limit (LL > PL)
+        const ll = row.ll;
+        const pl = row.pl;
+        if (ll !== null && ll !== undefined && !isNaN(ll) &&
+            pl !== null && pl !== undefined && !isNaN(pl)) {
+            if (ll > 0 || pl > 0) {
+                if (ll <= pl) {
+                    errors.push(`${ctx}: Liquid Limit (${ll}%) must be strictly greater than Plastic Limit (${pl}%).`);
+                }
+            }
+        }
+    });
+
+    // 6. Grain Size Analysis Validation
+    const grainSize = Array.isArray(props.grain_size_analysis_data) ? props.grain_size_analysis_data : [];
+    grainSize.forEach((row, idx) => {
+        const rowNum = idx + 1;
+        const ctx = `Grain Size Row ${rowNum}`;
+        checkDepth(row.depth_m, ctx);
+        checkNonNegative(row.sand, "Sand %", ctx);
+        checkNonNegative(row.silt, "Silt %", ctx);
+        checkNonNegative(row.clay, "Clay %", ctx);
+
+        const sand = row.sand || 0;
+        const silt = row.silt || 0;
+        const clay = row.clay || 0;
+        if (sand > 100 || silt > 100 || clay > 100) {
+            errors.push(`${ctx}: Individual particle fractions cannot exceed 100%.`);
+        }
+        if (sand + silt + clay > 105) {
+            errors.push(`${ctx}: Sum of fractions (${(sand + silt + clay).toFixed(1)}%) exceeds 100%.`);
+        }
+    });
+
+    // 7. CPT Data Validation
+    cpt.forEach((row, idx) => {
+        const rowNum = idx + 1;
+        const ctx = `CPT Row ${rowNum}`;
+        checkDepth(row.depth_m, ctx);
+        checkNonNegative(row.qc_mpa, "Tip Resistance qc", ctx);
+        checkNonNegative(row.fs_kpa, "Sleeve Friction fs", ctx);
+        checkNonNegative(row.rf_percent, "Friction Ratio Rf", ctx);
+    });
+
+    // 8. Direct Shear Test Validation
+    const shear = Array.isArray(props.direct_shear_test_data) ? props.direct_shear_test_data : [];
+    shear.forEach((row, idx) => {
+        const rowNum = idx + 1;
+        const ctx = `Direct Shear Row ${rowNum}`;
+        checkDepth(row.depth_m, ctx);
+        checkNonNegative(row.normal_stress_kpa, "Normal Stress", ctx);
+        checkNonNegative(row.shear_stress_kpa, "Shear Stress", ctx);
+        checkNonNegative(row.cohesion_kpa, "Cohesion c", ctx);
+        checkNonNegative(row.friction_angle_deg, "Friction Angle φ", ctx);
+        if (row.friction_angle_deg !== null && !isNaN(row.friction_angle_deg) && row.friction_angle_deg > 90) {
+            errors.push(`${ctx}: Friction angle (${row.friction_angle_deg}°) cannot exceed 90°.`);
+        }
+    });
+
+    // 9. 1-D Consolidation Test Validation
+    const consolidation = Array.isArray(props.consolidation_test_data) ? props.consolidation_test_data : [];
+    consolidation.forEach((row, idx) => {
+        const rowNum = idx + 1;
+        const ctx = `Consolidation Row ${rowNum}`;
+        checkDepth(row.depth_m, ctx);
+        checkNonNegative(row.vertical_effective_stress_kpa, "Vertical Effective Stress", ctx);
+        checkNonNegative(row.constrained_modulus_eoed_mpa, "Constrained Modulus", ctx);
+        checkNonNegative(row.compression_index, "Compression Index Cc", ctx);
+        checkNonNegative(row.recompression_index, "Recompression Index Cr", ctx);
+        checkNonNegative(row.preconsolidation_pressure_kpa, "Preconsolidation Pressure", ctx);
+
+        // Recompression Index strictly less than Compression Index (Cr < Cc)
+        const cc = row.compression_index;
+        const cr = row.recompression_index;
+        if (cc !== null && cc !== undefined && !isNaN(cc) &&
+            cr !== null && cr !== undefined && !isNaN(cr)) {
+            if (cc > 0 && cr > 0) {
+                if (cr >= cc) {
+                    errors.push(`${ctx}: Recompression Index Cr (${cr}) must be strictly less than Compression Index Cc (${cc}).`);
+                }
+            }
+        }
+    });
+
+    // 10. Triaxial Test Validation
+    const triaxial = Array.isArray(props.triaxial_test_data) ? props.triaxial_test_data : [];
+    triaxial.forEach((row, idx) => {
+        const rowNum = idx + 1;
+        const ctx = `Triaxial Row ${rowNum}`;
+        checkDepth(row.depth_m, ctx);
+        checkNonNegative(row.effective_confining_stress_kpa, "Confining Stress", ctx);
+        checkNonNegative(row.peak_deviator_stress_kpa, "Deviator Stress", ctx);
+        checkNonNegative(row.secant_modulus_e50_mpa, "Secant Modulus E50", ctx);
+    });
+
+    return errors;
+}
 
 function gatherBorelogData() {
     const coordRaw = document.getElementById('coordinates').value || "0,0";
     const [lat, lng] = parseCoordinates(coordRaw);
 
-    return {
+    const payload = {
         type: "Feature",
         geometry: {
             type: "Point",
@@ -348,17 +606,15 @@ function gatherBorelogData() {
         }
     };
 
-    // Continuity Validation for Stratigraphy
-    const strata = payload.properties.strata;
-    if (strata.length > 0) {
-        if (strata[0].top_m !== 0) {
-            throw new Error(`Stratigraphy must begin at 0 m. The first layer begins at ${strata[0].top_m} m.`);
-        }
-        for (let i = 1; i < strata.length; i++) {
-            if (strata[i].top_m !== strata[i - 1].bottom_m) {
-                throw new Error(`Stratigraphy discontinuity detected! Layer ${i + 1} begins at ${strata[i].top_m} m, but the previous layer ended at ${strata[i - 1].bottom_m} m.`);
-            }
-        }
+    // Run Geotechnical & Integrity Validations
+    const errors = validateGeotechnicalRules(payload);
+    if (errors.length > 0) {
+        const errorHtml = `<strong> ✘ Geotechnical Validation Failed (${errors.length} issue${errors.length > 1 ? 's' : ''}):</strong><ul style="margin: 6px 0 0 18px; padding: 0; text-align: left;">` + 
+            errors.map(err => `<li>${err}</li>`).join('') + `</ul>`;
+        const err = new Error(errors.join('\n'));
+        err.htmlMessage = errorHtml;
+        err.validationErrors = errors;
+        throw err;
     }
 
     return payload;
@@ -432,7 +688,7 @@ document.getElementById('borelogForm').addEventListener('submit', async (e) => {
         });
 
         if (response.ok) {
-            showToast(' ✔ Borelog successfully staged for approval!', false);
+            showToast(' ✔ Borelog successfully staged for approval!', false, 5000);
             document.getElementById('borelogForm').reset();
             // Clear arrays
             document.querySelectorAll('tbody').forEach(tbody => tbody.innerHTML = '');
@@ -440,11 +696,24 @@ document.getElementById('borelogForm').addEventListener('submit', async (e) => {
                 addRow(`${type}-body`);
             });
         } else {
-            const errorText = await response.text();
-            showToast(` ✘ Error: ${errorText}`, true);
+            let errorText = await response.text();
+            try {
+                const parsed = JSON.parse(errorText);
+                if (Array.isArray(parsed.detail)) {
+                    errorText = `<ul style="margin:4px 0 0 16px; padding:0; text-align:left;">` + 
+                        parsed.detail.map(d => `<li>${d}</li>`).join('') + `</ul>`;
+                } else if (parsed.detail) {
+                    errorText = parsed.detail;
+                }
+            } catch (_) {}
+            showToast(`<strong> ✘ Submission Rejected:</strong><br>${errorText}`, true, 12000);
         }
     } catch (error) {
-        showToast(` ✘ Validation Error: ${error.message}`, true);
+        if (error.htmlMessage) {
+            showToast(error.htmlMessage, true, 12000);
+        } else {
+            showToast(` ✘ Validation Error: ${error.message}`, true, 9000);
+        }
     } finally {
         btn.disabled = false;
         btn.textContent = "Submit Borelog for Approval";
@@ -459,7 +728,11 @@ document.getElementById('preview-btn').addEventListener('click', () => {
     try {
         data = gatherBorelogData();
     } catch (e) {
-        alert("Validation Error: " + e.message);
+        if (e.htmlMessage) {
+            showToast(e.htmlMessage, true, 12000);
+        } else {
+            showToast(` ✘ Validation Error: ${e.message}`, true, 9000);
+        }
         return;
     }
     
@@ -832,58 +1105,82 @@ document.addEventListener('change', (e) => {
     }
 });
 
+// Dynamic Calculations & Helper Listeners
+
+// 1. SPT N-Value auto-calculation: N = blows_150_300 + blows_300_450
 document.addEventListener('input', function(e) {
-    if (e.target.matches('#atterberg-body .f-wc, #atterberg-body .f-ll, #atterberg-body .f-pl')) {
+    if (e.target.matches('#spt-body .f-b300, #spt-body .f-b450')) {
         const tr = e.target.closest('tr');
-        const wc = parseFloat(tr.querySelector('.f-wc').value);
-        const ll = parseFloat(tr.querySelector('.f-ll').value);
-        const pl = parseFloat(tr.querySelector('.f-pl').value);
-        
-        const piInput = tr.querySelector('.f-pi');
-        const liInput = tr.querySelector('.f-li');
-        
-        if (!isNaN(ll) && !isNaN(pl)) {
-            const pi = ll - pl;
-            piInput.value = pi.toFixed(2);
-            if (!isNaN(wc) && pi !== 0) {
-                const li = (wc - pl) / pi;
-                liInput.value = li.toFixed(3);
-            } else {
-                liInput.value = '';
+        if (tr) {
+            const b300 = parseInt(tr.querySelector('.f-b300').value, 10);
+            const b450 = parseInt(tr.querySelector('.f-b450').value, 10);
+            const nInput = tr.querySelector('.f-nval');
+            if (!isNaN(b300) && !isNaN(b450)) {
+                if (nInput.value === '' || !isNaN(parseInt(nInput.value, 10))) {
+                    nInput.value = b300 + b450;
+                }
             }
-        } else {
-            piInput.value = '';
-            liInput.value = '';
         }
     }
 });
 
-// Auto-calculate PI and LI for Atterberg limits table
-document.addEventListener('input', (e) => {
-    if (e.target.classList.contains('f-wc') || 
-        e.target.classList.contains('f-ll') || 
-        e.target.classList.contains('f-pl')) {
-        const row = e.target.closest('tr');
-        if (row) {
-            const wc = parseFloat(row.querySelector('.f-wc').value);
-            const ll = parseFloat(row.querySelector('.f-ll').value);
-            const pl = parseFloat(row.querySelector('.f-pl').value);
-            const piField = row.querySelector('.f-pi');
-            const liField = row.querySelector('.f-li');
-
-            let pi = NaN;
+// 2. Atterberg Limits PI and LI auto-calculation
+document.addEventListener('input', function(e) {
+    if (e.target.matches('#atterberg-body .f-wc, #atterberg-body .f-ll, #atterberg-body .f-pl')) {
+        const tr = e.target.closest('tr');
+        if (tr) {
+            const wc = parseFloat(tr.querySelector('.f-wc').value);
+            const llInput = tr.querySelector('.f-ll');
+            const plInput = tr.querySelector('.f-pl');
+            const ll = parseFloat(llInput.value);
+            const pl = parseFloat(plInput.value);
+            
+            const piInput = tr.querySelector('.f-pi');
+            const liInput = tr.querySelector('.f-li');
+            
             if (!isNaN(ll) && !isNaN(pl)) {
-                pi = ll - pl;
-                piField.value = pi.toFixed(2);
-            } else {
-                piField.value = '';
-            }
+                const pi = ll - pl;
+                piInput.value = pi.toFixed(2);
 
-            if (!isNaN(pi) && pi !== 0 && !isNaN(wc) && !isNaN(pl)) {
-                const li = (wc - pl) / pi;
-                liField.value = li.toFixed(3);
+                if (ll <= pl) {
+                    llInput.style.borderColor = 'var(--danger, #e41c1c)';
+                    plInput.style.borderColor = 'var(--danger, #e41c1c)';
+                    llInput.title = 'Liquid Limit must be greater than Plastic Limit';
+                    plInput.title = 'Liquid Limit must be greater than Plastic Limit';
+                } else {
+                    llInput.style.borderColor = '';
+                    plInput.style.borderColor = '';
+                    llInput.title = '';
+                    plInput.title = '';
+                }
+
+                if (!isNaN(wc) && pi > 0) {
+                    const li = (wc - pl) / pi;
+                    liInput.value = li.toFixed(3);
+                } else {
+                    liInput.value = '';
+                }
             } else {
-                liField.value = '';
+                piInput.value = '';
+                liInput.value = '';
+                llInput.style.borderColor = '';
+                plInput.style.borderColor = '';
+            }
+        }
+    }
+});
+
+// 3. CPT Friction Ratio Rf (%) auto-calculation: Rf = fs (kPa) / (10 * qc (MPa))
+document.addEventListener('input', function(e) {
+    if (e.target.matches('#cpt-body .f-qc, #cpt-body .f-fs')) {
+        const tr = e.target.closest('tr');
+        if (tr) {
+            const qc = parseFloat(tr.querySelector('.f-qc').value);
+            const fs = parseFloat(tr.querySelector('.f-fs').value);
+            const rfInput = tr.querySelector('.f-rf');
+            if (!isNaN(qc) && qc > 0 && !isNaN(fs) && fs >= 0) {
+                const rf = fs / (10 * qc);
+                rfInput.value = rf.toFixed(2);
             }
         }
     }

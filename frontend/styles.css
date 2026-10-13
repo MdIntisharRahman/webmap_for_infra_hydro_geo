@@ -1945,7 +1945,7 @@ body {
     max-width: 1000px !important;
     overflow-y: auto !important;
     background: var(--panel-bg) !important;
-    padding: 11px !important;
+    padding: 1.25rem 0.75rem !important;
 }
 
 

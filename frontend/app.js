@@ -1582,7 +1582,7 @@ if (iframeModal) {
 
 
 
-window.openBorelogVisualizer = async (f_file, options) => {
+window.openBorelogVisualizer = async (f_file, options = {}) => {
     document.getElementById('borelog-modal').classList.remove('hidden');
     const modalContent = document.querySelector('#borelog-modal .approval-modal-content');
     // if (modalContent) modalContent.style.overflowY = 'hidden';
@@ -1597,7 +1597,8 @@ window.openBorelogVisualizer = async (f_file, options) => {
         if (f_file.startsWith('/') || f_file.startsWith('http://') || f_file.startsWith('https://')) {
             fetchPath = f_file;
         } else {
-            fetchPath = options.isAwaitingBorelog ? `${API_BASE_URL.replace("/api", "")}/staged-borelogs/${f_file}` : `${API_BASE_URL.replace("/api", "")}/borelogs/${f_file}`;
+            const isAwaiting = options && options.isAwaitingBorelog;
+            fetchPath = isAwaiting ? `${API_BASE_URL.replace("/api", "")}/staged-borelogs/${f_file}` : `${API_BASE_URL.replace("/api", "")}/borelogs/${f_file}`;
         }
         let res = await fetch(fetchPath);
 
@@ -1611,7 +1612,7 @@ window.openBorelogVisualizer = async (f_file, options) => {
         //     }
         // }
 
-        if (!res.ok) throw new Error("Could not fetch " + f_file);
+        if (!res.ok) throw new Error("Could not fetch " + f_file + " (HTTP " + res.status + ")");
         const data = await res.json();
         const cleanFileName = f_file.split('/').pop();
         const uid = cleanFileName.replace(/\.json$/i, "");
@@ -1648,7 +1649,7 @@ window.openBorelogVisualizer = async (f_file, options) => {
             document.getElementById("borelog-visualizer-container").innerHTML = "<p style='color:red;'>Chart renderer not loaded.</p>";
         }
 
-        if (options.isAwaitingBorelog) {
+        if (options && options.isAwaitingBorelog) {
             const btnContainer = rootNode.querySelector('#visualizer-action-buttons');
             if (btnContainer) {
                 const approveBtn = document.createElement('button');
@@ -1659,7 +1660,7 @@ window.openBorelogVisualizer = async (f_file, options) => {
                 approveBtn.style.background = "transparent";
                 approveBtn.style.color = "#0f832c";
                 approveBtn.style.border = "1px solid #2ca64a";
-                approveBtn.style.boxsizing = "border-box";
+                approveBtn.style.boxSizing = "border-box";
                 // approveBtn.style.border = "1px solid #42eb6c";
                 // approveBtn.style.borderRadius = "0px";
                 // approveBtn.style.fontSize = "12px";
@@ -1668,21 +1669,40 @@ window.openBorelogVisualizer = async (f_file, options) => {
                 // approveBtn.style.transition = "0.2s";
                 approveBtn.style.marginLeft = "23px";
                 approveBtn.onmouseover = () => {
-                approveBtn.style.backgroundColor = '#dff2e4';
-                approveBtn.style.borderColor = '#0f832c';
-                }
+                    approveBtn.style.backgroundColor = '#dff2e4';
+                    approveBtn.style.borderColor = '#0f832c';
+                };
                 approveBtn.onmouseout = () => {
                     approveBtn.style.backgroundColor = 'transparent';
                     approveBtn.style.borderColor = '#43eb6d';
-                }
+                };
                 approveBtn.onclick = (e) => window.handleApproveFromMap(f_file, e);
                 btnContainer.appendChild(approveBtn);
             }
         }
         
     } catch (e) {
-        console.error(e);
-        rootNode.innerHTML = "<p style='color:red;'>Error loading borelog data.</p>";
+        console.error("Error loading borelog data:", e);
+        rootNode.innerHTML = `
+            <div class="borelog-error-container" 
+                 onclick="document.getElementById('borelog-modal').classList.add('hidden')" 
+                 style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; min-height: 320px; padding: 40px 20px; text-align: center; box-sizing: border-box; cursor: pointer; user-select: none;">
+                <div style="width: 58px; height: 58px; border-radius: 50%; background: #fee2e2; display: flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+                    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                </div>
+                <h3 style="margin: 0 0 8px 0; font-size: 19px; font-weight: 700; color: #dc2626;">Error Loading Data</h3>
+                <p style="margin: 0 0 20px 0; font-size: 14px; color: #64748b; max-width: 440px; line-height: 1.5;">
+                    The requested borelog could not be found or contains invalid data.
+                </p>
+                <button type="button" class="blue_button" style="width: auto; padding: 11px 39px; font-weight: 600; cursor: pointer; border-radius: 4px; font-size: 14px;">
+                    ✕ click to close
+                </button>
+            </div>
+        `;
     }
 };
 
