@@ -65,6 +65,31 @@ body {
     width: 100vw;
     z-index: 1;
     background: #e2e8f0;
+    -webkit-user-select: none !important;
+    -moz-user-select: none !important;
+    -ms-user-select: none !important;
+    user-select: none !important;
+    -webkit-user-drag: none;
+}
+
+.leaflet-container {
+    -webkit-user-select: none !important;
+    -moz-user-select: none !important;
+    -ms-user-select: none !important;
+    user-select: none !important;
+    -webkit-user-drag: none;
+}
+
+.leaflet-container.leaflet-dragging,
+.leaflet-container.leaflet-dragging * {
+    cursor: grabbing !important;
+    -webkit-user-select: none !important;
+    user-select: none !important;
+}
+
+.leaflet-container.leaflet-dragging .tooltip {
+    pointer-events: none !important;
+    visibility: hidden !important;
 }
 
 /* Small Header */
@@ -632,7 +657,11 @@ body {
     top: 0;
     left: 0;
     z-index: 1100;
-    pointer-events: auto;
+    pointer-events: none !important;
+    visibility: hidden;
+    opacity: 0;
+    -webkit-user-select: none;
+    user-select: none;
     background: var(--panel-bg);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
@@ -642,12 +671,19 @@ body {
     width: max-content;
     max-width: 320px;
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
-    opacity: 0;
-    transition: opacity 0.15s ease;
+    transition: opacity 0.15s ease, visibility 0.15s ease;
 }
 
 .tooltip.visible {
+    pointer-events: auto !important;
+    visibility: visible;
     opacity: 1;
+}
+
+.tooltip.hidden {
+    display: none !important;
+    pointer-events: none !important;
+    visibility: hidden !important;
 }
 
 .tooltip-header {
@@ -973,7 +1009,10 @@ body {
 #custom-estimator-tooltip {
     position: absolute;
     z-index: 1100;
-    pointer-events: auto;
+    pointer-events: none !important;
+    visibility: hidden;
+    -webkit-user-select: none;
+    user-select: none;
     background: var(--panel-bg);
     backdrop-filter: blur(12px);
     border: 1px solid var(--panel-border);
@@ -983,7 +1022,13 @@ body {
     max-width: 320px;
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
     opacity: 0;
-    transition: opacity 0.15s ease;
+    transition: opacity 0.15s ease, visibility 0.15s ease;
+}
+
+#custom-estimator-tooltip.visible {
+    pointer-events: auto !important;
+    visibility: visible;
+    opacity: 1;
 }
 
 /* Custom Estimator Tooltip */

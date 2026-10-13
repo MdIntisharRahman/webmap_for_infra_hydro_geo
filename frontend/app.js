@@ -485,10 +485,26 @@ tooltip.addEventListener("mouseenter", () => {
 tooltip.addEventListener("mouseleave", () => {
     if (!window.featureTooltipLocked) {
         tooltip.classList.remove("visible");
+        tooltip.classList.add("hidden");
+        tooltip.style.transform = "translate3d(-9999px, -9999px, 0)";
     }
 });
 L.DomEvent.disableClickPropagation(tooltip);
 L.DomEvent.disableScrollPropagation(tooltip);
+
+// Ensure tooltip starts hidden off-screen to avoid ghost text hit-testing
+tooltip.classList.add("hidden");
+tooltip.style.transform = "translate3d(-9999px, -9999px, 0)";
+
+// Dismiss unlocked hover tooltip immediately when map pan begins
+map.on("dragstart", () => {
+    if (!window.featureTooltipLocked) {
+        if (window.tooltipHideTimeout) clearTimeout(window.tooltipHideTimeout);
+        tooltip.classList.remove("visible");
+        tooltip.classList.add("hidden");
+        tooltip.style.transform = "translate3d(-9999px, -9999px, 0)";
+    }
+});
 
 window.featureTooltipLocked = false;
 window.activeFeatureLayer = null;
@@ -518,6 +534,8 @@ map.on("click", (e) => {
     if (window.featureTooltipLocked) {
         window.featureTooltipLocked = false;
         tooltip.classList.remove("visible");
+        tooltip.classList.add("hidden");
+        tooltip.style.transform = "translate3d(-9999px, -9999px, 0)";
         if (window.activeFeatureLayer && window.activeFeatureLayer.resetStyleFunc) {
             window.activeFeatureLayer.resetStyleFunc();
         }
@@ -1162,7 +1180,10 @@ async function fetchAndRenderLayers() {
                                     if (tooltipLayer) tooltipLayer.textContent = layerInfo.name;
                                     if (tooltipRef) tooltipRef.style.display = "none";
                                     renderTooltipProps(props, displayKeys, layerInfo);
-                                    if (tooltip) tooltip.classList.add("visible");
+                                    if (tooltip) {
+                                        tooltip.classList.remove("hidden");
+                                        tooltip.classList.add("visible");
+                                    }
                                 };
                                 layer.on({
                                     click: (e) => {
@@ -1197,7 +1218,11 @@ async function fetchAndRenderLayers() {
                                         window.tooltipHideTimeout = setTimeout(() => {
                                             if (!window.featureTooltipLocked) {
                                                 const tooltip = document.getElementById("tooltip");
-                                                if (tooltip) tooltip.classList.remove("visible");
+                                                if (tooltip) {
+                                                    tooltip.classList.remove("visible");
+                                                    tooltip.classList.add("hidden");
+                                                    tooltip.style.transform = "translate3d(-9999px, -9999px, 0)";
+                                                }
                                                 window.activeFeatureLayer = null;
                                             }
                                         }, 250);
