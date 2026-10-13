@@ -429,6 +429,11 @@
             transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
             z-index: 9999;
             border: 1px solid rgba(255, 255, 255, 0.1);
+            max-width: 550px;
+            max-height: 80vh;
+            overflow-y: auto;
+            text-align: left;
+            line-height: 1.5;
         }
 
         #status-toast.visible {
@@ -795,26 +800,26 @@
                             placeholder="Client Name"></div>
                     <div class="form-group"><label>Project</label><input type="text" id="project"
                             placeholder="Project Name"></div>
-                    <div class="form-group"><label>Location Name</label><input type="text" id="location"
+                    <div class="form-group"><label>Location Name</label><input required aria-required="true" type="text" id="location"
                             placeholder="e.g. Modon"></div>
 
-                    <div class="form-group"><label>Engineering Team</label><input type="text" id="engineering_team" placeholder="e.g. FSA Engineering"></div>
+                    <div class="form-group"><label>Engineering Team</label><input required aria-required="true" type="text" id="engineering_team" placeholder="e.g. FSA Engineering"></div>
                     <div class="form-group"><label>Supervisor</label><input type="text" id="supervisor"></div>
                     <div class="form-group"><label>Drill Rig</label><input type="text" id="drill_rig"
                             placeholder="Hydraulic Rotary Drilling"></div>
 
-                    <div class="form-group"><label>Date of Starting the Boring</label><input type="date"
+                    <div class="form-group"><label>Date of Starting the Boring</label><input required aria-required="true" type="date"
                             id="date_of_starting_boring"></div>
                     <div class="form-group"><label>Date of Ending the Boring</label><input type="date"
                             id="date_of_ending_boring"></div>
                     <div class="form-group"><label>Reduced Level (RL, m)</label><input required aria-required="true"
                             type="number" step="0.00001" max="99999.99999" min="-99999.99999" id="rl_m"></div>
                     <div class="form-group"><label>Total Depth (m)</label><input required aria-required="true"
-                            type="number" step="0.01" id="depth_m">
+                            type="number" step="0.01" min="0.01" id="depth_m">
                     </div>
 
                     <div class="form-group"><label>Water Table Depth (m)</label><input required aria-required="true"
-                            type="number" step="0.01" id="water_table_m"></div>
+                            type="number" step="0.01" min="0" id="water_table_m"></div>
                     <div class="form-group"><label>TBM No.</label><input type="text" id="tbm_no"></div>
                 </div>
             </div>
