@@ -52,15 +52,33 @@ window.exportBorelogToXLSX = function(feature, uid) {
     XLSX.utils.book_append_sheet(wb, ws2, "SPT_Records");
   }
 
-  // TAB 2: Atterberg Limits
+  // TAB 2: Atterberg Limits & Specific Gravity
   if (properties.atterberg_test_data && properties.atterberg_test_data.length > 0) {
-    const atterbergData = properties.atterberg_test_data.map(test => ({
-      "Depth (m)": test.depth_m,
-      "Soil Class": getStratumAtDepth(test.depth_m),
-      "Liquid Limit (LL)": test.wl,
-      "Plastic Limit (PL)": test.wp,
-      "Plasticity Index (PI)": test.ip
-    }));
+    const atterbergData = properties.atterberg_test_data.map(test => {
+      const ll = test.ll !== undefined ? test.ll : (test.liquid_limit !== undefined ? test.liquid_limit : test.wl);
+      const pl = test.pl !== undefined ? test.pl : (test.plastic_limit !== undefined ? test.plastic_limit : test.wp);
+      const wc = test.wc !== undefined ? test.wc : test.water_content;
+      let pi = test.pi !== undefined ? test.pi : (test.ip !== undefined ? test.ip : test.plasticity_index);
+      if (pi === undefined && ll !== undefined && pl !== undefined && !isNaN(parseFloat(ll)) && !isNaN(parseFloat(pl))) {
+        pi = (parseFloat(ll) - parseFloat(pl)).toFixed(2);
+      }
+      let li = test.li !== undefined ? test.li : test.liquidity_index;
+      if (li === undefined && wc !== undefined && pl !== undefined && pi && !isNaN(parseFloat(wc)) && !isNaN(parseFloat(pl)) && parseFloat(pi) !== 0) {
+        li = ((parseFloat(wc) - parseFloat(pl)) / parseFloat(pi)).toFixed(3);
+      }
+      const gr = test.gr !== undefined ? test.gr : (test.g !== undefined ? test.g : (test.specific_gravity !== undefined ? test.specific_gravity : test.G));
+      
+      return {
+        "Depth (m)": test.depth_m,
+        "Soil Class": getStratumAtDepth(test.depth_m),
+        "Liquid Limit (LL, %)": ll,
+        "Plastic Limit (PL, %)": pl,
+        "Plasticity Index (PI)": pi,
+        "Water Content (w_c, %)": wc,
+        "Liquidity Index (LI)": li,
+        "Specific Gravity (G)": gr
+      };
+    });
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(atterbergData), "Atterberg_Tests");
   }
 

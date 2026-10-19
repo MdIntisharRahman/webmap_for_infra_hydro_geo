@@ -2030,6 +2030,11 @@ body {
 .management-btn {
     padding: 10px;
     margin-bottom: 7px;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.management-btn:hover {
+    transform: translateY(-2px);
 }
 
 /* Add new class for the header close button */
@@ -2096,58 +2101,72 @@ body {
 
 .blue_button {
     background: var(--accent-blue);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .blue_button:hover {
     background: #33b3f9;
+    box-shadow: 0 0 16px rgba(56, 189, 248, 0.55);
 }
 
 .violet_button {
     background: var(--accent-violet);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .violet_button:hover {
     background: var(--accent-violet-dim);
+    box-shadow: 0 0 16px rgba(168, 85, 247, 0.55);
 }
 
 .magenta_button {
     background: var(--accent-magenta);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .magenta_button:hover {
     background: var(--accent-magenta-dim);
+    box-shadow: 0 0 16px rgba(236, 72, 153, 0.55);
 }
 
 .slateblue_button {
     background: var(--accent-slateblue);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .slateblue_button:hover {
     background: var(--accent-slateblue-dim);
+    box-shadow: 0 0 16px rgba(99, 102, 241, 0.55);
 }
 
 .orange_button {
     background: var(--accent-orange);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .orange_button:hover {
     background: var(--accent-orange-dim);
+    box-shadow: 0 0 16px rgba(249, 115, 22, 0.55);
 }
 
 .green_button {
     background: var(--accent-green);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .green_button:hover {
     background: var(--accent-green-dim);
+    box-shadow: 0 0 16px rgba(34, 197, 94, 0.55);
 }
 
 .teal_button {
     background: var(--accent-teal);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .teal_button:hover {
     background: var(--accent-teal-dim);
+    box-shadow: 0 0 16px rgba(20, 184, 166, 0.55);
 }
 
 .blue_button:disabled,
