@@ -1,0 +1,294 @@
+{
+  "type": "Feature",
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      22.598972,
+      90.324972
+    ]
+  },
+  "properties": {
+    "borelog_name": "Berakatthi-Bridge-BH-2-FeX98Bjur56tF8Q",
+    "client": "Bridge Management Wing, Roads and Highways Department (RHD)",
+    "project": "Construction of Bridge at 01+380 Km on z-8047",
+    "location": "Bakerkatthi-Nalchitthi Road, Nalchitthi Upazilla, Jhalokathi",
+    "engineering_team": "Geotest Engineering & Trading Corporation",
+    "drilling_team": "Geotest Engineering & Trading Corporation",
+    "supervisor": "",
+    "drill_rig": "Auto Trip Hammer, Wash Boring",
+    "tbm_no": "01 (3.172 mPWD)",
+    "date_of_starting_boring": "2025-07-03",
+    "date_of_ending_boring": "2025-09-03",
+    "rl_m": 3.197,
+    "depth_m": 48,
+    "water_table_m": 0.8,
+    "comments": "The RL at the TBM #01 (225008.049E,2501611.697N) is 3.172 m (PWD). <br>\nThe stratigraphy and grain size analysis show that the soil layers are mainly constituent of silt and clay <br>\n|--------------|--------------------|\n|  Depth (m)      |  % of Silt and Clay   |\n|--------------|--------------------|\n|       4                |    98                            |\n|    14                 |    26                            |\n|    28                 |    38                            |\n|    37                 |    88                            |\n\n<br>\n<br>\nWater Content at 14 m and 28 m are 23.9 and 20.9 respectively.\n<br>\n<br>\nDirect Shear Test Result at 4 m is 12 kPa. \n<br>\nFriction angle at 14 m and 28 m are 29\u00b0 and 38\u00b0 respectively.\n<br>\n\n#### Soil Classification: ASTM D2487 & D2488.\n\nAdditional Test results found from the sub-soil investigation report are either incomplete or vague.",
+    "strata": [
+      {
+        "top_m": 0,
+        "bottom_m": 13,
+        "class": "ML",
+        "description": "Silt"
+      },
+      {
+        "top_m": 13,
+        "bottom_m": 33,
+        "class": "SM",
+        "description": "Silty Sand"
+      },
+      {
+        "top_m": 33,
+        "bottom_m": 43,
+        "class": "ML",
+        "description": "Silt"
+      },
+      {
+        "top_m": 43,
+        "bottom_m": 45,
+        "class": "ML",
+        "description": "Sandy Silt"
+      }
+    ],
+    "spt_data": [
+      {
+        "depth_m": 1.5,
+        "blows_0_150": 1,
+        "blows_150_300": 1,
+        "blows_300_450": 1,
+        "n_value": "2"
+      },
+      {
+        "depth_m": 3,
+        "blows_0_150": 1,
+        "blows_150_300": 1,
+        "blows_300_450": 2,
+        "n_value": "3"
+      },
+      {
+        "depth_m": 4.5,
+        "blows_0_150": 1,
+        "blows_150_300": 1,
+        "blows_300_450": 2,
+        "n_value": "3"
+      },
+      {
+        "depth_m": 6,
+        "blows_0_150": 0,
+        "blows_150_300": 0,
+        "blows_300_450": 1,
+        "n_value": "1"
+      },
+      {
+        "depth_m": 7.5,
+        "blows_0_150": 0,
+        "blows_150_300": 1,
+        "blows_300_450": 1,
+        "n_value": "2"
+      },
+      {
+        "depth_m": 9,
+        "blows_0_150": 1,
+        "blows_150_300": 2,
+        "blows_300_450": 3,
+        "n_value": "5"
+      },
+      {
+        "depth_m": 10.5,
+        "blows_0_150": 1,
+        "blows_150_300": 1,
+        "blows_300_450": 2,
+        "n_value": "3"
+      },
+      {
+        "depth_m": 12,
+        "blows_0_150": 1,
+        "blows_150_300": 2,
+        "blows_300_450": 2,
+        "n_value": "4"
+      },
+      {
+        "depth_m": 13.5,
+        "blows_0_150": 3,
+        "blows_150_300": 4,
+        "blows_300_450": 7,
+        "n_value": "11"
+      },
+      {
+        "depth_m": 15,
+        "blows_0_150": 7,
+        "blows_150_300": 10,
+        "blows_300_450": 12,
+        "n_value": "22"
+      },
+      {
+        "depth_m": 16.5,
+        "blows_0_150": 4,
+        "blows_150_300": 5,
+        "blows_300_450": 9,
+        "n_value": "14"
+      },
+      {
+        "depth_m": 18,
+        "blows_0_150": 3,
+        "blows_150_300": 8,
+        "blows_300_450": 12,
+        "n_value": "20"
+      },
+      {
+        "depth_m": 19.5,
+        "blows_0_150": 3,
+        "blows_150_300": 7,
+        "blows_300_450": 10,
+        "n_value": "17"
+      },
+      {
+        "depth_m": 21,
+        "blows_0_150": 6,
+        "blows_150_300": 15,
+        "blows_300_450": 20,
+        "n_value": "35"
+      },
+      {
+        "depth_m": 22.5,
+        "blows_0_150": 6,
+        "blows_150_300": 17,
+        "blows_300_450": 23,
+        "n_value": "40"
+      },
+      {
+        "depth_m": 24,
+        "blows_0_150": 14,
+        "blows_150_300": 25,
+        "blows_300_450": 32,
+        "n_value": "57"
+      },
+      {
+        "depth_m": 25.5,
+        "blows_0_150": 14,
+        "blows_150_300": 25,
+        "blows_300_450": 32,
+        "n_value": "57"
+      },
+      {
+        "depth_m": 27,
+        "blows_0_150": 13,
+        "blows_150_300": 24,
+        "blows_300_450": 29,
+        "n_value": "53"
+      },
+      {
+        "depth_m": 28.5,
+        "blows_0_150": 13,
+        "blows_150_300": 16,
+        "blows_300_450": 15,
+        "n_value": "31"
+      },
+      {
+        "depth_m": 30,
+        "blows_0_150": 12,
+        "blows_150_300": 14,
+        "blows_300_450": 19,
+        "n_value": "33"
+      },
+      {
+        "depth_m": 31.5,
+        "blows_0_150": 13,
+        "blows_150_300": 20,
+        "blows_300_450": 24,
+        "n_value": "44"
+      },
+      {
+        "depth_m": 33,
+        "blows_0_150": 8,
+        "blows_150_300": 12,
+        "blows_300_450": 16,
+        "n_value": "28"
+      },
+      {
+        "depth_m": 34.5,
+        "blows_0_150": 7,
+        "blows_150_300": 9,
+        "blows_300_450": 13,
+        "n_value": "22"
+      },
+      {
+        "depth_m": 36,
+        "blows_0_150": 3,
+        "blows_150_300": 10,
+        "blows_300_450": 19,
+        "n_value": "29"
+      },
+      {
+        "depth_m": 37.5,
+        "blows_0_150": 4,
+        "blows_150_300": 7,
+        "blows_300_450": 8,
+        "n_value": "15"
+      },
+      {
+        "depth_m": 39,
+        "blows_0_150": 3,
+        "blows_150_300": 6,
+        "blows_300_450": 11,
+        "n_value": "17"
+      },
+      {
+        "depth_m": 40.5,
+        "blows_0_150": 4,
+        "blows_150_300": 9,
+        "blows_300_450": 11,
+        "n_value": "20"
+      },
+      {
+        "depth_m": 42,
+        "blows_0_150": 7,
+        "blows_150_300": 9,
+        "blows_300_450": 10,
+        "n_value": "19"
+      },
+      {
+        "depth_m": 43.5,
+        "blows_0_150": 5,
+        "blows_150_300": 9,
+        "blows_300_450": 13,
+        "n_value": "22"
+      },
+      {
+        "depth_m": 45,
+        "blows_0_150": 20,
+        "blows_150_300": 37,
+        "blows_300_450": 50,
+        "n_value": "87/125 mm"
+      },
+      {
+        "depth_m": 46.5,
+        "blows_0_150": 23,
+        "blows_150_300": 34,
+        "blows_300_450": 43,
+        "n_value": "77/125 mm"
+      },
+      {
+        "depth_m": 48,
+        "blows_0_150": 32,
+        "blows_150_300": 50,
+        "blows_300_450": 18,
+        "n_value": "68/75 mm"
+      }
+    ],
+    "atterberg_test_data": [
+      {
+        "depth_m": 4,
+        "wc": 35.5,
+        "ll": 44,
+        "pl": 29
+      }
+    ],
+    "grain_size_analysis_data": [],
+    "cpt_data": [],
+    "direct_shear_test_data": [],
+    "consolidation_test_data": [],
+    "triaxial_test_data": [],
+    "borelog_id": "18102026D2GbHETY",
+    "uid": "Berakatthi-Bridge-BH-2-FeX98Bjur56tF8Q-18102026-D2GbHETY"
+  }
+}

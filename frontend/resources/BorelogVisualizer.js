@@ -232,7 +232,7 @@ window.renderBorelogChart = function(containerId, geoJsonData) {
     const PIXELS_PER_METER = 60;
     const totalHeight = maxDepth * PIXELS_PER_METER;
     
-    const baseWidths = { depth: 60, stratum: 80, desc: 250, sptText: 140, sptGraph: 215, testsGraph: 300, grainGraph: 150, cptGraph: 600 };
+    const baseWidths = { depth: 60, stratum: 80, desc: 250, sptText: 140, sptGraph: 215, testsGraph: 400, grainGraph: 150, cptGraph: 600 };
     if (strata.length === 0) { baseWidths.stratum = 0; baseWidths.desc = 0; }
     if (sptData.length === 0) { baseWidths.sptText = 0; baseWidths.sptGraph = 0; }
     if (atterberg.length === 0) { baseWidths.testsGraph = 0; }
@@ -317,7 +317,14 @@ window.renderBorelogChart = function(containerId, geoJsonData) {
     stickyContainer.style.top = "0";
     stickyContainer.style.zIndex = "10";
     stickyContainer.style.backgroundColor = "#ffffff";
-    stickyContainer.style.boxShadow = "0 2px 8px rgba(0,0,0,0.1)";
+    stickyContainer.style.boxShadow = "0 4px 14px rgba(14, 165, 233, 0.08), 0 2px 8px rgba(0,0,0,0.06)";
+
+    const glowBar = document.createElement('div');
+    glowBar.style.height = "3px";
+    glowBar.style.width = "100%";
+    glowBar.style.background = "linear-gradient(90deg, #0ea5e9 0%, #6366f1 35%, #14b8a6 70%, #0284c7 100%)";
+    glowBar.style.boxShadow = "0 0 10px rgba(14, 165, 233, 0.5)";
+    // stickyContainer.appendChild(glowBar);
     stickyContainer.style.display = "flex";
     stickyContainer.style.flexDirection = "column";
     stickyContainer.style.alignSelf = "flex-start"; // Fix for sticky in flexbox
@@ -366,31 +373,32 @@ window.renderBorelogChart = function(containerId, geoJsonData) {
         if (i === 5 && atterberg.length > 0) {
             d.style.padding = "0";
             d.innerHTML = `
-                <div style="border-bottom: 1px solid #e4e4e7; padding: 4px;">Atterberg Limits</div>
+                <div style="border-bottom: 1px solid #e4e4e7; padding: 4px; font-weight: 600; color: #1e293b;">Atterberg Limits & Specific Gravity</div>
                 <div style="display: flex;">
-                    <div style="flex: 1; padding: 4px; border-right: 1px solid #e4e4e7;">LL-PL (%)</div>
-                    <div style="flex: 1; padding: 4px; border-right: 1px solid #e4e4e7;">Water Content (%)</div>
-                    <div style="flex: 1; padding: 4px;">Liquidity Index</div>
+                    <div style="flex: 1; padding: 4px; border-right: 1px solid #e4e4e7; font-size: 11px; font-weight: 600;"><span style="color: #9400d3;">PL(%)</span>, <span style="color: #ff1493;">LL(%)</span></div>
+                    <div style="flex: 1; padding: 4px; border-right: 1px solid #e4e4e7; font-size: 11px; font-weight: 600; color: #0284c7;">Water Content (%)</div>
+                    <div style="flex: 1; padding: 4px; border-right: 1px solid #e4e4e7; font-size: 11px; font-weight: 600; color: #0284c7;">Liquidity Index</div>
+                    <div style="flex: 1; padding: 4px; font-size: 11px; font-weight: 600; color: #0d9488;">Specific Gravity (G)</div>
                 </div>
             `;
         } else if (i === 6 && grainSize.length > 0) {
             d.style.padding = "0";
             d.innerHTML = `
-                <div style="border-bottom: 1px solid #e4e4e7; padding: 4px;">Grain Size Analysis</div>
+                <div style="border-bottom: 1px solid #e4e4e7; padding: 4px; font-weight: 600; color: #1e293b;">Grain Size Analysis</div>
                 <div style="display: flex;">
-                    <div style="flex: 1; padding: 4px; border-right: 1px solid #e4e4e7;">Sand (%)</div>
-                    <div style="flex: 1; padding: 4px; border-right: 1px solid #e4e4e7;">Silt (%)</div>
-                    <div style="flex: 1; padding: 4px;">Clay (%)</div>
+                    <div style="flex: 1; padding: 4px; border-right: 1px solid #e4e4e7; font-size: 11px; font-weight: 600; color: #ff8d40;">Sand (%)</div>
+                    <div style="flex: 1; padding: 4px; border-right: 1px solid #e4e4e7; font-size: 11px; font-weight: 600; color: #ff4053;">Silt (%)</div>
+                    <div style="flex: 1; padding: 4px; font-size: 11px; font-weight: 600; color: #6830eb;">Clay (%)</div>
                 </div>
             `;
         } else if (i === 7 && cpt.length > 0) {
             d.style.padding = "0";
             d.innerHTML = `
-                <div style="border-bottom: 1px solid #e4e4e7; padding: 4px;">CPT Test Results</div>
+                <div style="border-bottom: 1px solid #e4e4e7; padding: 4px; font-weight: 600; color: #1e293b;">CPT Test Results</div>
                 <div style="display: flex;">
-                    <div style="flex: 1; padding: 4px; border-right: 1px solid #e4e4e7;">qc (MPa)</div>
-                    <div style="flex: 1; padding: 4px; border-right: 1px solid #e4e4e7;">Rf (%)</div>
-                    <div style="flex: 1; padding: 4px;">u2 (kPa)</div>
+                    <div style="flex: 1; padding: 4px; border-right: 1px solid #e4e4e7; font-size: 11px; font-weight: 600; color: #8b5cf6;">qc (MPa)</div>
+                    <div style="flex: 1; padding: 4px; border-right: 1px solid #e4e4e7; font-size: 11px; font-weight: 600; color: #ec4899;">Rf (%)</div>
+                    <div style="flex: 1; padding: 4px; font-size: 11px; font-weight: 600; color: #06b6d4;">u2 (kPa)</div>
                 </div>
             `;
         } else {
@@ -636,9 +644,11 @@ window.renderBorelogChart = function(containerId, geoJsonData) {
         const llplCol = createSubcol();
         const wcCol = createSubcol();
         const liCol = createSubcol();
-        liCol.wrapper.style.borderRight = "none";
+        const gCol = createSubcol();
+        liCol.wrapper.style.borderRight = "1px solid #e4e4e7";
+        gCol.wrapper.style.borderRight = "none";
         
-        // Col width is exactly 100px since testsGraph is 300px and we use flex: 1
+        // Col width is exactly 100px since testsGraph is 400px and we use flex: 1 (4 subcolumns = 100px each)
         // So value maps from 0..100 directly to 0..100px.
 
         for(let val=0; val<=100; val+=25) {
@@ -727,6 +737,35 @@ window.renderBorelogChart = function(containerId, geoJsonData) {
                         liCol.svg.appendChild(labelLI);
                     }
                 }
+            }
+            
+            const gVal = test.gr !== undefined ? test.gr : (test.g !== undefined ? test.g : (test.specific_gravity !== undefined ? test.specific_gravity : test.G));
+            const g = parseFloat(gVal);
+            if (!isNaN(g)) {
+                const gFormatted = (g % 1 === 0) ? g.toFixed(1) : (g.toString().split('.')[1]?.length > 2 ? g.toFixed(3) : g.toFixed(2));
+                
+                const badge = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+                badge.setAttribute("x", "calc(50% - 24px)");
+                badge.setAttribute("y", y - 10);
+                badge.setAttribute("width", "48");
+                badge.setAttribute("height", "20");
+                badge.setAttribute("rx", "10");
+                badge.setAttribute("fill", "#f0fdfa");
+                badge.setAttribute("stroke", "#14b8a6");
+                badge.setAttribute("stroke-width", "1.2");
+                badge.style.filter = "drop-shadow(0 2px 5px rgba(20, 184, 166, 0.35))";
+                gCol.svg.appendChild(badge);
+
+                const labelG = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                labelG.setAttribute("x", "50%");
+                labelG.setAttribute("y", y + 4);
+                labelG.setAttribute("font-size", "11px");
+                labelG.setAttribute("font-weight", "600");
+                labelG.setAttribute("font-family", "'JetBrains Mono', Consolas, monospace");
+                labelG.setAttribute("fill", "#0f766e");
+                labelG.setAttribute("text-anchor", "middle");
+                labelG.textContent = gFormatted;
+                gCol.svg.appendChild(labelG);
             }
             
             if (!isNaN(ll)) {
@@ -825,6 +864,7 @@ window.renderBorelogChart = function(containerId, geoJsonData) {
         cols[5].appendChild(llplCol.wrapper);
         cols[5].appendChild(wcCol.wrapper);
         cols[5].appendChild(liCol.wrapper);
+        cols[5].appendChild(gCol.wrapper);
     }
     
     if (grainSize.length > 0) {
@@ -1119,7 +1159,7 @@ window.downloadBorelogSVG = function(geoJsonData, uid) {
     
     const PIXELS_PER_METER = 60;
 
-    const baseWidths = { depth: 60, stratum: 80, desc: 250, sptText: 140, sptGraph: 215, testsGraph: 300, grainGraph: 150, cptGraph: 600 };
+    const baseWidths = { depth: 60, stratum: 80, desc: 250, sptText: 140, sptGraph: 215, testsGraph: 400, grainGraph: 150, cptGraph: 600 };
     if (strata.length === 0) { baseWidths.stratum = 0; baseWidths.desc = 0; }
     if (sptData.length === 0) { baseWidths.sptText = 0; baseWidths.sptGraph = 0; }
     if (atterberg.length === 0) { baseWidths.testsGraph = 0; }
@@ -1221,6 +1261,9 @@ window.downloadBorelogSVG = function(geoJsonData, uid) {
     
     let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${totalWidth}" height="${totalHeight}" style="background: white; font-family: 'Outfit', sans-serif;">
 <defs>
+    <filter id="glow-badge" x="-20%" y="-20%" width="140%" height="140%">
+        <feDropShadow dx="0" dy="1" stdDeviation="1.5" flood-color="#14b8a6" flood-opacity="0.35" />
+    </filter>
     <style>
 
         @font-face {
@@ -1272,29 +1315,31 @@ window.downloadBorelogSVG = function(geoJsonData, uid) {
 
         if (i === 5 && atterberg.length > 0) {
                 svg += `<line x1="${colOffsets[i]}" y1="${metaHeight + 20}" x2="${colOffsets[i+1]}" y2="${metaHeight + 20}" stroke="#e4e4e7" stroke-width="1" />`;
-                svg += `<text class="meta-text" x="${cx}" y="${metaHeight + 14}" font-size="12px" font-weight="bold" fill="#3f3f46" text-anchor="middle">Atterberg Limits</text>`;
+                svg += `<text class="meta-text" x="${cx}" y="${metaHeight + 14}" font-size="12px" font-weight="bold" fill="#3f3f46" text-anchor="middle">Atterberg Limits &amp; Specific Gravity</text>`;
                 svg += `<line x1="${colOffsets[i] + 100}" y1="${metaHeight + 20}" x2="${colOffsets[i] + 100}" y2="${metaHeight + 40}" stroke="#e4e4e7" stroke-width="1" />`;
                 svg += `<line x1="${colOffsets[i] + 200}" y1="${metaHeight + 20}" x2="${colOffsets[i] + 200}" y2="${metaHeight + 40}" stroke="#e4e4e7" stroke-width="1" />`;
-                svg += `<text class="meta-text" x="${colOffsets[i] + 50}" y="${metaHeight + 34}" font-size="11px" fill="#3f3f46" text-anchor="middle">PL(%), LL(%)</text>`;
-                svg += `<text class="meta-text" x="${colOffsets[i] + 150}" y="${metaHeight + 34}" font-size="11px" fill="#3f3f46" text-anchor="middle">Water Content (%)</text>`;
-                svg += `<text class="meta-text" x="${colOffsets[i] + 250}" y="${metaHeight + 34}" font-size="11px" fill="#3f3f46" text-anchor="middle">Liquidity Index</text>`;
+                svg += `<line x1="${colOffsets[i] + 300}" y1="${metaHeight + 20}" x2="${colOffsets[i] + 300}" y2="${metaHeight + 40}" stroke="#e4e4e7" stroke-width="1" />`;
+                svg += `<text class="meta-text" x="${colOffsets[i] + 50}" y="${metaHeight + 34}" font-size="11px" font-weight="600" text-anchor="middle"><tspan fill="#9400d3">PL(%)</tspan><tspan fill="#64748b">, </tspan><tspan fill="#ff1493">LL(%)</tspan></text>`;
+                svg += `<text class="meta-text" x="${colOffsets[i] + 150}" y="${metaHeight + 34}" font-size="11px" font-weight="600" fill="#0284c7" text-anchor="middle">Water Content (%)</text>`;
+                svg += `<text class="meta-text" x="${colOffsets[i] + 250}" y="${metaHeight + 34}" font-size="11px" font-weight="600" fill="#0284c7" text-anchor="middle">Liquidity Index</text>`;
+                svg += `<text class="meta-text" x="${colOffsets[i] + 350}" y="${metaHeight + 34}" font-size="11px" font-weight="600" fill="#0d9488" text-anchor="middle">Specific Gravity (G)</text>`;
             } else if (i === 6 && grainSize.length > 0) {
                 svg += `<line x1="${colOffsets[i]}" y1="${metaHeight + 20}" x2="${colOffsets[i+1]}" y2="${metaHeight + 20}" stroke="#e4e4e7" stroke-width="1" />`;
                 svg += `<text class="meta-text" x="${cx}" y="${metaHeight + 14}" font-size="12px" font-weight="bold" fill="#3f3f46" text-anchor="middle">Grain Size Analysis</text>`;
                 svg += `<line x1="${colOffsets[i] + 50}" y1="${metaHeight + 20}" x2="${colOffsets[i] + 50}" y2="${metaHeight + 40}" stroke="#e4e4e7" stroke-width="1" />`;
                 svg += `<line x1="${colOffsets[i] + 100}" y1="${metaHeight + 20}" x2="${colOffsets[i] + 100}" y2="${metaHeight + 40}" stroke="#e4e4e7" stroke-width="1" />`;
-                svg += `<text class="meta-text" x="${colOffsets[i] + 25}" y="${metaHeight + 34}" font-size="11px" fill="#3f3f46" text-anchor="middle">Sand (%)</text>`;
-                svg += `<text class="meta-text" x="${colOffsets[i] + 75}" y="${metaHeight + 34}" font-size="11px" fill="#3f3f46" text-anchor="middle">Silt (%)</text>`;
-                svg += `<text class="meta-text" x="${colOffsets[i] + 125}" y="${metaHeight + 34}" font-size="11px" fill="#3f3f46" text-anchor="middle">Clay (%)</text>`;
+                svg += `<text class="meta-text" x="${colOffsets[i] + 25}" y="${metaHeight + 34}" font-size="11px" font-weight="600" fill="#ff8d40" text-anchor="middle">Sand (%)</text>`;
+                svg += `<text class="meta-text" x="${colOffsets[i] + 75}" y="${metaHeight + 34}" font-size="11px" font-weight="600" fill="#ff4053" text-anchor="middle">Silt (%)</text>`;
+                svg += `<text class="meta-text" x="${colOffsets[i] + 125}" y="${metaHeight + 34}" font-size="11px" font-weight="600" fill="#6830eb" text-anchor="middle">Clay (%)</text>`;
             } else if (i === 7 && cpt.length > 0) {
                 // Draw 3 sub-headers for CPT in SVG
                 svg += `<line x1="${colOffsets[i]}" y1="${metaHeight + 20}" x2="${colOffsets[i+1]}" y2="${metaHeight + 20}" stroke="#e4e4e7" stroke-width="1" />`;
                 svg += `<text class="meta-text" x="${cx}" y="${metaHeight + 14}" font-size="12px" font-weight="bold" fill="#3f3f46" text-anchor="middle">CPT Test Results</text>`;
                 svg += `<line x1="${colOffsets[i] + 200}" y1="${metaHeight + 20}" x2="${colOffsets[i] + 200}" y2="${metaHeight + 40}" stroke="#e4e4e7" stroke-width="1" />`;
                 svg += `<line x1="${colOffsets[i] + 400}" y1="${metaHeight + 20}" x2="${colOffsets[i] + 400}" y2="${metaHeight + 40}" stroke="#e4e4e7" stroke-width="1" />`;
-                svg += `<text class="meta-text" x="${colOffsets[i] + 100}" y="${metaHeight + 34}" font-size="11px" fill="#3f3f46" text-anchor="middle">qc (MPa)</text>`;
-                svg += `<text class="meta-text" x="${colOffsets[i] + 300}" y="${metaHeight + 34}" font-size="11px" fill="#3f3f46" text-anchor="middle">Rf (%)</text>`;
-                svg += `<text class="meta-text" x="${colOffsets[i] + 500}" y="${metaHeight + 34}" font-size="11px" fill="#3f3f46" text-anchor="middle">u2 (kPa)</text>`;
+                svg += `<text class="meta-text" x="${colOffsets[i] + 100}" y="${metaHeight + 34}" font-size="11px" font-weight="600" fill="#8b5cf6" text-anchor="middle">qc (MPa)</text>`;
+                svg += `<text class="meta-text" x="${colOffsets[i] + 300}" y="${metaHeight + 34}" font-size="11px" font-weight="600" fill="#ec4899" text-anchor="middle">Rf (%)</text>`;
+                svg += `<text class="meta-text" x="${colOffsets[i] + 500}" y="${metaHeight + 34}" font-size="11px" font-weight="600" fill="#06b6d4" text-anchor="middle">u2 (kPa)</text>`;
             } else {
                 svg += `<text class="meta-text" x="${cx}" y="${metaHeight + 25}" font-size="13px" font-weight="bold" fill="#3f3f46" text-anchor="middle">${headers[i]}</text>`;
             }
@@ -1375,6 +1420,11 @@ window.downloadBorelogSVG = function(geoJsonData, uid) {
         svg += `<text x="${textX}" y="${headerHeight + 12}" class="plot-data" font-size="10px" fill="#a1a1aa" text-anchor="${anchor}">${val}</text>`;
     }
     if (atterberg.length > 0) {
+        svg += `<line x1="${colOffsets[5] + 100}" y1="${headerHeight}" x2="${colOffsets[5] + 100}" y2="${totalHeight - remarksHeight}" stroke="#e4e4e7" stroke-width="1" />`;
+        svg += `<line x1="${colOffsets[5] + 200}" y1="${headerHeight}" x2="${colOffsets[5] + 200}" y2="${totalHeight - remarksHeight}" stroke="#e4e4e7" stroke-width="1" />`;
+        svg += `<line x1="${colOffsets[5] + 300}" y1="${headerHeight}" x2="${colOffsets[5] + 300}" y2="${totalHeight - remarksHeight}" stroke="#e4e4e7" stroke-width="1" />`;
+    }
+    if (atterberg.length > 0) {
         let llPts = [];
         let plPts = [];
         atterberg.forEach(test => {
@@ -1406,6 +1456,15 @@ window.downloadBorelogSVG = function(geoJsonData, uid) {
                 }
             }
             
+            const gVal = test.gr !== undefined ? test.gr : (test.g !== undefined ? test.g : (test.specific_gravity !== undefined ? test.specific_gravity : test.G));
+            const g = parseFloat(gVal);
+            if (!isNaN(g)) {
+                let gx = colOffsets[5] + 350;
+                let gFormatted = (g % 1 === 0) ? g.toFixed(1) : (g.toString().split('.')[1]?.length > 2 ? g.toFixed(3) : g.toFixed(2));
+                svg += `<rect x="${gx - 24}" y="${y - 10}" width="48" height="20" rx="10" fill="#f0fdfa" stroke="#14b8a6" stroke-width="1.2" filter="url(#glow-badge)" />`;
+                svg += `<text x="${gx}" y="${y + 4}" class="plot-data" font-size="11px" font-weight="600" font-family="'JetBrains Mono', Consolas, monospace" fill="#0f766e" text-anchor="middle">${gFormatted}</text>`;
+            }
+            
             if (!isNaN(ll)) {
                 let llVal = Math.min(Math.max(ll, 0), 100);
                 let x = colOffsets[5] + llVal;
@@ -1426,7 +1485,7 @@ window.downloadBorelogSVG = function(geoJsonData, uid) {
                 let plVal = Math.min(Math.max(pl, 0), 100);
                 let x = colOffsets[5] + plVal;
                 plPts.push(`${x},${y}`);
-                svg += `<rect x="${x - 4}" y="${y - 4}" width="8" height="8" fill="#9932cc" />`;
+                svg += `<rect x="${x - 4}" y="${y - 4}" width="8" height="8" fill="#9400d3" />`;
                 
                 let plX = x - 6;
                 let plAnchor = "end";
@@ -1436,7 +1495,7 @@ window.downloadBorelogSVG = function(geoJsonData, uid) {
                     plAnchor = "start";
                     plY = y - 6;
                 }
-                svg += `<text x="${plX}" y="${plY}" class="plot-data" font-size="9px" fill="#9932cc" text-anchor="${plAnchor}">${pl.toFixed(1)}</text>`;
+                svg += `<text x="${plX}" y="${plY}" class="plot-data" font-size="9px" fill="#9400d3" text-anchor="${plAnchor}">${pl.toFixed(1)}</text>`;
             }
             if (!isNaN(ll) && !isNaN(pl)) {
                 let x1 = colOffsets[5] + Math.min(Math.max(ll, 0), 100);
@@ -1445,7 +1504,7 @@ window.downloadBorelogSVG = function(geoJsonData, uid) {
             }
         });
         if (llPts.length > 0) svg += `<polyline points="${llPts.join(" ")}" fill="none" stroke="#ff1493" stroke-width="1" stroke-dasharray="2 2" />`;
-        if (plPts.length > 0) svg += `<polyline points="${plPts.join(" ")}" fill="none" stroke="#9932cc" stroke-width="1" stroke-dasharray="2 2" />`;
+        if (plPts.length > 0) svg += `<polyline points="${plPts.join(" ")}" fill="none" stroke="#9400d3" stroke-width="1" stroke-dasharray="2 2" />`;
     }
     if (grainSize.length > 0) {
         grainSize.forEach(test => {

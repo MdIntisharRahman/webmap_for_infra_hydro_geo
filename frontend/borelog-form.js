@@ -65,9 +65,10 @@ const getRowHTML = (type) => {
         case 'atterberg':
             return `
                 <td data-label="Depth (m)"><input type="number" step="any" class="f-depth" required></td>
-                <td data-label="WC (%)"><input type="number" step="0.01" class="f-wc" required></td>
-                <td data-label="LL (%)"><input type="number" step="0.01" class="f-ll" required></td>
-                <td data-label="PL (%)"><input type="number" step="0.01" class="f-pl" required></td>
+                <td data-label="G"><input type="number" step="0.001" class="f-gr"></td>
+                <td data-label="WC (%)"><input type="number" step="0.01" class="f-wc" ></td>
+                <td data-label="LL (%)"><input type="number" step="0.01" class="f-ll" ></td>
+                <td data-label="PL (%)"><input type="number" step="0.01" class="f-pl" ></td>
                 <td data-label="PI"><input type="number" step="0.001" class="f-pi"></td>
                 <td data-label="LI"><input type="number" step="0.001" class="f-li"></td>
                 <td data-label="Actions" class="action-pill-td">
@@ -143,7 +144,7 @@ const getRowHTML = (type) => {
                         <button type="button" class="del-btn" onclick="deleteRow(this)" title="Delete Row">𐩃</button>
                     </div>
                 </td>
-            `;                              
+            `;
         case 'consolidation':
             return `
                 <td data-label="Depth (m)"><input required type="number" step="any" class="f-depth"></td>
@@ -185,7 +186,7 @@ window.addRow = (tbodyId) => {
             }
         }
     }
-    
+
     // Remove class after animation to clean up DOM
     setTimeout(() => tr.classList.remove('new-row'), 400);
 
@@ -206,7 +207,7 @@ window.insertRowAfter = (btn) => {
     tr.classList.add('new-row');
     tr.innerHTML = getRowHTML(type);
     currentRow.insertAdjacentElement('afterend', tr);
-    
+
     setTimeout(() => tr.classList.remove('new-row'), 400);
 
     if (type === 'strata') {
@@ -413,6 +414,8 @@ function validateGeotechnicalRules(payload) {
         const rowNum = idx + 1;
         const ctx = `Atterberg Limits Row ${rowNum}`;
         checkDepth(row.depth_m, ctx);
+        const gr = row.gr !== undefined ? row.gr : (row.g !== undefined ? row.g : row.specific_gravity);
+        checkNonNegative(gr, "Specific Gravity", ctx);
         checkNonNegative(row.wc, "Water Content", ctx);
         checkNonNegative(row.ll, "Liquid Limit", ctx);
         checkNonNegative(row.pl, "Plastic Limit", ctx);
@@ -420,6 +423,7 @@ function validateGeotechnicalRules(payload) {
         // Liquid Limit strictly greater than Plastic Limit (LL > PL)
         const ll = row.ll;
         const pl = row.pl;
+
         if (ll !== null && ll !== undefined && !isNaN(ll) &&
             pl !== null && pl !== undefined && !isNaN(pl)) {
             if (ll > 0 || pl > 0) {
@@ -557,12 +561,14 @@ function gatherBorelogData() {
                 n_value: row.querySelector('.f-nval').value
             })),
 
-            atterberg_test_data: Array.from(document.querySelectorAll('#atterberg-body tr')).filter(row => row.querySelector('.f-depth').value.trim() !== '').map(row => ({
-                depth_m: parseFloat(row.querySelector('.f-depth').value),
-                wc: parseFloat(row.querySelector('.f-wc').value),
-                ll: parseFloat(row.querySelector('.f-ll').value),
-                pl: parseFloat(row.querySelector('.f-pl').value)
-            })),
+            atterberg_test_data: Array.from(document.querySelectorAll('#atterberg-body tr')).filter(row => row.querySelector('.f-depth').value.trim() !== '').map(row => {
+                const depth_m = parseNum(row.querySelector('.f-depth')?.value);
+                const gr = parseNum(row.querySelector('.f-gr')?.value);
+                const wc = parseNum(row.querySelector('.f-wc')?.value);
+                const ll = parseNum(row.querySelector('.f-ll')?.value);
+                const pl = parseNum(row.querySelector('.f-pl')?.value);
+                return { depth_m, gr, wc, ll, pl };
+            }),
 
             grain_size_analysis_data: Array.from(document.querySelectorAll('#grain_size-body tr')).filter(row => row.querySelector('.f-depth').value.trim() !== '').map(row => ({
                 depth_m: parseFloat(row.querySelector('.f-depth').value),
@@ -609,7 +615,7 @@ function gatherBorelogData() {
     // Run Geotechnical & Integrity Validations
     const errors = validateGeotechnicalRules(payload);
     if (errors.length > 0) {
-        const errorHtml = `<strong> ✘ Geotechnical Validation Failed (${errors.length} issue${errors.length > 1 ? 's' : ''}):</strong><ul style="margin: 6px 0 0 18px; padding: 0; text-align: left;">` + 
+        const errorHtml = `<strong> ✘ Geotechnical Validation Failed (${errors.length} issue${errors.length > 1 ? 's' : ''}):</strong><ul style="margin: 6px 0 0 18px; padding: 0; text-align: left;">` +
             errors.map(err => `<li>${err}</li>`).join('') + `</ul>`;
         const err = new Error(errors.join('\n'));
         err.htmlMessage = errorHtml;
@@ -624,12 +630,12 @@ function gatherBorelogData() {
 function validateFormIgnoringEmptyRows() {
     const form = document.getElementById('borelogForm');
     const emptyInputs = [];
-    
+
     document.querySelectorAll('tbody[data-type]').forEach(tbody => {
         const type = tbody.dataset.type;
         tbody.querySelectorAll('tr').forEach(row => {
             const inputs = Array.from(row.querySelectorAll('input, select'));
-            
+
             let isEmpty = true;
             if (type === 'strata') {
                 // Ignore the auto-filled Top (m) when checking if strata row is completely empty
@@ -644,7 +650,7 @@ function validateFormIgnoringEmptyRows() {
                     return input.value.trim() === '';
                 });
             }
-            
+
             if (isEmpty) {
                 inputs.forEach(input => {
                     if (input.hasAttribute('required')) {
@@ -655,14 +661,14 @@ function validateFormIgnoringEmptyRows() {
             }
         });
     });
-    
+
     const isValid = form.reportValidity();
-    
+
     // Restore required attributes shortly after native validation completes
     setTimeout(() => {
         emptyInputs.forEach(input => input.setAttribute('required', 'true'));
     }, 10);
-    
+
     return isValid;
 }
 
@@ -700,12 +706,12 @@ document.getElementById('borelogForm').addEventListener('submit', async (e) => {
             try {
                 const parsed = JSON.parse(errorText);
                 if (Array.isArray(parsed.detail)) {
-                    errorText = `<ul style="margin:4px 0 0 16px; padding:0; text-align:left;">` + 
+                    errorText = `<ul style="margin:4px 0 0 16px; padding:0; text-align:left;">` +
                         parsed.detail.map(d => `<li>${d}</li>`).join('') + `</ul>`;
                 } else if (parsed.detail) {
                     errorText = parsed.detail;
                 }
-            } catch (_) {}
+            } catch (_) { }
             showToast(`<strong> ✘ Submission Rejected:</strong><br>${errorText}`, true, 12000);
         }
     } catch (error) {
@@ -735,7 +741,7 @@ document.getElementById('preview-btn').addEventListener('click', () => {
         }
         return;
     }
-    
+
     document.getElementById('preview-modal').classList.add('active');
     if (window.renderBorelogChart) {
         window.renderBorelogChart('borelog-visualizer-container', data);
@@ -880,21 +886,22 @@ function populateFormFromJson(geoJson) {
     if (atterbergData) {
         atterbergData.forEach(s => {
             const tr = addRow('atterberg-body');
-            const inputs = tr.querySelectorAll('input');
-            inputs[0].value = s.depth_m !== undefined ? s.depth_m : '';
-            inputs[1].value = s.wc !== undefined ? s.wc : (s.water_content !== undefined ? s.water_content: '');
-            inputs[2].value = s.ll !== undefined ? s.ll : (s.liquid_limit !== undefined ? s.liquid_limit : '');
-            inputs[3].value = s.pl !== undefined ? s.pl : (s.plastic_limit !== undefined ? s.plastic_limit : '');
-            
-            const wc = parseFloat(inputs[1].value);
-            const ll = parseFloat(inputs[2].value);
-            const pl = parseFloat(inputs[3].value);
-            
+            tr.querySelector('.f-depth').value = s.depth_m !== undefined && s.depth_m !== null ? s.depth_m : '';
+            const grVal = s.gr !== undefined && s.gr !== null ? s.gr : (s.g !== undefined && s.g !== null ? s.g : (s.specific_gravity !== undefined && s.specific_gravity !== null ? s.specific_gravity : ''));
+            tr.querySelector('.f-gr').value = grVal;
+            tr.querySelector('.f-wc').value = s.wc !== undefined && s.wc !== null ? s.wc : (s.water_content !== undefined && s.water_content !== null ? s.water_content : '');
+            tr.querySelector('.f-ll').value = s.ll !== undefined && s.ll !== null ? s.ll : (s.liquid_limit !== undefined && s.liquid_limit !== null ? s.liquid_limit : '');
+            tr.querySelector('.f-pl').value = s.pl !== undefined && s.pl !== null ? s.pl : (s.plastic_limit !== undefined && s.plastic_limit !== null ? s.plastic_limit : '');
+
+            const wc = parseFloat(tr.querySelector('.f-wc').value);
+            const ll = parseFloat(tr.querySelector('.f-ll').value);
+            const pl = parseFloat(tr.querySelector('.f-pl').value);
+
             if (!isNaN(ll) && !isNaN(pl)) {
                 const pi = ll - pl;
-                inputs[4].value = pi.toFixed(2);
+                tr.querySelector('.f-pi').value = pi.toFixed(2);
                 if (!isNaN(wc) && pi !== 0) {
-                    inputs[5].value = ((wc - pl) / pi).toFixed(3);
+                    tr.querySelector('.f-li').value = ((wc - pl) / pi).toFixed(3);
                 }
             }
         });
@@ -1108,7 +1115,7 @@ document.addEventListener('change', (e) => {
 // Dynamic Calculations & Helper Listeners
 
 // 1. SPT N-Value auto-calculation: N = blows_150_300 + blows_300_450
-document.addEventListener('input', function(e) {
+document.addEventListener('input', function (e) {
     if (e.target.matches('#spt-body .f-b300, #spt-body .f-b450')) {
         const tr = e.target.closest('tr');
         if (tr) {
@@ -1125,7 +1132,7 @@ document.addEventListener('input', function(e) {
 });
 
 // 2. Atterberg Limits PI and LI auto-calculation
-document.addEventListener('input', function(e) {
+document.addEventListener('input', function (e) {
     if (e.target.matches('#atterberg-body .f-wc, #atterberg-body .f-ll, #atterberg-body .f-pl')) {
         const tr = e.target.closest('tr');
         if (tr) {
@@ -1134,10 +1141,10 @@ document.addEventListener('input', function(e) {
             const plInput = tr.querySelector('.f-pl');
             const ll = parseFloat(llInput.value);
             const pl = parseFloat(plInput.value);
-            
+
             const piInput = tr.querySelector('.f-pi');
             const liInput = tr.querySelector('.f-li');
-            
+
             if (!isNaN(ll) && !isNaN(pl)) {
                 const pi = ll - pl;
                 piInput.value = pi.toFixed(2);
@@ -1171,7 +1178,7 @@ document.addEventListener('input', function(e) {
 });
 
 // 3. CPT Friction Ratio Rf (%) auto-calculation: Rf = fs (kPa) / (10 * qc (MPa))
-document.addEventListener('input', function(e) {
+document.addEventListener('input', function (e) {
     if (e.target.matches('#cpt-body .f-qc, #cpt-body .f-fs')) {
         const tr = e.target.closest('tr');
         if (tr) {

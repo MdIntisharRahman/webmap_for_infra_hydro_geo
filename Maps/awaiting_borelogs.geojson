@@ -49,22 +49,154 @@
     {
       "type": "Feature",
       "properties": {
-        "borelog_id": "09102026wxBFQQN7",
-        "borelog_name": "Maharkona-Bridge-BH1-pc33ifc3ifc3K3f5T",
+        "borelog_id": "13102026dc3XtHDV",
         "project": "PMP 2026-27",
         "client": "Road Division, RHD, Netrokona",
+        "borelog_name": "Maharkona-Bridge-BH1-A2-uHVQcwssJjqvhs",
         "xcoord": 90.733814,
         "ycoord": 24.942769,
         "keys": "'[borelog_name, Borelog Name], [borelog_id, ID], [xcoord, Easting], [ycoord, Northing], [f_file(=>{type:file, format:JSON, location: `./Maps/borelogs/staged/`}, See Borelog, imodal, borelog-modal=>),Details]'",
         "f_class_color": "#ff4053",
-        "f_file": "Maharkona-Bridge-BH1-pc33ifc3ifc3K3f5T-09102026-wxBFQQN7.JSON",
-        "uid": "Maharkona-Bridge-BH1-pc33ifc3ifc3K3f5T-09102026-wxBFQQN7"
+        "uid": "Maharkona-Bridge-BH1-A2-uHVQcwssJjqvhs-13102026-dc3XtHDV",
+        "f_file": "Maharkona-Bridge-BH1-A2-uHVQcwssJjqvhs-13102026-dc3XtHDV.JSON"
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
           90.733814,
           24.942769
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "borelog_id": "13102026V8hgYkb4",
+        "project": "PMP 2026-27",
+        "client": "Road Division, RHD, Netrokona",
+        "borelog_name": "Maharkona-Bridge-BH2-A1-vGDU2UYM9twyvp",
+        "xcoord": 90.733988,
+        "ycoord": 24.942868,
+        "keys": "'[borelog_name, Borelog Name], [borelog_id, ID], [xcoord, Easting], [ycoord, Northing], [f_file(=>{type:file, format:JSON, location: `./Maps/borelogs/staged/`}, See Borelog, imodal, borelog-modal=>),Details]'",
+        "f_class_color": "#ff4053",
+        "uid": "Maharkona-Bridge-BH2-A1-vGDU2UYM9twyvp-13102026-V8hgYkb4",
+        "f_file": "Maharkona-Bridge-BH2-A1-vGDU2UYM9twyvp-13102026-V8hgYkb4.JSON"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          90.733988,
+          24.942868
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "borelog_id": "15102026i25BoI1t",
+        "project": "Construction of Fateh Ali Bridge",
+        "client": "Bogura Road Division, RHD",
+        "borelog_name": "Belkuchi-Purbapara-Bridge-BH-2-thGRMIo",
+        "xcoord": 89.48644441997519,
+        "ycoord": 25.043875668826708,
+        "keys": "'[borelog_name, Borelog Name], [borelog_id, ID], [xcoord, Easting], [ycoord, Northing], [f_file(=>{type:file, format:JSON, location: `./Maps/borelogs/staged/`}, See Borelog, imodal, borelog-modal=>),Details]'",
+        "f_class_color": "#ff4053",
+        "uid": "Belkuchi-Purbapara-Bridge-BH-2-thGRMIo-15102026-i25BoI1t",
+        "f_file": "Belkuchi-Purbapara-Bridge-BH-2-thGRMIo-15102026-i25BoI1t.JSON"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          89.48644441997519,
+          25.043875668826708
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "borelog_id": "15102026Bi5MoOPU",
+        "project": "Construction of Fotheh Ali Bridge",
+        "client": "Bogura Road Division, RHD",
+        "borelog_name": "Belkuchi-Purbapara-Bridge-BH-1-67qiptH",
+        "xcoord": 89.48661610300586,
+        "ycoord": 25.043975312921834,
+        "keys": "'[borelog_name, Borelog Name], [borelog_id, ID], [xcoord, Easting], [ycoord, Northing], [f_file(=>{type:file, format:JSON, location: `./Maps/borelogs/staged/`}, See Borelog, imodal, borelog-modal=>),Details]'",
+        "f_class_color": "#ff4053",
+        "uid": "Belkuchi-Purbapara-Bridge-BH-1-67qiptH-15102026-Bi5MoOPU",
+        "f_file": "Belkuchi-Purbapara-Bridge-BH-1-67qiptH-15102026-Bi5MoOPU.JSON"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          89.48661610300586,
+          25.043975312921834
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "borelog_id": "15102026Pf6qbmPg",
+        "project": "Construction of Fateh Ali Bridge",
+        "client": "Bogura Road Division, RHD",
+        "borelog_name": "Belkuchi-Purbapara-Bridge-BH-3-x81djRB",
+        "xcoord": 89.48630425687591,
+        "ycoord": 25.04392306054057,
+        "keys": "'[borelog_name, Borelog Name], [borelog_id, ID], [xcoord, Easting], [ycoord, Northing], [f_file(=>{type:file, format:JSON, location: `./Maps/borelogs/staged/`}, See Borelog, imodal, borelog-modal=>),Details]'",
+        "f_class_color": "#ff4053",
+        "uid": "Belkuchi-Purbapara-Bridge-BH-3-x81djRB-15102026-Pf6qbmPg",
+        "f_file": "Belkuchi-Purbapara-Bridge-BH-3-x81djRB-15102026-Pf6qbmPg.JSON"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          89.48630425687591,
+          25.04392306054057
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "borelog_id": "18102026wzOG2S4y",
+        "project": "Construction of Bridge at 01+380 Km on z-8047",
+        "client": "Bridge Management Wing, Roads and Highways Department (RHD)",
+        "borelog_name": "Berakatthi-Bridge-BH-1-QELkcf9iQrOLSIy",
+        "xcoord": 90.32472,
+        "ycoord": 22.59888,
+        "keys": "'[borelog_name, Borelog Name], [borelog_id, ID], [xcoord, Easting], [ycoord, Northing], [f_file(=>{type:file, format:JSON, location: `./Maps/borelogs/staged/`}, See Borelog, imodal, borelog-modal=>),Details]'",
+        "f_class_color": "#ff4053",
+        "uid": "Berakatthi-Bridge-BH-1-QELkcf9iQrOLSIy-18102026-wzOG2S4y",
+        "f_file": "Berakatthi-Bridge-BH-1-QELkcf9iQrOLSIy-18102026-wzOG2S4y.JSON"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          90.32472,
+          22.59888
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "borelog_id": "18102026D2GbHETY",
+        "project": "Construction of Bridge at 01+380 Km on z-8047",
+        "client": "Bridge Management Wing, Roads and Highways Department (RHD)",
+        "borelog_name": "Berakatthi-Bridge-BH-2-FeX98Bjur56tF8Q",
+        "xcoord": 90.324972,
+        "ycoord": 22.598972,
+        "keys": "'[borelog_name, Borelog Name], [borelog_id, ID], [xcoord, Easting], [ycoord, Northing], [f_file(=>{type:file, format:JSON, location: `./Maps/borelogs/staged/`}, See Borelog, imodal, borelog-modal=>),Details]'",
+        "f_class_color": "#ff4053",
+        "uid": "Berakatthi-Bridge-BH-2-FeX98Bjur56tF8Q-18102026-D2GbHETY",
+        "f_file": "Berakatthi-Bridge-BH-2-FeX98Bjur56tF8Q-18102026-D2GbHETY.JSON"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          90.324972,
+          22.598972
         ]
       }
     }

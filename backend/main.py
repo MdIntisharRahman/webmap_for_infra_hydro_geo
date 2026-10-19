@@ -639,6 +639,8 @@ def validate_borelog_payload(payload: dict) -> list[str]:
     for idx, row in enumerate(props.get("atterberg_test_data") or []):
         ctx = f"Atterberg Limits Row {idx + 1}"
         check_depth(row.get("depth_m"), ctx)
+        gr = row.get("gr") if row.get("gr") is not None else (row.get("g") if row.get("g") is not None else row.get("specific_gravity"))
+        check_non_neg(gr, "Specific Gravity", ctx)
         check_non_neg(row.get("wc"), "Water Content", ctx)
         check_non_neg(row.get("ll"), "Liquid Limit", ctx)
         check_non_neg(row.get("pl"), "Plastic Limit", ctx)

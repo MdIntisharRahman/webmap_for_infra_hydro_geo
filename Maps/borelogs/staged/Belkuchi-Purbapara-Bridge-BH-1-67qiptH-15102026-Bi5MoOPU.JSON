@@ -1,0 +1,169 @@
+{
+  "type": "Feature",
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      25.043975312921834,
+      89.48661610300586
+    ]
+  },
+  "properties": {
+    "borelog_name": "Belkuchi-Purbapara-Bridge-BH-1-67qiptH",
+    "client": "Bogura Road Division, RHD",
+    "project": "Construction of Fotheh Ali Bridge",
+    "location": "Belkuchi Purbapara, Bogura Sadar, Bogura",
+    "engineering_team": "AR Trading & Geo-Services",
+    "drilling_team": "AR Trading & Geo-Services",
+    "supervisor": "",
+    "drill_rig": "Not Specified",
+    "tbm_no": "30 m (Bridge Top)",
+    "date_of_starting_boring": "2018-09-08",
+    "date_of_ending_boring": "2018-09-08",
+    "rl_m": 21.2,
+    "depth_m": 24,
+    "water_table_m": 2,
+    "comments": "From the EGL to 2.28 m rubbish filling was found. <br/>\nFrom 3.00 m to 24 m Medium to Dense Fine to Very Fine Silty Sand Was found.<br/>\n\nThe Borelog came as specifying the corrected SPT in the SPT field. <br/>\n\n#### Soil Classification: ASTM D2487 & D2488.\n\nNo additional Test result were found from the sub-soil investigation report.",
+    "strata": [
+      {
+        "top_m": 0,
+        "bottom_m": 2.28,
+        "class": "Pt",
+        "description": "Rubbish, up top 2.28 m"
+      },
+      {
+        "top_m": 2.28,
+        "bottom_m": 10.5,
+        "class": "SM",
+        "description": "Gray, Medium/Silty Sand"
+      },
+      {
+        "top_m": 10.5,
+        "bottom_m": 24,
+        "class": "SP-SM",
+        "description": "Grayish, Dense to Very Dense Silty Sand"
+      }
+    ],
+    "spt_data": [
+      {
+        "depth_m": 2.28,
+        "blows_0_150": 0,
+        "blows_150_300": 0,
+        "blows_300_450": 0,
+        "n_value": "0"
+      },
+      {
+        "depth_m": 3,
+        "blows_0_150": 2,
+        "blows_150_300": 3,
+        "blows_300_450": 5,
+        "n_value": "10"
+      },
+      {
+        "depth_m": 4.5,
+        "blows_0_150": 4,
+        "blows_150_300": 5,
+        "blows_300_450": 7,
+        "n_value": "13"
+      },
+      {
+        "depth_m": 6,
+        "blows_0_150": 6,
+        "blows_150_300": 7,
+        "blows_300_450": 8,
+        "n_value": "15"
+      },
+      {
+        "depth_m": 7.5,
+        "blows_0_150": 6,
+        "blows_150_300": 8,
+        "blows_300_450": 11,
+        "n_value": "17"
+      },
+      {
+        "depth_m": 9,
+        "blows_0_150": 7,
+        "blows_150_300": 10,
+        "blows_300_450": 14,
+        "n_value": "27"
+      },
+      {
+        "depth_m": 10.5,
+        "blows_0_150": 8,
+        "blows_150_300": 13,
+        "blows_300_450": 15,
+        "n_value": "30"
+      },
+      {
+        "depth_m": 12,
+        "blows_0_150": 10,
+        "blows_150_300": 15,
+        "blows_300_450": 20,
+        "n_value": "36"
+      },
+      {
+        "depth_m": 13.5,
+        "blows_0_150": 15,
+        "blows_150_300": 30,
+        "blows_300_450": 20,
+        "n_value": "42"
+      },
+      {
+        "depth_m": 15,
+        "blows_0_150": 15,
+        "blows_150_300": 30,
+        "blows_300_450": 20,
+        "n_value": "48"
+      },
+      {
+        "depth_m": 16.5,
+        "blows_0_150": 15,
+        "blows_150_300": 27,
+        "blows_300_450": 23,
+        "n_value": "46"
+      },
+      {
+        "depth_m": 18,
+        "blows_0_150": 16,
+        "blows_150_300": 40,
+        "blows_300_450": 10,
+        "n_value": "45"
+      },
+      {
+        "depth_m": 19.5,
+        "blows_0_150": 15,
+        "blows_150_300": 45,
+        "blows_300_450": 5,
+        "n_value": "43"
+      },
+      {
+        "depth_m": 21,
+        "blows_0_150": 25,
+        "blows_150_300": 50,
+        "blows_300_450": 50,
+        "n_value": "42"
+      },
+      {
+        "depth_m": 22.5,
+        "blows_0_150": 28,
+        "blows_150_300": 50,
+        "blows_300_450": 50,
+        "n_value": "41"
+      },
+      {
+        "depth_m": 24,
+        "blows_0_150": 30,
+        "blows_150_300": 50,
+        "blows_300_450": 50,
+        "n_value": "40"
+      }
+    ],
+    "atterberg_test_data": [],
+    "grain_size_analysis_data": [],
+    "cpt_data": [],
+    "direct_shear_test_data": [],
+    "consolidation_test_data": [],
+    "triaxial_test_data": [],
+    "borelog_id": "15102026Bi5MoOPU",
+    "uid": "Belkuchi-Purbapara-Bridge-BH-1-67qiptH-15102026-Bi5MoOPU"
+  }
+}

@@ -1,0 +1,253 @@
+{
+  "type": "Feature",
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      24.942769,
+      90.733814
+    ]
+  },
+  "properties": {
+    "borelog_name": "Maharkona-Bridge-BH1-A2-uHVQcwssJjqvhs",
+    "client": "Road Division, RHD, Netrokona",
+    "project": "PMP 2026-27",
+    "location": "Maharkona, Netrokona",
+    "engineering_team": "FSA Engineering",
+    "drilling_team": "FSA Engineering",
+    "supervisor": "Anya",
+    "drill_rig": "Percussion Drilling",
+    "tbm_no": "1",
+    "date_of_starting_boring": "2025-12-03",
+    "date_of_ending_boring": "2025-12-03",
+    "rl_m": 5.2,
+    "depth_m": 30,
+    "water_table_m": 3.6,
+    "comments": "## Borelog interpretation \u2014 Abutment 2\n\n### Overall profile\n- From ground level to about 6 m, the log describes soft silty clay (CH); SPT N-values of 3\u20134 indicate very low penetration resistance. This layer may be compressible and could contribute to settlement; settlement magnitude cannot be estimated from this log alone.\n- From about 6\u20139 m, the clay is described as stiffening, with N-values increasing from 4 to 13.\n- From about 9 m to the termination depth of 30 m, the log describes silty sand (SM). N-values rise from 13\u201318 in the upper sand to 32\u201350 at greater depths, indicating increasing penetration resistance. Values reported as 50 may be capped/refusal values rather than exact N-values; check the original field records and equipment/procedure.\n- The reported groundwater level is 3.6 m below ground. If representative of the assessment period, the sand below 9 m is below groundwater and is likely saturated. Groundwater can vary seasonally and should be confirmed for design.\n\n### Liquefaction \u2014 preliminary screening only\nLiquefaction cannot be confirmed or ruled out from this borelog alone. Saturated sand is present below the reported groundwater level. The upper sand (roughly 9\u201313.5 m; N about 13\u201318) is the interval of greatest screening concern if strong earthquake shaking occurs. The higher reported resistance at depth suggests lower susceptibility in the deeper sand, but does not by itself demonstrate immunity. Grain-size results at 18 m and 25 m report about 20% and 12% silt respectively; fines plasticity and the full gradation curves are not supplied. The shallow CH clay is not classified as liquefiable sand by this log, though its cyclic response and settlement still require appropriate evaluation.\n\nA site-specific assessment requires corrected SPT resistance (including hammer energy, overburden and fines corrections), verified groundwater conditions, soil unit weights and suitable fines/plasticity data, plus the design earthquake shaking level (such as magnitude and peak ground acceleration). Evaluate liquefaction triggering and, if triggered, consequences such as post-shaking settlement; lateral spreading also depends on site geometry and nearby free faces or slopes. This note is not a liquefaction design assessment.\n\n### Foundation implications and data checks\nThe deeper, higher-resistance sand is a potential pile-bearing stratum, but the log alone does not establish allowable capacity, settlement performance, pile toe depth, or a safe founding level. These require project loads, design calculations, and confirmation of layer continuity and construction conditions. The shallow soft clay warrants settlement and pile-installation considerations as applicable.\n\nThere is a material strata-depth inconsistency: the dense SM layer is logged from 13.5\u201319.5 m, while the very dense SM layer is logged from 13.5\u201330 m. These intervals overlap; confirm the intended top of the very dense layer against the original borelog before using the stratigraphy. Testing is sparse (Atterberg limits only at 3 m and 7.5 m; grain-size results only at 3 m, 7.5 m, 18 m and 25 m), and no CPT, shear-strength, consolidation, triaxial or direct-shear data are included. This is a single borehole, so lateral variability between abutments is not established.\n\nUse this as a preliminary interpretation, not a substitute for geotechnical design review.",
+    "strata": [
+      {
+        "top_m": 0,
+        "bottom_m": 3,
+        "class": "CH",
+        "description": "Brown, Soft in consistency, Silty Clay, AC2."
+      },
+      {
+        "top_m": 3,
+        "bottom_m": 6,
+        "class": "CH",
+        "description": "Gray, Soft in consistency, Silty Clay, AC2."
+      },
+      {
+        "top_m": 6,
+        "bottom_m": 9,
+        "class": "CH",
+        "description": "Gray, Stiff in consistency, Silty Clay, AC4."
+      },
+      {
+        "top_m": 9,
+        "bottom_m": 13.5,
+        "class": "SM",
+        "description": "Gray, Medium dense in consistency, Silty Sand, AS3."
+      },
+      {
+        "top_m": 13.5,
+        "bottom_m": 19.5,
+        "class": "SM",
+        "description": "Gray, Dense in consistency, Silty Sand, AS4."
+      },
+      {
+        "top_m": 19.5,
+        "bottom_m": 30,
+        "class": "SM",
+        "description": "Gray, Very Dense in consistency, Silty Sand, AS5."
+      }
+    ],
+    "spt_data": [
+      {
+        "depth_m": 1.5,
+        "blows_0_150": 1,
+        "blows_150_300": 1,
+        "blows_300_450": 2,
+        "n_value": "3"
+      },
+      {
+        "depth_m": 3,
+        "blows_0_150": 1,
+        "blows_150_300": 1,
+        "blows_300_450": 2,
+        "n_value": "3"
+      },
+      {
+        "depth_m": 4.5,
+        "blows_0_150": 2,
+        "blows_150_300": 2,
+        "blows_300_450": 2,
+        "n_value": "4"
+      },
+      {
+        "depth_m": 6,
+        "blows_0_150": 2,
+        "blows_150_300": 2,
+        "blows_300_450": 2,
+        "n_value": "4"
+      },
+      {
+        "depth_m": 7.5,
+        "blows_0_150": 2,
+        "blows_150_300": 4,
+        "blows_300_450": 6,
+        "n_value": "10"
+      },
+      {
+        "depth_m": 9,
+        "blows_0_150": 3,
+        "blows_150_300": 5,
+        "blows_300_450": 8,
+        "n_value": "13"
+      },
+      {
+        "depth_m": 10.5,
+        "blows_0_150": 3,
+        "blows_150_300": 6,
+        "blows_300_450": 9,
+        "n_value": "15"
+      },
+      {
+        "depth_m": 12,
+        "blows_0_150": 4,
+        "blows_150_300": 7,
+        "blows_300_450": 8,
+        "n_value": "13"
+      },
+      {
+        "depth_m": 13.5,
+        "blows_0_150": 4,
+        "blows_150_300": 8,
+        "blows_300_450": 10,
+        "n_value": "18"
+      },
+      {
+        "depth_m": 15,
+        "blows_0_150": 5,
+        "blows_150_300": 12,
+        "blows_300_450": 20,
+        "n_value": "32"
+      },
+      {
+        "depth_m": 16.5,
+        "blows_0_150": 9,
+        "blows_150_300": 18,
+        "blows_300_450": 25,
+        "n_value": "43"
+      },
+      {
+        "depth_m": 18,
+        "blows_0_150": 11,
+        "blows_150_300": 22,
+        "blows_300_450": 26,
+        "n_value": "48"
+      },
+      {
+        "depth_m": 19.5,
+        "blows_0_150": 13,
+        "blows_150_300": 23,
+        "blows_300_450": 27,
+        "n_value": "50"
+      },
+      {
+        "depth_m": 21,
+        "blows_0_150": 16,
+        "blows_150_300": 26,
+        "blows_300_450": 26,
+        "n_value": "50"
+      },
+      {
+        "depth_m": 22.5,
+        "blows_0_150": 17,
+        "blows_150_300": 28,
+        "blows_300_450": 25,
+        "n_value": "50"
+      },
+      {
+        "depth_m": 24,
+        "blows_0_150": 17,
+        "blows_150_300": 27,
+        "blows_300_450": 26,
+        "n_value": "50"
+      },
+      {
+        "depth_m": 25.5,
+        "blows_0_150": 18,
+        "blows_150_300": 30,
+        "blows_300_450": 25,
+        "n_value": "50"
+      },
+      {
+        "depth_m": 27,
+        "blows_0_150": 19,
+        "blows_150_300": 28,
+        "blows_300_450": 25,
+        "n_value": "50"
+      },
+      {
+        "depth_m": 28.5,
+        "blows_0_150": 14,
+        "blows_150_300": 29,
+        "blows_300_450": 26,
+        "n_value": "50"
+      },
+      {
+        "depth_m": 30,
+        "blows_0_150": 16,
+        "blows_150_300": 20,
+        "blows_300_450": 25,
+        "n_value": "50"
+      }
+    ],
+    "atterberg_test_data": [
+      {
+        "depth_m": 3,
+        "wc": 31.38,
+        "ll": 41.7,
+        "pl": 17.37
+      },
+      {
+        "depth_m": 7.5,
+        "wc": 32.78,
+        "ll": 42.77,
+        "pl": 26.16
+      }
+    ],
+    "grain_size_analysis_data": [
+      {
+        "depth_m": 3,
+        "sand": 0.39,
+        "silt": 68.96,
+        "clay": 30.65
+      },
+      {
+        "depth_m": 7.5,
+        "sand": 0.17,
+        "silt": 70.52,
+        "clay": 29.3
+      },
+      {
+        "depth_m": 18,
+        "sand": 78.71,
+        "silt": 20.01,
+        "clay": 0
+      },
+      {
+        "depth_m": 25,
+        "sand": 87.88,
+        "silt": 11.81,
+        "clay": 0
+      }
+    ],
+    "cpt_data": [],
+    "direct_shear_test_data": [],
+    "consolidation_test_data": [],
+    "triaxial_test_data": [],
+    "borelog_id": "13102026dc3XtHDV",
+    "uid": "Maharkona-Bridge-BH1-A2-uHVQcwssJjqvhs-13102026-dc3XtHDV"
+  }
+}
