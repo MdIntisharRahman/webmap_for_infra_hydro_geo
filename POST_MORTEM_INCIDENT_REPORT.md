@@ -2,10 +2,10 @@
 **Incident Identifier**: INC-20261022-RHD-VPS  
 **Target Host**: Contabo VPS (`62.171.150.194` / `vmi3124618`)  
 **Impacted Applications**:
-* `https://webmap.rhdbridge.com` (Status: **502 Bad Gateway** &rarr; **Resolved**)
+* `https://webmap.rhdbridge.com` (Status: **502 Bad Gateway & Layer Auth Failures** &rarr; **Resolved**)
 * `https://estimate.rhdbridge.com` (Status: **Login Failure: UndefinedTable "permissions"** &rarr; **Resolved**)
 * `https://estimation.rhdbridge.com` (Status: **Healthy / Preserved**)  
-**Current State**: **All Services Fully Operational (HTTP 200 OK)**
+**Current State**: **All Services Fully Operational (HTTP 200 OK across all endpoints and vector layers)**
 
 ---
 
@@ -79,12 +79,14 @@ Immediately following a deployment attempt of the latest Webmap commit (`cc481ee
    ```
 3. **Severe Port and Daemon Conflicts**:
    Running `docker ps` appeared to show only 2 containers, while `netstat` and `ss` showed ports `5432`, `8003`, and `8007` locked by processes that Docker CLI could neither inspect nor manage.
+4. **Secondary Issue: Vector Layers Disappearing / Not Loading**:
+   After resolving the 502 error, the map frontend loaded successfully, but all 24 spatial vector layers (rivers, road network, borehole points, bridge markers) failed to render on the canvas.
 
 ---
 
 ## 3. Why and How It Happened (Root Cause Breakdown)
 
-Three distinct root causes combined to create this incident:
+Four distinct root causes combined across the deployment:
 
 ### Root Cause 1: Dual Docker Daemon Collision & Socket Hijacking
 * **How it happened**:
@@ -143,6 +145,26 @@ Three distinct root causes combined to create this incident:
 
 ---
 
+### Root Cause 4: PostGIS Authentication Escaping Artifact (Vector Layers Failure)
+* **How it happened**:
+  During shell script piping to regenerate the Docker Compose file, environment variables were escaped with backslashes (`\${POSTGRES_USER:-postgres}`). Docker Compose evaluated the leading `\` as the literal value of the environment variable.
+  Inspecting the live backend container via `docker inspect` revealed:
+  ```json
+  [
+    "POSTGRES_USER=\\",
+    "POSTGRES_PASSWORD=\\",
+    "POSTGRES_DB=\\"
+  ]
+  ```
+* **Why it broke the system**:
+  While the frontend served HTML and API status endpoints returned 200, any request to `/api/layers/{table_name}` executed an internal database query against PostGIS. PostgreSQL rejected the connection:
+  ```text
+  Error fetching layer rivers: password authentication failed for user "\"
+  ```
+  This caused FastAPI to return `500 Internal Server Error`, leaving the Leaflet map with zero rendered vector features.
+
+---
+
 ## 4. Detection & Forensic Investigation: How We Found the Problems
 
 We diagnosed the failure without guessing by following a forensic discovery pipeline:
@@ -154,6 +176,7 @@ We diagnosed the failure without guessing by following a forensic discovery pipe
 | **3. Process Tree Forensics** | `ps aux \| grep docker` and `pstree -p` | **Key Finding**: Discovered TWO concurrent Docker daemons: Native APT dockerd (`PID 1950032`) and Snap dockerd (`PID 2329560`). |
 | **4. Storage Analysis** | `ls -la /var/lib/docker/volumes` vs `/var/snap/docker/...` | Verified that all authentic production volumes (`rhd-ces_pgdata`, `backend_postgres_data_proto`, `webmap_postgis_data`) resided in `/var/lib/docker`, proving no data was lost. |
 | **5. Container Crash Logs** | `docker logs webmap-frontend-1` | Logged: `[emerg] 1#1: unexpected "}" in /etc/nginx/conf.d/default.conf:18` and `"location" directive is not allowed here`. Pinpointed the exact syntax defect in `nginx.conf`. |
+| **6. Vector Layer DB Auth Forensics** | `docker logs webmap-backend-1` and `docker inspect` | Uncovered `password authentication failed for user "\"` and inspected environment variables showing `POSTGRES_USER=\`. |
 
 ---
 
@@ -216,37 +239,55 @@ services:
       - "127.0.0.1:8002:80"    # Routes exactly to Edge Nginx's proxy_pass
 ```
 
-### Action 5: Rebuild, Deploy, and Sync
-1. Executed `docker compose up -d --build` in `/opt/webmap`. All dependencies (`pyproj`, `geopandas`, `rasterio`, `pydantic`, `fastapi`) compiled successfully.
-2. Verified that all containers (`webmap-frontend-1`, `webmap-backend-1`, `webmap-db-1`) entered `Up` status.
-3. Committed and pushed the corrected files to GitHub (`2a595ff`) and fast-forwarded `/opt/webmap` on the VPS to maintain complete repository synchronization.
+### Action 5: Recreating Containers with Clean Credentials
+Executed a forced container recreation to purge the backslash environment values:
+```bash
+cd /opt/webmap && docker compose up -d --force-recreate
+```
+Verified with `docker inspect webmap-backend-1`:
+* `POSTGRES_USER=postgres`
+* `POSTGRES_PASSWORD=<real_secure_password>`
+* `POSTGRES_HOST=db`
 
 ---
 
 ## 6. Verification Results
 
-All endpoints were tested directly via loopback SNI and across the public internet:
+All endpoints and every individual vector layer were tested directly via loopback SNI and across the public internet:
 
 ```bash
 # Public Connectivity Verification
 curl -sI https://webmap.rhdbridge.com
 # HTTP/1.1 200 OK
-# Content-Type: text/html
-# Content-Length: 10067
 
 curl -sI https://estimate.rhdbridge.com
 # HTTP/1.1 200 OK
-# Content-Type: text/html
 
-# API Layer Route Verification
-curl -s https://webmap.rhdbridge.com/api/layers | jq .[0].name
-# "Rivers" (Full spatial dataset loaded successfully)
-
-# Borelog File Access Verification
-curl -sI https://webmap.rhdbridge.com/maps/borelogs/published/PL-0879-PAC0E9-2Hm2PUseSaQeK3dHm2Usea7-19092026-pl07sq23.JSON
-# HTTP/1.1 200 OK
-# Content-Type: application/json
-# Content-Length: 11557
+# Automated 24-Vector-Layer Audit
+OK  (200): rivers
+OK  (200): navigable_routes
+OK  (200): slwl
+OK  (200): shwl
+OK  (200): rhd_road_network
+OK  (200): geological_map
+OK  (200): borelog_map
+OK  (200): bnbc_seismic_zones
+OK  (200): bnbc_basic_wind_speed_m_s
+OK  (200): awaiting_borelogs
+OK  (200): appended_borelogs
+OK  (200): comilla_zone_rhd_bridges
+OK  (200): comilla_zone_rhd_culverts
+OK  (200): rangpur_zone_rhd_bridges
+OK  (200): rangpur_zone_rhd_culverts
+OK  (200): sylhet_zone_rhd_bridges
+OK  (200): sylhet_zone_rhd_culverts
+OK  (200): chittagong_zone_rhd_bridges
+OK  (200): chittagong_zone_rhd_culverts
+OK  (200): khulna_zone_rhd_bridges
+OK  (200): khulna_zone_rhd_culverts
+OK  (200): barishal_zone_rhd_bridges
+OK  (200): barishal_zone_rhd_culverts
+OK  (200): perimeter_bounds
 ```
 
 ---
@@ -279,13 +320,19 @@ docker compose up -d --build
 > [!TIP]
 > Because dependencies are cached by Docker layers, routine frontend/backend script updates will rebuild in **under 15 seconds**.
 
-### Rule 3: Emergency Diagnostics Flowchart
-If any domain reports a `502 Bad Gateway` in the future:
+### Rule 3: Updating Environment Variables or Compose Files
+Whenever you modify `.env` or `docker-compose.yml`, always use `--force-recreate` to ensure the running containers inherit the new configuration immediately:
+```bash
+docker compose up -d --force-recreate
+```
+
+### Rule 4: Emergency Diagnostics Flowchart
+If any domain reports a `502 Bad Gateway` or vector layers fail to render in the future:
 1. **Check which container is down**:
    ```bash
    docker ps -a --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
    ```
-2. **Inspect container crash logs**:
+2. **Inspect container logs**:
    ```bash
    docker logs --tail 50 webmap-frontend-1
    docker logs --tail 50 webmap-backend-1
