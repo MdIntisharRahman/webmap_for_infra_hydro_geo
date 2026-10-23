@@ -206,7 +206,7 @@ body {
     left: 0;
     /* Hide mostly, peek 15px */
     transform: translateY(-50%) translateX(calc(-100% + 20px));
-    width: 340px;
+    width: 41vw;
     max-height: 93vh;
     display: flex;
     flex-direction: column;
@@ -226,7 +226,7 @@ body {
     content: '';
     position: absolute;
     top: 50%;
-    right: 6px;
+    right: 7px;
     transform: translateY(-50%);
     width: 4px;
     height: 40px;
@@ -312,7 +312,7 @@ body {
     width: 100%;
     height: 100%;
     background: var(--panel-bg);
-    backdrop-filter: blur(12px);
+    backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(12px);
     /* border: 1px solid var(--accent-blue-dim); */
     border-left: none !important;
@@ -320,7 +320,7 @@ body {
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
     display: flex;
     flex-direction: column;
-    padding: 17px 15px 23px 15px;
+    padding: 17px 17px 23px 15px;
     pointer-events: auto;
     position: relative;
     overflow: hidden;
@@ -348,10 +348,14 @@ body {
     width: 100%;
     height: 100%;
     background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
-    transform: skewX(-20deg);
+    /* transform: skewX(-20deg); */
     animation: side-panel-shimmer 7s infinite;
     pointer-events: none;
     z-index: 10;
+}
+
+.side-panel-insider {
+    margin: 3px;
 }
 
 .side-header {
@@ -537,7 +541,7 @@ body {
     background: transparent;
     border: 0.25px solid var(--accent-blue-dim);
     padding: 10px 14px;
-    margin: 5px 17px 5px 5px;
+    margin: 5px;
     border-radius: var(--layer-item-border-radius);
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     cursor: pointer;
@@ -865,7 +869,7 @@ body {
     max-height: 33vh;
     overflow-y: auto;
     overflow-x: hidden;
-    padding-right: 4px;
+    /* padding-right: 4px; */
 }
 
 #tab-content-area::-webkit-scrollbar {
@@ -1276,7 +1280,11 @@ body {
         border-radius: 16px 16px 0 0;
         border: 1px solid var(--panel-border);
         border-bottom: none;
-        padding: 37px 16px 16px 16px;
+        padding: 21px 16px 16px 16px;
+    }
+
+    .side-panel-insider {
+        margin-top: 3px;
     }
 
     .side-header {
@@ -1378,7 +1386,7 @@ body {
     }
 
     .leaflet-control-zoom {
-        margin-bottom: 7vh !important;
+        margin-bottom: 13vh !important;
         margin-right: 17px !important;
     }
 
