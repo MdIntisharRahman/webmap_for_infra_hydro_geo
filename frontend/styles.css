@@ -361,11 +361,12 @@ body {
     min-height: 0;
     flex: 1;
     overflow: hidden;
-    padding-right: 18px; /* Protects content from bleeding into the 20px peek zone */
+    margin: 0 28px 0 0; /* Keeps inner contents tucked deep into screen edge when collapsed */
+    padding-right: 0;
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
-    transition: opacity 0.25s ease-out, visibility 0.25s ease-out;
+    transition: opacity 0.25s ease-out, visibility 0.25s ease-out, margin-right 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .side-panel-container:hover .side-panel-insider,
@@ -374,7 +375,9 @@ body {
     opacity: 1;
     visibility: visible;
     pointer-events: auto;
-    transition: opacity 0.35s ease-out 0.1s, visibility 0.35s ease-out;
+    margin: 0; /* Cut down right margin so only side-panel 17px padding remains */
+    padding-right: 0;
+    transition: opacity 0.35s ease-out 0.08s, visibility 0.35s ease-out, margin-right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .side-header {
