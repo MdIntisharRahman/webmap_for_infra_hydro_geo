@@ -355,7 +355,26 @@ body {
 }
 
 .side-panel-insider {
-    margin: 3px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    flex: 1;
+    overflow: hidden;
+    padding-right: 18px; /* Protects content from bleeding into the 20px peek zone */
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.25s ease-out, visibility 0.25s ease-out;
+}
+
+.side-panel-container:hover .side-panel-insider,
+.side-panel-container:focus-within .side-panel-insider,
+.side-panel-container.pinned .side-panel-insider {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition: opacity 0.35s ease-out 0.1s, visibility 0.35s ease-out;
 }
 
 .side-header {
@@ -1208,7 +1227,7 @@ body {
 }
 
 /* Mobile Devices */
-@media (max-width: 767px) {
+@media (max-width: 768px) {
     .app-header {
         top: 0;
         left: 0;
@@ -1235,14 +1254,12 @@ body {
 
     .header-titles h1 {
         font-size: 0.83rem; 
-        /* var(--text-base); */
         padding-bottom: 5px;
         margin-bottom: 3px;
     }
 
     .header-titles p {
         font-size: 0.63rem;
-        /* var(--text-xs); */
     }
 
     /* Map Controls -> Bottom Sheet */
@@ -1251,19 +1268,21 @@ body {
         bottom: 0;
         left: 0;
         right: 0;
-        transform: translateY(calc(93%));
+        transform: translateY(calc(100% - 44px)); /* Clean, deterministic 44px peek bar */
         width: 100%;
-        height: 61vh;
-        max-height: 61vh;
+        height: 65vh;
+        max-height: 72vh;
         z-index: 1001;
-        padding-bottom: env(safe-area-inset-bottom);
+        padding-bottom: env(safe-area-inset-bottom, 0px);
         transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        pointer-events: auto;
     }
 
     .side-panel-container:hover,
     .side-panel-container:focus-within,
     .side-panel-container.pinned {
         transform: translateY(0);
+        z-index: 1010;
     }
 
     .side-panel-container::after {
@@ -1271,70 +1290,125 @@ body {
         left: 50%;
         right: auto;
         transform: translateX(-50%);
-        width: 40px;
+        width: 44px;
         height: 5px;
-        background: rgba(0, 0, 0, 0.2);
+        background: rgba(0, 0, 0, 0.25);
+        border-radius: 4px;
+        z-index: 1012;
     }
 
     .side-panel {
-        border-radius: 16px 16px 0 0;
+        border-radius: 18px 18px 0 0;
         border: 1px solid var(--panel-border);
         border-bottom: none;
-        padding: 21px 16px 16px 16px;
+        padding: 18px 16px calc(12px + env(safe-area-inset-bottom, 0px)) 16px;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        box-sizing: border-box;
     }
 
     .side-panel-insider {
-        margin-top: 3px;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        min-height: 0;
+        flex: 1;
+        overflow: hidden;
+        padding-right: 0;
+        margin: 0;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: opacity 0.25s ease-out, visibility 0.25s ease-out;
+    }
+
+    .side-panel-container:hover .side-panel-insider,
+    .side-panel-container:focus-within .side-panel-insider,
+    .side-panel-container.pinned .side-panel-insider {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+        transition: opacity 0.35s ease-out 0.1s, visibility 0.35s ease-out;
     }
 
     .side-header {
-        margin-bottom: 3px;
+        margin-bottom: 4px;
+        flex-shrink: 0;
     }
 
-    /* Tabs Horizontal Scroll */
+    /* Tabs and Content as strict flex-1 column */
     .tabs-and-content {
+        flex: 1;
+        display: flex;
         flex-direction: column;
-        margin-bottom: 3px;
+        min-height: 0;
+        overflow: hidden;
+        margin-bottom: 6px;
     }
 
     .fluid-tabs.vertical-tabs {
+        flex-shrink: 0;
         flex-direction: row;
         width: 100%;
         overflow-x: auto;
         overflow-y: hidden;
         border-right: none;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-        margin-bottom: 5px;
-        padding: 0 4px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+        margin-bottom: 4px;
+        padding: 0 2px;
         -webkit-overflow-scrolling: touch;
     }
 
     .fluid-tabs.vertical-tabs .tab {
         writing-mode: horizontal-tb;
         transform: none;
-        padding: 10px 16px;
+        padding: 8px 14px;
         white-space: nowrap;
         flex: 0 0 auto;
     }
 
     #tab-content-area {
         flex: 1;
+        min-height: 70px;
         max-height: none;
+        overflow-y: auto;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+        padding-right: 4px;
     }
 
-    .tabs-and-content {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        min-height: 0;
-    }
-
+    /* Point Data Estimator Tool always pinned at the bottom */
     .coord-tool {
-        padding-top: 7px;
+        flex-shrink: 0;
+        margin-top: auto;
+        padding-top: 8px;
+        border-top: 1px solid rgba(0, 0, 0, 0.08);
     }
 
     .coord-tool h3 {
         margin: 0 0 5px 0;
+        font-size: var(--text-xs, 12px) !important;
+    }
+
+    .coord-inputs {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+    }
+
+    .coord-action-btns {
+        display: flex;
+        gap: 8px;
+        margin-top: 6px;
+    }
+
+    .coord-action-btns button {
+        flex: 1;
+        min-height: 38px;
+        font-size: 12px !important;
+        padding: 7px 10px;
     }
 
     /* Right Panel (Extended Legend) -> Bottom Sheet */
@@ -1385,9 +1459,18 @@ body {
         z-index: 1003;
     }
 
+    /* Zoom buttons elevated and clear of the bottom sheet peek bar */
+    .leaflet-bottom.leaflet-right {
+        z-index: 1005 !important;
+        pointer-events: none;
+    }
+
     .leaflet-control-zoom {
-        margin-bottom: 13vh !important;
-        margin-right: 17px !important;
+        margin-bottom: max(62px, calc(env(safe-area-inset-bottom, 0px) + 52px)) !important;
+        margin-right: 14px !important;
+        z-index: 1005 !important;
+        pointer-events: auto !important;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15) !important;
     }
 
     .custom-estimator-popup .leaflet-popup-content {
