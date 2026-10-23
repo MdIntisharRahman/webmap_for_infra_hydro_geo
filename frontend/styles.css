@@ -108,6 +108,7 @@ body {
     align-items: center;
     gap: 19px;
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+    max-width: calc(100vw - 440px);
 }
 
 .logo {
@@ -207,6 +208,8 @@ body {
     /* Hide mostly, peek 15px */
     transform: translateY(-50%) translateX(calc(-100% + 20px));
     width: 41vw;
+    min-width: 340px;
+    max-width: 400px;
     max-height: 93vh;
     display: flex;
     flex-direction: column;
@@ -312,7 +315,7 @@ body {
     width: 100%;
     height: 100%;
     background: var(--panel-bg);
-    backdrop-filter: blur(5px);
+    backdrop-filter: blur(11px);
     -webkit-backdrop-filter: blur(12px);
     /* border: 1px solid var(--accent-blue-dim); */
     border-left: none !important;
@@ -1230,7 +1233,7 @@ body {
 }
 
 /* Mobile Devices */
-@media (max-width: 768px) {
+@media (max-width: 767px) {
     .app-header {
         top: 0;
         left: 0;
@@ -1255,14 +1258,19 @@ body {
         height: 40px;
     }
 
+    .app-header {
+        gap: 10px;
+    }
+
     .header-titles h1 {
-        font-size: 0.83rem; 
-        padding-bottom: 5px;
-        margin-bottom: 3px;
+        font-size: clamp(0.72rem, 3.4vw, 0.83rem);
+        white-space: nowrap;
+        padding-bottom: 4px;
+        margin-bottom: 2px;
     }
 
     .header-titles p {
-        font-size: 0.63rem;
+        font-size: clamp(0.58rem, 2.6vw, 0.63rem);
     }
 
     /* Map Controls -> Bottom Sheet */
@@ -1273,6 +1281,7 @@ body {
         right: 0;
         transform: translateY(calc(100% - 44px)); /* Clean, deterministic 44px peek bar */
         width: 100%;
+        max-width: 100%;
         height: 65vh;
         max-height: 72vh;
         z-index: 1001;
@@ -1469,7 +1478,7 @@ body {
     }
 
     .leaflet-control-zoom {
-        margin-bottom: max(62px, calc(env(safe-area-inset-bottom, 0px) + 52px)) !important;
+        margin-bottom: max(6rem, calc(env(safe-area-inset-bottom, 0px) + 52px)) !important;
         margin-right: 14px !important;
         z-index: 1005 !important;
         pointer-events: auto !important;
@@ -1814,14 +1823,16 @@ body {
     flex-shrink: 0;
 }
 
-/* Tablet Adaptations */
+/* Tablet Adaptations (iPad Mini/Air/Pro, Galaxy Tab, Foldables) */
 @media (min-width: 768px) and (max-width: 1180px) and (pointer: coarse) {
     .side-panel-container {
-        width: 300px;
+        width: 320px;
+        max-width: 360px;
     }
 
     .right-panel-container {
-        width: 300px;
+        width: 320px;
+        max-width: 360px;
     }
 }
 
@@ -2089,7 +2100,7 @@ body {
 
 
 
-@media (max-width: 768px) {
+@media (max-width: 767px) {
     .approval-modal-content {
         width: 100vw !important;
         height: 100vh !important;
@@ -2105,7 +2116,7 @@ body {
 }
 
 
-@media (max-width: 768px) {
+@media (max-width: 767px) {
     .iframe-modal-content {
         width: 100% !important;
         height: 100% !important;
@@ -2610,18 +2621,18 @@ body {
 }
 
 
-@media (min-width: 750px) and (max-width: 850px) {
+@media (min-width: 768px) and (max-width: 1024px) {
     .search-modal {
-        width: 25vw;
-        max-width: 37vw;
-        /* min-width: 220px; */
+        width: 32vw;
+        min-width: 260px;
+        max-width: 360px;
     }
 }
 
 /* ============================================================================
    RESPONSIVE ADJUSTMENTS FOR SEARCH & BOTTOM PANEL (MOBILE/NARROW SCREENS)
    ============================================================================ */
-@media (max-width: 768px) {
+@media (max-width: 767px) {
     /* Prevent search elements from overlapping the banner */
     .search-container {
         top: max(85px, calc(env(safe-area-inset-top) + 65px));
@@ -2687,8 +2698,28 @@ body {
 
 @media (max-width: 511px) {
     .search-modal {
-        width: 53vw;
-        /* min-width: 200px; */
-        max-width: calc(93vw);
+        width: calc(100vw - 76px);
+        max-width: 340px;
+    }
+}
+
+/* Borelog Visualizer Modal Responsive Adaptations for Phones */
+@media (max-width: 767px) {
+    .visualizer-outer-layer > div:first-child {
+        flex-wrap: wrap !important;
+        gap: 6px !important;
+    }
+    #visualizer-title {
+        font-size: 15px !important;
+        flex: 1 1 100% !important;
+        margin-bottom: 2px !important;
+    }
+    #visualizer-action-buttons {
+        flex-wrap: wrap !important;
+        gap: 5px !important;
+    }
+    #visualizer-action-buttons button {
+        font-size: 11px !important;
+        padding: 5px 8px !important;
     }
 }
