@@ -1478,7 +1478,7 @@ body {
     }
 
     .leaflet-control-zoom {
-        margin-bottom: max(6rem, calc(env(safe-area-inset-bottom, 0px) + 52px)) !important;
+        margin-bottom: max(6rem, 52px) !important;
         margin-right: 14px !important;
         z-index: 1005 !important;
         pointer-events: auto !important;
