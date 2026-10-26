@@ -28,7 +28,7 @@ The server must have **Docker** and **Docker Compose** installed.
    POSTGRES_USER=your_secure_user
    POSTGRES_PASSWORD=your_secure_password
    POSTGRES_DB=webmap
-   POSTGRES_HOST=localhost
+   POSTGRES_HOST=name_of_the_database_as_in_your_yml_file
    POSTGRES_PORT=5432
    ```
    *(Note: The Python backend automatically reads this `.env` file. When running via Docker Compose, Docker intelligently overrides `POSTGRES_HOST` to route internally to the database container, meaning you use the exact same `.env` file for both local development and production without changing code!)*
