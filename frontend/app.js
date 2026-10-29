@@ -1677,14 +1677,16 @@ window.openBorelogVisualizer = async (f_file, options = {}) => {
         if (options && options.isAwaitingBorelog) {
             const btnContainer = rootNode.querySelector('#visualizer-action-buttons');
             if (btnContainer) {
+                const approveDiv = document.createElement('div');
+                approveDiv.className = "approve-buttons";
                 const approveBtn = document.createElement('button');
-                approveBtn.className = "green_button";
+                approveBtn.className = "green_button approve-button";
                 approveBtn.innerText = "Approve";
                 // approveBtn.style.backgroundColor = "#10b981"; // vibrant green
                 // approveBtn.style.padding = "6px 12px";
                 approveBtn.style.background = "transparent";
                 approveBtn.style.color = "#0f832c";
-                approveBtn.style.border = "1px solid #2ca64a";
+                approveBtn.style.border = "1px solid #43eb6d";
                 approveBtn.style.boxSizing = "border-box";
                 // approveBtn.style.border = "1px solid #42eb6c";
                 // approveBtn.style.borderRadius = "0px";
@@ -1692,17 +1694,19 @@ window.openBorelogVisualizer = async (f_file, options = {}) => {
                 // approveBtn.style.fontWeight = "600";
                 // approveBtn.style.cursor = "pointer";
                 // approveBtn.style.transition = "0.2s";
-                approveBtn.style.marginLeft = "23px";
+                approveBtn.style.marginLeft = "7rem";
                 approveBtn.onmouseover = () => {
                     approveBtn.style.backgroundColor = '#dff2e4';
                     approveBtn.style.borderColor = '#0f832c';
                 };
-                approveBtn.onmouseout = () => {
-                    approveBtn.style.backgroundColor = 'transparent';
-                    approveBtn.style.borderColor = '#43eb6d';
-                };
+                // approveBtn.onmouseout = () => {
+                //     approveBtn.style.backgroundColor = 'transparent';
+                //     approveBtn.style.borderColor = '#43eb6d';
+                // };
                 approveBtn.onclick = (e) => window.handleApproveFromMap(f_file, e);
-                btnContainer.appendChild(approveBtn);
+                // btnContainer.appendChild(approveBtn)
+                approveDiv.appendChild(approveBtn);
+                btnContainer.appendChild(approveDiv);
             }
         }
         

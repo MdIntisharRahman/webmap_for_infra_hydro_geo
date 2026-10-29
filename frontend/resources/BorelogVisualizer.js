@@ -746,23 +746,22 @@ window.renderBorelogChart = function(containerId, geoJsonData) {
                 
                 const badge = document.createElementNS("http://www.w3.org/2000/svg", "rect");
                 badge.setAttribute("x", "calc(50% - 24px)");
-                badge.setAttribute("y", y - 10);
-                badge.setAttribute("width", "48");
-                badge.setAttribute("height", "20");
-                badge.setAttribute("rx", "10");
-                badge.setAttribute("fill", "#f0fdfa");
-                badge.setAttribute("stroke", "#14b8a6");
-                badge.setAttribute("stroke-width", "1.2");
-                badge.style.filter = "drop-shadow(0 2px 5px rgba(20, 184, 166, 0.35))";
+                badge.setAttribute("y", y - 10.5);
+                badge.setAttribute("width", "49");
+                badge.setAttribute("height", "21");
+                badge.setAttribute("fill", "#0d94895e");
+                badge.setAttribute("stroke", "#0d9489");
+                badge.setAttribute("stroke-width", "0.5");
+                badge.style.filter = "drop-shadow(0 1px 2px rgba(0, 0, 0, 0.15))";
                 gCol.svg.appendChild(badge);
 
                 const labelG = document.createElementNS("http://www.w3.org/2000/svg", "text");
                 labelG.setAttribute("x", "50%");
-                labelG.setAttribute("y", y + 4);
+                labelG.setAttribute("y", y + 4.5);
                 labelG.setAttribute("font-size", "11px");
                 labelG.setAttribute("font-weight", "600");
                 labelG.setAttribute("font-family", "'JetBrains Mono', Consolas, monospace");
-                labelG.setAttribute("fill", "#0f766e");
+                labelG.setAttribute("fill", "#475569");
                 labelG.setAttribute("text-anchor", "middle");
                 labelG.textContent = gFormatted;
                 gCol.svg.appendChild(labelG);
