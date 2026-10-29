@@ -21,20 +21,35 @@
 <body>
     <div id="map"></div>
 
+    <!-- Small Header -->
+
+    <header class="app-header">
+        <div class="logo">
+            <img src="resources/images/RHD_Logo.png" alt="RHD Logo">
+            <!-- RHD -->
+            <!-- <img src="resources/images/RHD_Logo.png" alt="RHD Logo"> -->
+        </div>
+        <div class="header-titles">
+            <h1>INFRASTRUCTURE & GEO-HYDRO PORTAL</h1>
+            <!-- <h1>INFRASTRUCTURE & GEO PORTAL</h1> -->
+            <p>RHD Bridge Engineering Units</p>
+        </div>
+    </header>
+
     <!-- Search Container (Unified Floating Icon + Search Modal) -->
     <div id="search-container" class="search-container">
         <div id="search-modal" class="search-modal hidden">
             <div class="search-modal-content">
                 <div class="search-input-group">
                     <button id="search-drawer-toggle" class="drawer-toggle" title="Toggle Search Options">
-                        <img src="resources/images/chevron-right-circle-svgrepo-com.svg" alt="Toggle Drawer" 
-                        style="
+                        <img src="resources/images/chevron-right-circle-svgrepo-com.svg" alt="Toggle Drawer" style="
                             height: 33px;
                             width: auto;
                         ">
                     </button>
                     <div class="search-input-wrapper">
-                        <input type="text" id="search-input" placeholder="Search feature attributes..." autocomplete="off">
+                        <input type="text" id="search-input" placeholder="Search feature attributes..."
+                            autocomplete="off">
                         <button id="search-reset-btn" class="search-reset-btn hidden" title="Clear search"></button>
                         <div id="search-suggestions" class="search-suggestions hidden"></div>
                     </div>
@@ -56,31 +71,17 @@
         </div>
     </div>
 
-    <!-- Small Header -->
-
-    <header class="app-header">
-        <div class="logo">
-            <img src="resources/images/RHD_Logo.png" alt="RHD Logo">
-            <!-- RHD -->
-            <!-- <img src="resources/images/RHD_Logo.png" alt="RHD Logo"> -->
-        </div>
-        <div class="header-titles">
-            <h1>INFRASTRUCTURE & GEO-HYDRO PORTAL</h1>
-            <!-- <h1>INFRASTRUCTURE & GEO PORTAL</h1> -->
-            <p>RHD Bridge Engineering Units</p>
-        </div>
-    </header>
 
 
     <!-- Left Hover Control Panel -->
     <div class="side-panel-container" tabindex="0">
         <div class="side-panel">
-            <div class="side-panel-insider">                
+            <div class="side-panel-insider">
                 <div class="side-header">
                     <h2>MAP CONTROLS</h2>
                     <div id="pin-btn" class="pin-btn" title="Pin Panel">
-                        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"
-                            stroke-linecap="round" stroke-linejoin="round">
+                        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2"
+                            fill="none" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M12 17v5"></path>
                             <path d="M9 10.5V7a3 3 0 0 1 6 0v3.5l2 4.5H7z"></path>
                         </svg>
@@ -149,22 +150,27 @@
         <div id="my-custom-wrapper" class="visualizer-outer-layer" data-state="active"
             style="display: flex; flex-direction: column; height: 100%; box-sizing: border-box; max-height: 91vh;">
             <div
-                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; padding: 0.25rem;;">
-                <h2 style="margin:0; font-size: 20px; font-weight: bold; color: #1e293b;" id="visualizer-title"></h2>
-                <div style="display: flex; gap: 9px; align-items: center;" id="visualizer-action-buttons">
-                    <button id="export-json-btn" class="violet_button export-json-btn-class">
-                        Export JSON
-                    </button>
-                    <button id="export-graphic-btn" class="blue_button export-graphic-btn-class">
-                        Export Graphic
-                    </button>
-                    <button id="export-xlsx-btn" class="teal_button export-xlsx-btn-class">
-                        Export XLSX
-                    </button>
+                style="display: flex; justify-content: flex-start; align-items: center; margin-bottom: 0.75rem; padding: 0.25rem; flex-flow: row-reverse;">
+                <!-- <h2 style="margin:0; font-size: 20px; font-weight: bold; color: #1e293b;" id="visualizer-title"></h2> -->
+                <div style="display: inline-flex; flex: 1 1 auto; justify-content: flex-end; align-items: center; margin-left: 1.5rem;">
+                    <button class="iframe-modal-close"
+                        onclick="document.getElementById('borelog-modal').classList.add('hidden')"
+                        aria-label="Close"></button>
                 </div>
-                <button class="iframe-modal-close" style="margin-left: 12px;"
-                    onclick="document.getElementById('borelog-modal').classList.add('hidden')"
-                    aria-label="Close"></button>
+                <div style="display: inline-flex; flex: 9; justify-content: flex-end; align-items: center; gap: 9px; height: inherit; "
+                    id="visualizer-action-buttons">
+                    <div class="export-buttons">
+                        <button id="export-json-btn" class="violet_button export-json-btn-class">
+                            Export JSON
+                        </button>
+                        <button id="export-graphic-btn" class="blue_button export-graphic-btn-class">
+                            Export Graphic
+                        </button>
+                        <button id="export-xlsx-btn" class="teal_button export-xlsx-btn-class">
+                            Export XLSX
+                        </button>
+                    </div>
+                </div>
             </div>
             <div id="borelog-visualizer-container"
                 style="width: 100%; height: 81vh; max-height: 87vh; overflow: hidden; display: flex; flex: 1 1 0%; min-height: 0; flex-direction: column; padding: 3px;">
