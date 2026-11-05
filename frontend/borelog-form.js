@@ -82,9 +82,10 @@ const getRowHTML = (type) => {
         case 'grain_size':
             return `
                 <td data-label="Depth (m)"><input type="number" step="any" class="f-depth" required></td>
-                <td data-label="Sand (%)"><input type="number" step="0.01" class="f-sand" required></td>
-                <td data-label="Silt (%)"><input type="number" step="0.01" class="f-silt" required></td>
-                <td data-label="Clay (%)"><input type="number" step="0.01" class="f-clay" required></td>
+                <td data-label="Gravel (%)"><input type="number" step="0.01" class="f-gravel"></td>
+                <td data-label="Sand (%)"><input type="number" step="0.01" class="f-sand"></td>
+                <td data-label="Silt (%)"><input type="number" step="0.01" class="f-silt"></td>
+                <td data-label="Clay (%)"><input type="number" step="0.01" class="f-clay"></td>
                 <td data-label="Actions" class="action-pill-td">
                     <span class="empty-table-row-filler" title="Type into any field to begin"><img src="resources/images/enter-svgrepo.svg"></span>
                     <div class="action-pill">                    
@@ -440,18 +441,20 @@ function validateGeotechnicalRules(payload) {
         const rowNum = idx + 1;
         const ctx = `Grain Size Row ${rowNum}`;
         checkDepth(row.depth_m, ctx);
+        checkNonNegative(row.gravel, "Gravel %", ctx);
         checkNonNegative(row.sand, "Sand %", ctx);
         checkNonNegative(row.silt, "Silt %", ctx);
         checkNonNegative(row.clay, "Clay %", ctx);
 
+        const gravel = row.gravel || 0;
         const sand = row.sand || 0;
         const silt = row.silt || 0;
         const clay = row.clay || 0;
-        if (sand > 100 || silt > 100 || clay > 100) {
+        if (gravel > 100 || sand > 100 || silt > 100 || clay > 100) {
             errors.push(`${ctx}: Individual particle fractions cannot exceed 100%.`);
         }
-        if (sand + silt + clay > 105) {
-            errors.push(`${ctx}: Sum of fractions (${(sand + silt + clay).toFixed(1)}%) exceeds 100%.`);
+        if (gravel + sand + silt + clay > 105) {
+            errors.push(`${ctx}: Sum of fractions (${(gravel + sand + silt + clay).toFixed(1)}%) exceeds 100%.`);
         }
     });
 
@@ -572,9 +575,10 @@ function gatherBorelogData() {
 
             grain_size_analysis_data: Array.from(document.querySelectorAll('#grain_size-body tr')).filter(row => row.querySelector('.f-depth').value.trim() !== '').map(row => ({
                 depth_m: parseFloat(row.querySelector('.f-depth').value),
-                sand: parseFloat(row.querySelector('.f-sand').value),
-                silt: parseFloat(row.querySelector('.f-silt').value),
-                clay: parseFloat(row.querySelector('.f-clay').value)
+                gravel: (row.querySelector('.f-gravel') && row.querySelector('.f-gravel').value.trim() !== '') ? parseFloat(row.querySelector('.f-gravel').value) : 0,
+                sand: (row.querySelector('.f-sand') && row.querySelector('.f-sand').value.trim() !== '') ? parseFloat(row.querySelector('.f-sand').value) : 0,
+                silt: (row.querySelector('.f-silt') && row.querySelector('.f-silt').value.trim() !== '') ? parseFloat(row.querySelector('.f-silt').value) : 0,
+                clay: (row.querySelector('.f-clay') && row.querySelector('.f-clay').value.trim() !== '') ? parseFloat(row.querySelector('.f-clay').value) : 0
             })),
 
             cpt_data: Array.from(document.querySelectorAll('#cpt-body tr')).filter(row => row.querySelector('.f-depth').value.trim() !== '').map(row => ({
@@ -911,11 +915,16 @@ function populateFormFromJson(geoJson) {
     if (grainSizeData) {
         grainSizeData.forEach(s => {
             const tr = addRow('grain_size-body');
-            const inputs = tr.querySelectorAll('input');
-            inputs[0].value = s.depth_m !== undefined ? s.depth_m : '';
-            inputs[1].value = s.sand !== undefined ? s.sand : '';
-            inputs[2].value = s.silt !== undefined ? s.silt : '';
-            inputs[3].value = s.clay !== undefined ? s.clay : '';
+            const depthInp = tr.querySelector('.f-depth');
+            const gravelInp = tr.querySelector('.f-gravel');
+            const sandInp = tr.querySelector('.f-sand');
+            const siltInp = tr.querySelector('.f-silt');
+            const clayInp = tr.querySelector('.f-clay');
+            if (depthInp) depthInp.value = s.depth_m !== undefined && s.depth_m !== null ? s.depth_m : '';
+            if (gravelInp) gravelInp.value = s.gravel !== undefined && s.gravel !== null ? s.gravel : '';
+            if (sandInp) sandInp.value = s.sand !== undefined && s.sand !== null ? s.sand : '';
+            if (siltInp) siltInp.value = s.silt !== undefined && s.silt !== null ? s.silt : '';
+            if (clayInp) clayInp.value = s.clay !== undefined && s.clay !== null ? s.clay : '';
         });
     }
 

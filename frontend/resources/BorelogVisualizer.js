@@ -232,7 +232,7 @@ window.renderBorelogChart = function(containerId, geoJsonData) {
     const PIXELS_PER_METER = 60;
     const totalHeight = maxDepth * PIXELS_PER_METER;
     
-    const baseWidths = { depth: 60, stratum: 80, desc: 250, sptText: 140, sptGraph: 215, testsGraph: 400, grainGraph: 150, cptGraph: 600 };
+    const baseWidths = { depth: 60, stratum: 80, desc: 250, sptText: 140, sptGraph: 215, testsGraph: 400, grainGraph: 200, cptGraph: 600 };
     if (strata.length === 0) { baseWidths.stratum = 0; baseWidths.desc = 0; }
     if (sptData.length === 0) { baseWidths.sptText = 0; baseWidths.sptGraph = 0; }
     if (atterberg.length === 0) { baseWidths.testsGraph = 0; }
@@ -386,6 +386,7 @@ window.renderBorelogChart = function(containerId, geoJsonData) {
             d.innerHTML = `
                 <div style="border-bottom: 1px solid #e4e4e7; padding: 4px; font-weight: 600; color: #1e293b;">Grain Size Analysis</div>
                 <div style="display: flex;">
+                    <div style="flex: 1; padding: 4px; border-right: 1px solid #e4e4e7; font-size: 11px; font-weight: 600; color: #854d0e;">Gravel (%)</div>
                     <div style="flex: 1; padding: 4px; border-right: 1px solid #e4e4e7; font-size: 11px; font-weight: 600; color: #ff8d40;">Sand (%)</div>
                     <div style="flex: 1; padding: 4px; border-right: 1px solid #e4e4e7; font-size: 11px; font-weight: 600; color: #ff4053;">Silt (%)</div>
                     <div style="flex: 1; padding: 4px; font-size: 11px; font-weight: 600; color: #6830eb;">Clay (%)</div>
@@ -878,42 +879,58 @@ window.renderBorelogChart = function(containerId, geoJsonData) {
         
         grainSize.forEach(test => {
             const y = (parseFloat(test.depth_m) || 0) * PIXELS_PER_METER;
+            let gr = parseFloat(test.gravel) || 0;
             let s = parseFloat(test.sand) || 0;
             let si = parseFloat(test.silt) || 0;
             let cl = parseFloat(test.clay) || 0;
-            let tot = s + si + cl;
+            let tot = gr + s + si + cl;
             if(tot > 0) {
-                s = (s/tot)*100; si = (si/tot)*100; cl = (cl/tot)*100;
+                gr = (gr/tot)*100; s = (s/tot)*100; si = (si/tot)*100; cl = (cl/tot)*100;
                 
-                // For HTML rendering, we distribute equally in 3 columns:
-                // Sand is at 1/6th, Silt at 3/6th, Clay at 5/6th of 150px
-                const w = baseWidths.grainGraph; // 150
+                // For HTML rendering, we distribute equally in 4 columns:
+                // Gravel at 1/8th, Sand at 3/8th, Silt at 5/8th, Clay at 7/8th of 200px
+                const w = baseWidths.grainGraph; // 200
                 
+                const tGravel = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                tGravel.setAttribute("x", `${w/8}`); tGravel.setAttribute("y", y);
+                tGravel.setAttribute("font-size", "11px"); tGravel.setAttribute("fill", "#854d0e");
+                tGravel.setAttribute("text-anchor", "middle"); tGravel.textContent = gr.toFixed(1);
+                tGravel.setAttribute("font-family", "var(--font-mono)");
+                gsSvg.appendChild(tGravel);
+
                 const tSand = document.createElementNS("http://www.w3.org/2000/svg", "text");
-                tSand.setAttribute("x", `${w/6}`); tSand.setAttribute("y", y);
+                tSand.setAttribute("x", `${w*3/8}`); tSand.setAttribute("y", y);
                 tSand.setAttribute("font-size", "11px"); tSand.setAttribute("fill", "#ff8d40");
                 tSand.setAttribute("text-anchor", "middle"); tSand.textContent = s.toFixed(1);
-                tSand.setAttribute("font-family", "var(--font-mono)")
+                tSand.setAttribute("font-family", "var(--font-mono)");
                 gsSvg.appendChild(tSand);
                 
                 const tSilt = document.createElementNS("http://www.w3.org/2000/svg", "text");
-                tSilt.setAttribute("x", `${w/2}`); tSilt.setAttribute("y", y);
+                tSilt.setAttribute("x", `${w*5/8}`); tSilt.setAttribute("y", y);
                 tSilt.setAttribute("font-size", "11px"); tSilt.setAttribute("fill", "#ff4053");
                 tSilt.setAttribute("text-anchor", "middle"); tSilt.textContent = si.toFixed(1);
-                tSilt.setAttribute("font-family", "var(--font-mono)")
+                tSilt.setAttribute("font-family", "var(--font-mono)");
                 gsSvg.appendChild(tSilt);
                 
                 const tClay = document.createElementNS("http://www.w3.org/2000/svg", "text");
-                tClay.setAttribute("x", `${w*5/6}`); tClay.setAttribute("y", y);
+                tClay.setAttribute("x", `${w*7/8}`); tClay.setAttribute("y", y);
                 tClay.setAttribute("font-size", "11px"); tClay.setAttribute("fill", "#6830eb");
                 tClay.setAttribute("text-anchor", "middle"); tClay.textContent = cl.toFixed(1);
-                tClay.setAttribute("font-family", "var(--text-mono)")
+                tClay.setAttribute("font-family", "var(--font-mono)");
                 gsSvg.appendChild(tClay);
                 
                 const barW = w * 0.8; // 80% width for bars
-                const b1 = (s/100)*barW; const b2 = (si/100)*barW; const b3 = (cl/100)*barW;
+                const b0 = (gr/100)*barW; const b1 = (s/100)*barW; const b2 = (si/100)*barW; const b3 = (cl/100)*barW;
                 let xOffset = w * 0.1;
                 
+                const r0 = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+                r0.setAttribute("x", xOffset); r0.setAttribute("y", y + 4);
+                r0.setAttribute("width", b0); r0.setAttribute("height", "5"); 
+                r0.setAttribute("rx","2.5"); r0.setAttribute("ry","2.5");
+                r0.setAttribute("fill", "#854d0e");
+                gsSvg.appendChild(r0);
+                xOffset += b0;
+
                 const r1 = document.createElementNS("http://www.w3.org/2000/svg", "rect");
                 r1.setAttribute("x", xOffset); r1.setAttribute("y", y + 4);
                 r1.setAttribute("width", b1); r1.setAttribute("height", "5"); 
@@ -1158,7 +1175,7 @@ window.downloadBorelogSVG = function(geoJsonData, uid) {
     
     const PIXELS_PER_METER = 60;
 
-    const baseWidths = { depth: 60, stratum: 80, desc: 250, sptText: 140, sptGraph: 215, testsGraph: 400, grainGraph: 150, cptGraph: 600 };
+    const baseWidths = { depth: 60, stratum: 80, desc: 250, sptText: 140, sptGraph: 215, testsGraph: 400, grainGraph: 200, cptGraph: 600 };
     if (strata.length === 0) { baseWidths.stratum = 0; baseWidths.desc = 0; }
     if (sptData.length === 0) { baseWidths.sptText = 0; baseWidths.sptGraph = 0; }
     if (atterberg.length === 0) { baseWidths.testsGraph = 0; }
@@ -1327,9 +1344,11 @@ window.downloadBorelogSVG = function(geoJsonData, uid) {
                 svg += `<text class="meta-text" x="${cx}" y="${metaHeight + 14}" font-size="12px" font-weight="bold" fill="#3f3f46" text-anchor="middle">Grain Size Analysis</text>`;
                 svg += `<line x1="${colOffsets[i] + 50}" y1="${metaHeight + 20}" x2="${colOffsets[i] + 50}" y2="${metaHeight + 40}" stroke="#e4e4e7" stroke-width="1" />`;
                 svg += `<line x1="${colOffsets[i] + 100}" y1="${metaHeight + 20}" x2="${colOffsets[i] + 100}" y2="${metaHeight + 40}" stroke="#e4e4e7" stroke-width="1" />`;
-                svg += `<text class="meta-text" x="${colOffsets[i] + 25}" y="${metaHeight + 34}" font-size="11px" font-weight="600" fill="#ff8d40" text-anchor="middle">Sand (%)</text>`;
-                svg += `<text class="meta-text" x="${colOffsets[i] + 75}" y="${metaHeight + 34}" font-size="11px" font-weight="600" fill="#ff4053" text-anchor="middle">Silt (%)</text>`;
-                svg += `<text class="meta-text" x="${colOffsets[i] + 125}" y="${metaHeight + 34}" font-size="11px" font-weight="600" fill="#6830eb" text-anchor="middle">Clay (%)</text>`;
+                svg += `<line x1="${colOffsets[i] + 150}" y1="${metaHeight + 20}" x2="${colOffsets[i] + 150}" y2="${metaHeight + 40}" stroke="#e4e4e7" stroke-width="1" />`;
+                svg += `<text class="meta-text" x="${colOffsets[i] + 25}" y="${metaHeight + 34}" font-size="11px" font-weight="600" fill="#854d0e" text-anchor="middle">Gravel (%)</text>`;
+                svg += `<text class="meta-text" x="${colOffsets[i] + 75}" y="${metaHeight + 34}" font-size="11px" font-weight="600" fill="#ff8d40" text-anchor="middle">Sand (%)</text>`;
+                svg += `<text class="meta-text" x="${colOffsets[i] + 125}" y="${metaHeight + 34}" font-size="11px" font-weight="600" fill="#ff4053" text-anchor="middle">Silt (%)</text>`;
+                svg += `<text class="meta-text" x="${colOffsets[i] + 175}" y="${metaHeight + 34}" font-size="11px" font-weight="600" fill="#6830eb" text-anchor="middle">Clay (%)</text>`;
             } else if (i === 7 && cpt.length > 0) {
                 // Draw 3 sub-headers for CPT in SVG
                 svg += `<line x1="${colOffsets[i]}" y1="${metaHeight + 20}" x2="${colOffsets[i+1]}" y2="${metaHeight + 20}" stroke="#e4e4e7" stroke-width="1" />`;
@@ -1508,22 +1527,25 @@ window.downloadBorelogSVG = function(geoJsonData, uid) {
     if (grainSize.length > 0) {
         grainSize.forEach(test => {
             const y = headerHeight + (parseFloat(test.depth_m) || 0) * PIXELS_PER_METER;
+            let gr = parseFloat(test.gravel) || 0;
             let s = parseFloat(test.sand) || 0;
             let si = parseFloat(test.silt) || 0;
             let cl = parseFloat(test.clay) || 0;
-            let tot = s + si + cl;
+            let tot = gr + s + si + cl;
             if(tot > 0) {
-                s = (s/tot)*100; si = (si/tot)*100; cl = (cl/tot)*100;
-                svg += `<text x="${colOffsets[6] + 24}" y="${y}" class="plot-data" font-size="11px"  fill="#ff8d40" text-anchor="middle">${s.toFixed(1)}</text>`;
-                svg += `<text x="${colOffsets[6] + 75}" y="${y}" class="plot-data" font-size="11px"  fill="#ff4053" text-anchor="middle">${si.toFixed(1)}</text>`;
-                svg += `<text x="${colOffsets[6] + 126}" y="${y}" class="plot-data" font-size="11px" fill="#6830eb" text-anchor="middle">${cl.toFixed(1)}</text>`;
+                gr = (gr/tot)*100; s = (s/tot)*100; si = (si/tot)*100; cl = (cl/tot)*100;
+                svg += `<text x="${colOffsets[6] + 25}" y="${y}" class="plot-data" font-size="11px" fill="#854d0e" text-anchor="middle">${gr.toFixed(1)}</text>`;
+                svg += `<text x="${colOffsets[6] + 75}" y="${y}" class="plot-data" font-size="11px" fill="#ff8d40" text-anchor="middle">${s.toFixed(1)}</text>`;
+                svg += `<text x="${colOffsets[6] + 125}" y="${y}" class="plot-data" font-size="11px" fill="#ff4053" text-anchor="middle">${si.toFixed(1)}</text>`;
+                svg += `<text x="${colOffsets[6] + 175}" y="${y}" class="plot-data" font-size="11px" fill="#6830eb" text-anchor="middle">${cl.toFixed(1)}</text>`;
                 
-                const barW = 120;
-                const b1 = (s/100)*barW; const b2 = (si/100)*barW; const b3 = (cl/100)*barW;
-                let xOffset = colOffsets[6] + 15;
+                const barW = 160;
+                const b0 = (gr/100)*barW; const b1 = (s/100)*barW; const b2 = (si/100)*barW; const b3 = (cl/100)*barW;
+                let xOffset = colOffsets[6] + 20;
                 
                 let rx = 2.5;
                 let ry = 2.5;
+                svg += `<rect x="${xOffset}" y="${y+4}" width="${b0}" height="5" rx="${rx}" ry="${ry}" fill="#854d0e" />`; xOffset += b0;
                 svg += `<rect x="${xOffset}" y="${y+4}" width="${b1}" height="5" rx="${rx}" ry="${ry}" fill="#ff8d40" />`; xOffset += b1;
                 svg += `<rect x="${xOffset}" y="${y+4}" width="${b2}" height="5" rx="${rx}" ry="${ry}" fill="#ff4053" />`; xOffset += b2;
                 svg += `<rect x="${xOffset}" y="${y+4}" width="${b3}" height="5" rx="${rx}" ry="${ry}" fill="#6830eb" />`;

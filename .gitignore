@@ -90,3 +90,5 @@ Webmap.code-workspace
 
 # large borelogs directory
 Maps/prosoil-borelogs/
+.codebase-memory/
+audit_git_secrets.py

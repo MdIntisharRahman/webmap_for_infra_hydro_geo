@@ -660,17 +660,19 @@ def validate_borelog_payload(payload: dict) -> list[str]:
     for idx, row in enumerate(props.get("grain_size_analysis_data") or []):
         ctx = f"Grain Size Row {idx + 1}"
         check_depth(row.get("depth_m"), ctx)
+        check_non_neg(row.get("gravel"), "Gravel %", ctx)
         check_non_neg(row.get("sand"), "Sand %", ctx)
         check_non_neg(row.get("silt"), "Silt %", ctx)
         check_non_neg(row.get("clay"), "Clay %", ctx)
         try:
+            gravel = float(row.get("gravel") or 0)
             sand = float(row.get("sand") or 0)
             silt = float(row.get("silt") or 0)
             clay = float(row.get("clay") or 0)
-            if sand > 100 or silt > 100 or clay > 100:
+            if gravel > 100 or sand > 100 or silt > 100 or clay > 100:
                 errors.append(f"{ctx}: Individual particle fractions cannot exceed 100%.")
-            if (sand + silt + clay) > 105:
-                errors.append(f"{ctx}: Sum of fractions ({sand + silt + clay:.1f}%) exceeds 100%.")
+            if (gravel + sand + silt + clay) > 105:
+                errors.append(f"{ctx}: Sum of fractions ({gravel + sand + silt + clay:.1f}%) exceeds 100%.")
         except (ValueError, TypeError):
             pass
 

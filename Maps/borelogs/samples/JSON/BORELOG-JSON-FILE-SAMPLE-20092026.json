@@ -389,24 +389,28 @@
     "grain_size_analysis_data": [
       {
         "depth_m": 3,
+        "gravel": 0,
         "sand": 0.39,
         "silt": 68.96,
         "clay": 30.65
       },
       {
         "depth_m": 7.5,
+        "gravel": 0,
         "sand": 0.17,
         "silt": 70.52,
         "clay": 29.30
       },
       {
         "depth_m": 18,
+        "gravel": 1.28,
         "sand": 78.71,
         "silt": 20.01,
         "clay": 0
       },
       {
         "depth_m": 25,
+        "gravel": 0.31,
         "sand": 87.88,
         "silt": 11.81,
         "clay": 0
