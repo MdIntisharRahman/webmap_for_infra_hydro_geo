@@ -1064,7 +1064,7 @@ async function fetchAndRenderLayers() {
                 <div class="basemap-tab-header">
                     <div class="basemap-mode-switch">
                         <button type="button" class="basemap-mode-btn active" data-mode="single">Standard Single</button>
-                        <button type="button" class="basemap-mode-btn" data-mode="composite">🎨 Composite Mode</button>
+                        <button type="button" class="basemap-mode-btn" data-mode="composite">Composite Mode</button>
                     </div>
                     <div id="basemap-composite-card" class="basemap-composite-card" style="display: none;">
                         <div class="basemap-composite-row">
@@ -1078,10 +1078,10 @@ async function fetchAndRenderLayers() {
                         <div class="basemap-composite-row">
                             <label><span>Quick Presets</span></label>
                             <div class="composite-presets-container">
-                                <span class="composite-preset-badge" data-preset="sat_roads">🛰️ Sat + Roads</span>
-                                <span class="composite-preset-badge" data-preset="topo_roads">🏔️ Topo + Roads</span>
-                                <span class="composite-preset-badge" data-preset="sat_topo">🎨 Sat + Topo Relief</span>
-                                <span class="composite-preset-badge" data-preset="cycle_roads">🚲 Cycle + Roads</span>
+                                <span class="composite-preset-badge" data-preset="sat_roads">Sat + Roads</span>
+                                <span class="composite-preset-badge" data-preset="topo_roads">Topo + Roads</span>
+                                <span class="composite-preset-badge" data-preset="sat_topo">Sat + Topo Relief</span>
+                                <span class="composite-preset-badge" data-preset="cycle_roads">Cycle + Roads</span>
                             </div>
                         </div>
                         <div class="basemap-composite-row">
@@ -1103,12 +1103,12 @@ async function fetchAndRenderLayers() {
                                 <option value="luminosity">Luminosity (Monochrome Shading)</option>
                             </select>
                         </div>
-                        <div class="basemap-composite-row">
+                        <!-- <div class="basemap-composite-row">
                             <label class="swipe-toggle-label">
                                 <input type="checkbox" id="composite-swipe-toggle" />
                                 <span>Interactive Split / Swipe Divider</span>
                             </label>
-                        </div>
+                        </div> -->
                     </div>
                 </div>
                 <div id="single-basemaps-list"></div>
@@ -2809,13 +2809,13 @@ document.addEventListener("DOMContentLoaded", () => {
             label.appendChild(document.createTextNode(mask));
             row.appendChild(label);
 
-            if (isNum && stats.min !== Infinity && stats.max !== -Infinity) {
-                const boundsBadge = document.createElement("span");
-                boundsBadge.className = "range-bounds-badge";
-                boundsBadge.title = `Data range: ${stats.min} to ${stats.max}`;
-                boundsBadge.textContent = `${stats.min} – ${stats.max}`;
-                row.appendChild(boundsBadge);
-            }
+            // if (isNum && stats.min !== Infinity && stats.max !== -Infinity) {
+            //     const boundsBadge = document.createElement("span");
+            //     boundsBadge.className = "range-bounds-badge";
+            //     boundsBadge.title = `Data range: ${stats.min} to ${stats.max}`;
+            //     boundsBadge.textContent = `${stats.min} – ${stats.max}`;
+            //     row.appendChild(boundsBadge);
+            // }
 
             itemContainer.appendChild(row);
             searchFieldsCheckboxes.appendChild(itemContainer);
