@@ -24,6 +24,350 @@ L.control
     .attribution({ position: "bottomleft" })
     .addTo(map);
 
+// Dedicated panes for basemap compositing (hybrid, overlay, and swipe split)
+map.createPane('baseTilePanePrimary');
+map.getPane('baseTilePanePrimary').style.zIndex = '200';
+
+map.createPane('baseTilePaneSecondary');
+map.getPane('baseTilePaneSecondary').style.zIndex = '201';
+
+// ============================================================================
+// BASEMAP COMPOSITE MANAGER
+// ============================================================================
+
+window.basemapCompositeManager = {
+    mode: 'single', // 'single' | 'composite'
+    basemapConfigs: [],
+    primaryConfig: null,
+    secondaryConfig: null,
+    primaryTileLayer: null,
+    secondaryTileLayer: null,
+    opacity: 0.8,
+    blendMode: 'normal',
+    isSwipeActive: false,
+    swipePercent: 50,
+    swipeDividerEl: null,
+
+    init(basemapConfigs) {
+        this.basemapConfigs = basemapConfigs || [];
+        this.initSwipeControl();
+        this.initUI();
+    },
+
+    initSwipeControl() {
+        if (this.swipeDividerEl) return;
+        const mapEl = document.getElementById("map");
+        if (!mapEl) return;
+        const divider = document.createElement("div");
+        divider.id = "basemap-swipe-divider";
+        divider.style.display = "none";
+        divider.style.left = "50%";
+        divider.innerHTML = '<div class="swipe-divider-handle">&#x25C0;&#x25B6;</div>';
+        mapEl.appendChild(divider);
+        this.swipeDividerEl = divider;
+
+        let isDragging = false;
+        const updateSwipe = (clientX) => {
+            const rect = mapEl.getBoundingClientRect();
+            const x = clientX - rect.left;
+            const pct = Math.max(0, Math.min(100, (x / rect.width) * 100));
+            this.swipePercent = pct;
+            divider.style.left = `${pct}%`;
+            const secPane = map.getPane('baseTilePaneSecondary');
+            if (secPane && this.isSwipeActive) {
+                secPane.style.clipPath = `polygon(${pct}% 0, 100% 0, 100% 100%, ${pct}% 100%)`;
+            }
+        };
+
+        divider.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            divider.classList.add('dragging');
+            e.preventDefault();
+        });
+        window.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            updateSwipe(e.clientX);
+        });
+        window.addEventListener('mouseup', () => {
+            if (isDragging) {
+                isDragging = false;
+                divider.classList.remove('dragging');
+            }
+        });
+
+        divider.addEventListener('touchstart', () => {
+            isDragging = true;
+            divider.classList.add('dragging');
+        }, { passive: true });
+        window.addEventListener('touchmove', (e) => {
+            if (!isDragging || !e.touches || !e.touches[0]) return;
+            updateSwipe(e.touches[0].clientX);
+        }, { passive: true });
+        window.addEventListener('touchend', () => {
+            if (isDragging) {
+                isDragging = false;
+                divider.classList.remove('dragging');
+            }
+        });
+    },
+
+    initUI() {
+        const baseSelect = document.getElementById("composite-base-select");
+        const overlaySelect = document.getElementById("composite-overlay-select");
+        const opacitySlider = document.getElementById("composite-opacity-slider");
+        const opacityVal = document.getElementById("composite-opacity-val");
+        const blendSelect = document.getElementById("composite-blend-select");
+        const swipeToggle = document.getElementById("composite-swipe-toggle");
+        const modeBtns = document.querySelectorAll(".basemap-mode-btn");
+
+        if (baseSelect && overlaySelect && this.basemapConfigs.length > 0) {
+            baseSelect.innerHTML = "";
+            overlaySelect.innerHTML = "";
+            this.basemapConfigs.forEach(cfg => {
+                const opt1 = document.createElement("option");
+                opt1.value = cfg.name;
+                opt1.textContent = cfg.name;
+                baseSelect.appendChild(opt1);
+
+                const opt2 = document.createElement("option");
+                opt2.value = cfg.name;
+                opt2.textContent = cfg.name;
+                overlaySelect.appendChild(opt2);
+            });
+
+            // Default selections: Base -> Satellite Imagery (or first), Overlay -> ESRI Transportation (or second)
+            const sat = this.basemapConfigs.find(c => c.name.toLowerCase().includes("satellite")) || this.basemapConfigs[0];
+            const trans = this.basemapConfigs.find(c => c.name.toLowerCase().includes("transportation") || c.name.toLowerCase().includes("road")) || this.basemapConfigs[1] || this.basemapConfigs[0];
+            
+            if (sat) baseSelect.value = sat.name;
+            if (trans) overlaySelect.value = trans.name;
+
+            baseSelect.addEventListener("change", () => {
+                this.setPrimary(baseSelect.value);
+            });
+            overlaySelect.addEventListener("change", () => {
+                this.setSecondary(overlaySelect.value);
+            });
+        }
+
+        if (opacitySlider && opacityVal) {
+            opacitySlider.addEventListener("input", (e) => {
+                const val = parseInt(e.target.value, 10);
+                opacityVal.textContent = `${val}%`;
+                this.setOpacity(val / 100);
+            });
+        }
+
+        if (blendSelect) {
+            blendSelect.addEventListener("change", (e) => {
+                this.setBlendMode(e.target.value);
+            });
+        }
+
+        if (swipeToggle) {
+            swipeToggle.addEventListener("change", (e) => {
+                this.setSwipe(e.target.checked);
+            });
+        }
+
+        modeBtns.forEach(btn => {
+            btn.addEventListener("click", () => {
+                modeBtns.forEach(b => b.classList.remove("active"));
+                btn.classList.add("active");
+                this.setMode(btn.dataset.mode);
+            });
+        });
+
+        // Presets
+        document.querySelectorAll(".composite-preset-badge").forEach(badge => {
+            badge.addEventListener("click", () => {
+                this.applyPreset(badge.dataset.preset);
+            });
+        });
+    },
+
+    setMode(newMode) {
+        this.mode = newMode;
+        const singleContainer = document.getElementById("single-basemaps-list");
+        const compositeCard = document.getElementById("basemap-composite-card");
+        
+        if (newMode === 'composite') {
+            if (singleContainer) singleContainer.style.display = 'none';
+            if (compositeCard) compositeCard.style.display = 'flex';
+            
+            // Remove single active basemap from map
+            if (window.activeBasemapLayer) {
+                map.removeLayer(window.activeBasemapLayer);
+            }
+
+            const baseSelect = document.getElementById("composite-base-select");
+            const overlaySelect = document.getElementById("composite-overlay-select");
+            if (baseSelect) this.setPrimary(baseSelect.value);
+            if (overlaySelect) this.setSecondary(overlaySelect.value);
+            this.setBlendMode(this.blendMode);
+            this.setOpacity(this.opacity);
+            if (this.isSwipeActive) this.setSwipe(true);
+        } else {
+            if (singleContainer) singleContainer.style.display = 'block';
+            if (compositeCard) compositeCard.style.display = 'none';
+            
+            // Remove secondary layer and swipe
+            if (this.secondaryTileLayer) {
+                map.removeLayer(this.secondaryTileLayer);
+                this.secondaryTileLayer = null;
+            }
+            if (this.primaryTileLayer) {
+                map.removeLayer(this.primaryTileLayer);
+                this.primaryTileLayer = null;
+            }
+            this.setSwipe(false);
+
+            // Restore active single basemap
+            if (window.activeBasemapLayer) {
+                window.activeBasemapLayer.addTo(map);
+                window.activeBasemapLayer.bringToBack();
+            } else {
+                // Trigger checked radio
+                const checkedRadio = singleContainer ? singleContainer.querySelector(".layer-load-cb:checked") : null;
+                if (checkedRadio) checkedRadio.dispatchEvent(new Event("change"));
+            }
+        }
+    },
+
+    getAttribution(cfg) {
+        if (!cfg || !cfg.credit_page) return '';
+        const match = cfg.credit_page.match(/^(.*?)\s*\[(.*?)\]$/);
+        if (match) return `&copy; <a href="${match[1].trim()}" target="_blank">${match[2].trim()}</a>`;
+        return cfg.credit_page;
+    },
+
+    setPrimary(layerName) {
+        const cfg = this.basemapConfigs.find(c => c.name === layerName);
+        if (!cfg) return;
+        this.primaryConfig = cfg;
+        if (this.primaryTileLayer) map.removeLayer(this.primaryTileLayer);
+
+        const maxZoom = parseInt(cfg.zoom_level, 10) || 19;
+        this.primaryTileLayer = L.tileLayer(cfg.filename, {
+            maxZoom: maxZoom,
+            attribution: this.getAttribution(cfg),
+            pane: 'baseTilePanePrimary'
+        });
+        if (this.mode === 'composite') {
+            this.primaryTileLayer.addTo(map);
+            this.primaryTileLayer.bringToBack();
+        }
+    },
+
+    setSecondary(layerName) {
+        const cfg = this.basemapConfigs.find(c => c.name === layerName);
+        if (!cfg) return;
+        this.secondaryConfig = cfg;
+        if (this.secondaryTileLayer) map.removeLayer(this.secondaryTileLayer);
+
+        const maxZoom = parseInt(cfg.zoom_level, 10) || 19;
+        this.secondaryTileLayer = L.tileLayer(cfg.filename, {
+            maxZoom: maxZoom,
+            attribution: this.getAttribution(cfg),
+            pane: 'baseTilePaneSecondary',
+            opacity: this.opacity
+        });
+        if (this.mode === 'composite') {
+            this.secondaryTileLayer.addTo(map);
+            const secPane = map.getPane('baseTilePaneSecondary');
+            if (secPane) {
+                secPane.style.mixBlendMode = this.blendMode;
+                if (this.isSwipeActive) {
+                    secPane.style.clipPath = `polygon(${this.swipePercent}% 0, 100% 0, 100% 100%, ${this.swipePercent}% 100%)`;
+                } else {
+                    secPane.style.clipPath = '';
+                }
+            }
+        }
+    },
+
+    setOpacity(val) {
+        this.opacity = val;
+        if (this.secondaryTileLayer) {
+            this.secondaryTileLayer.setOpacity(val);
+        }
+    },
+
+    setBlendMode(mode) {
+        this.blendMode = mode;
+        const secPane = map.getPane('baseTilePaneSecondary');
+        if (secPane) {
+            secPane.style.mixBlendMode = mode;
+        }
+    },
+
+    setSwipe(active) {
+        this.isSwipeActive = active;
+        const secPane = map.getPane('baseTilePaneSecondary');
+        if (active) {
+            if (this.swipeDividerEl) this.swipeDividerEl.style.display = 'block';
+            if (secPane) {
+                secPane.style.clipPath = `polygon(${this.swipePercent}% 0, 100% 0, 100% 100%, ${this.swipePercent}% 100%)`;
+            }
+        } else {
+            if (this.swipeDividerEl) this.swipeDividerEl.style.display = 'none';
+            if (secPane) {
+                secPane.style.clipPath = '';
+            }
+        }
+    },
+
+    applyPreset(presetKey) {
+        const baseSelect = document.getElementById("composite-base-select");
+        const overlaySelect = document.getElementById("composite-overlay-select");
+        const opacitySlider = document.getElementById("composite-opacity-slider");
+        const opacityVal = document.getElementById("composite-opacity-val");
+        const blendSelect = document.getElementById("composite-blend-select");
+
+        let baseName = "";
+        let overlayName = "";
+        let op = 0.8;
+        let blend = "normal";
+
+        if (presetKey === "sat_roads") {
+            baseName = "Satellite Imagery";
+            overlayName = "ESRI Transportation";
+            op = 1.0;
+            blend = "normal";
+        } else if (presetKey === "topo_roads") {
+            baseName = "ESRI Topographic";
+            overlayName = "ESRI Transportation";
+            op = 0.9;
+            blend = "normal";
+        } else if (presetKey === "sat_topo") {
+            baseName = "Satellite Imagery";
+            overlayName = "ESRI Topographic";
+            op = 0.65;
+            blend = "multiply";
+        } else if (presetKey === "cycle_roads") {
+            baseName = "Satellite Imagery";
+            overlayName = "CycleOSM";
+            op = 0.75;
+            blend = "overlay";
+        }
+
+        const hasBase = this.basemapConfigs.some(c => c.name === baseName);
+        const hasOverlay = this.basemapConfigs.some(c => c.name === overlayName);
+        if (hasBase && baseSelect) baseSelect.value = baseName;
+        if (hasOverlay && overlaySelect) overlaySelect.value = overlayName;
+        if (opacitySlider) opacitySlider.value = Math.round(op * 100);
+        if (opacityVal) opacityVal.textContent = `${Math.round(op * 100)}%`;
+        if (blendSelect) blendSelect.value = blend;
+
+        this.setPrimary(hasBase ? baseName : (baseSelect ? baseSelect.value : ""));
+        this.setSecondary(hasOverlay ? overlayName : (overlaySelect ? overlaySelect.value : ""));
+        this.setOpacity(op);
+        this.setBlendMode(blend);
+    }
+};
+
+
+
 // ============================================================================
 // UI ELEMENT REFERENCES
 // ============================================================================
@@ -714,6 +1058,64 @@ async function fetchAndRenderLayers() {
             `;
         }
 
+        let singleBasemapsContainer = null;
+        if (tabContentWrappers["Basemaps"]) {
+            tabContentWrappers["Basemaps"].innerHTML = `
+                <div class="basemap-tab-header">
+                    <div class="basemap-mode-switch">
+                        <button type="button" class="basemap-mode-btn active" data-mode="single">Standard Single</button>
+                        <button type="button" class="basemap-mode-btn" data-mode="composite">🎨 Composite Mode</button>
+                    </div>
+                    <div id="basemap-composite-card" class="basemap-composite-card" style="display: none;">
+                        <div class="basemap-composite-row">
+                            <label><span>Primary Base Layer</span></label>
+                            <select id="composite-base-select" class="composite-select"></select>
+                        </div>
+                        <div class="basemap-composite-row">
+                            <label><span>Overlay / Blend Layer</span></label>
+                            <select id="composite-overlay-select" class="composite-select"></select>
+                        </div>
+                        <div class="basemap-composite-row">
+                            <label><span>Quick Presets</span></label>
+                            <div class="composite-presets-container">
+                                <span class="composite-preset-badge" data-preset="sat_roads">🛰️ Sat + Roads</span>
+                                <span class="composite-preset-badge" data-preset="topo_roads">🏔️ Topo + Roads</span>
+                                <span class="composite-preset-badge" data-preset="sat_topo">🎨 Sat + Topo Relief</span>
+                                <span class="composite-preset-badge" data-preset="cycle_roads">🚲 Cycle + Roads</span>
+                            </div>
+                        </div>
+                        <div class="basemap-composite-row">
+                            <label>
+                                <span>Overlay Opacity</span>
+                                <span id="composite-opacity-val" class="composite-opacity-badge">80%</span>
+                            </label>
+                            <div class="composite-slider-container">
+                                <input type="range" id="composite-opacity-slider" class="composite-range-slider" min="0" max="100" value="80" />
+                            </div>
+                        </div>
+                        <div class="basemap-composite-row">
+                            <label><span>CSS Blend Mode</span></label>
+                            <select id="composite-blend-select" class="composite-select">
+                                <option value="normal" selected>Normal (Standard Opacity)</option>
+                                <option value="multiply">Multiply (Terrain/Relief Darkening)</option>
+                                <option value="overlay">Overlay (Contrast Blend)</option>
+                                <option value="screen">Screen (Light Highlights)</option>
+                                <option value="luminosity">Luminosity (Monochrome Shading)</option>
+                            </select>
+                        </div>
+                        <div class="basemap-composite-row">
+                            <label class="swipe-toggle-label">
+                                <input type="checkbox" id="composite-swipe-toggle" />
+                                <span>Interactive Split / Swipe Divider</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div id="single-basemaps-list"></div>
+            `;
+            singleBasemapsContainer = tabContentWrappers["Basemaps"].querySelector("#single-basemaps-list");
+        }
+
         for (let i = 0; i < layers.length; i++) {
             const layerInfo = layers[i];
             const color = engineeringColors[i % engineeringColors.length];
@@ -811,7 +1213,9 @@ async function fetchAndRenderLayers() {
             item.addEventListener('touchend', () => { setTimeout(handleReset, 1500); }, { passive: true });
 
             let targetTab = layerInfo.tab || "Uncategorized";
-            if (tabContentWrappers[targetTab]) {
+            if (targetTab === "Basemaps" && singleBasemapsContainer) {
+                singleBasemapsContainer.appendChild(item);
+            } else if (tabContentWrappers[targetTab]) {
                 tabContentWrappers[targetTab].appendChild(item);
             }
 
@@ -845,7 +1249,7 @@ async function fetchAndRenderLayers() {
                         geoLayer = L.tileLayer(layerInfo.filename, {
                             maxZoom: maxZoom,
                             attribution: attributionHtml,
-                            pane: "tilePane"
+                            pane: "baseTilePanePrimary"
                         });
 
                         colorUI.innerHTML = `<div style="width: 1em; height: 1em; border-radius: 50%; background: #cbd5e1; flex-shrink:0;"></div>`;
@@ -1336,6 +1740,11 @@ async function fetchAndRenderLayers() {
                     });
                 }
             }
+        }
+
+        if (window.basemapCompositeManager) {
+            const basemapLayers = layers.filter(l => l.type && l.type.toLowerCase() === 'basemap');
+            window.basemapCompositeManager.init(basemapLayers);
         }
     } catch (error) {
         console.error("Error fetching layers data:", error);
@@ -2229,27 +2638,221 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let currentSearchFieldsConfig = [];
 
+    function parseSearchQuery(query) {
+        if (!query) return null;
+        let trimmed = query.trim();
+        let targetFieldMask = null;
+
+        // Check for field-specific prefix, e.g. "Construction Year: 2000..2010" or "spans: >= 5"
+        const colonIdx = trimmed.indexOf(":");
+        if (colonIdx > 0 && colonIdx < 35) {
+            const potentialMask = trimmed.substring(0, colonIdx).trim().toLowerCase();
+            const remainder = trimmed.substring(colonIdx + 1).trim();
+            if (remainder) {
+                targetFieldMask = potentialMask;
+                trimmed = remainder;
+            }
+        }
+
+        // Comparison operator: >=, <=, >, <, =, ==, !=
+        const opMatch = trimmed.match(/^([><]=?|==?|!=)\s*([+-]?\d+(?:\.\d+)?)$/);
+        if (opMatch) {
+            return {
+                type: "operator",
+                operator: opMatch[1] === "==" ? "=" : opMatch[1],
+                value: parseFloat(opMatch[2]),
+                targetMask: targetFieldMask,
+                raw: query.trim()
+            };
+        }
+
+        // Range between two numbers with ".." or "to"
+        const rangeMatch1 = trimmed.match(/^([+-]?\d+(?:\.\d+)?)\s*(?:\.\.|\s+to\s+)\s*([+-]?\d+(?:\.\d+)?)$/i);
+        if (rangeMatch1) {
+            const v1 = parseFloat(rangeMatch1[1]);
+            const v2 = parseFloat(rangeMatch1[2]);
+            return {
+                type: "range",
+                min: Math.min(v1, v2),
+                max: Math.max(v1, v2),
+                targetMask: targetFieldMask,
+                raw: query.trim()
+            };
+        }
+
+        // Range with hyphen: "2000 - 2010" or "10-20"
+        const rangeMatch2 = trimmed.match(/^([+-]?\d+(?:\.\d+)?)\s*-\s*([+-]?\d+(?:\.\d+)?)$/);
+        if (rangeMatch2) {
+            const v1 = parseFloat(rangeMatch2[1]);
+            const v2 = parseFloat(rangeMatch2[2]);
+            return {
+                type: "range",
+                min: Math.min(v1, v2),
+                max: Math.max(v1, v2),
+                targetMask: targetFieldMask,
+                raw: query.trim()
+            };
+        }
+
+        // Plain text substring
+        return {
+            type: "text",
+            text: trimmed.toLowerCase(),
+            targetMask: targetFieldMask,
+            raw: query.trim()
+        };
+    }
+
+    function inspectFieldStats(geoLayer, fieldsConfig) {
+        const stats = {};
+        fieldsConfig.forEach(({ field, mask }) => {
+            stats[field] = {
+                field: field,
+                mask: mask || field,
+                isNumeric: false,
+                min: Infinity,
+                max: -Infinity,
+                totalCount: 0,
+                numCount: 0
+            };
+        });
+
+        if (!geoLayer) return stats;
+        if (!geoLayer.allFeatureLayers) {
+            geoLayer.allFeatureLayers = geoLayer.getLayers ? geoLayer.getLayers() : [];
+        }
+
+        geoLayer.allFeatureLayers.forEach(layer => {
+            const props = layer.feature && layer.feature.properties;
+            if (!props) return;
+            fieldsConfig.forEach(({ field }) => {
+                const val = props[field];
+                if (val !== undefined && val !== null && String(val).trim() !== '') {
+                    stats[field].totalCount++;
+                    const cleanStr = String(val).trim();
+                    const num = parseFloat(cleanStr);
+                    if (!isNaN(num) && isFinite(num) && /^[+-]?\d+(?:\.\d+)?$/.test(cleanStr)) {
+                        stats[field].numCount++;
+                        if (num < stats[field].min) stats[field].min = num;
+                        if (num > stats[field].max) stats[field].max = num;
+                    }
+                }
+            });
+        });
+
+        fieldsConfig.forEach(({ field }) => {
+            const s = stats[field];
+            if (s.totalCount > 0 && (s.numCount / s.totalCount) >= 0.5 && s.min !== Infinity) {
+                s.isNumeric = true;
+            }
+        });
+
+        return stats;
+    }
+
+    function showSearchToast(count, query) {
+        let existingToast = document.querySelector(".search-result-toast");
+        if (existingToast) existingToast.remove();
+
+        const toast = document.createElement("div");
+        toast.className = "search-result-toast";
+        if (count > 0) {
+            toast.innerHTML = `<span>🔍</span> Found <strong>${count}</strong> feature${count > 1 ? 's' : ''} matching "<em>${query}</em>"`;
+        } else {
+            toast.style.background = "rgba(185, 28, 28, 0.95)";
+            toast.innerHTML = `<span>⚠️</span> No features found matching "<em>${query}</em>". Restoring layer.`;
+        }
+        document.body.appendChild(toast);
+        setTimeout(() => {
+            toast.style.opacity = "0";
+            setTimeout(() => toast.remove(), 350);
+        }, 3200);
+    }
+
     function populateSearchFields(config) {
         searchFieldsCheckboxes.innerHTML = "";
         searchFieldsList.classList.remove("hidden");
         currentSearchFieldsConfig = parseSearchOn(config.search_on);
         
+        const geoLayer = loadedLayers[activeSearchLayerName];
+        const fieldStats = inspectFieldStats(geoLayer, currentSearchFieldsConfig);
+        
         currentSearchFieldsConfig.forEach(({ field, mask }) => {
+            const stats = fieldStats[field] || {};
+            const isNum = stats.isNumeric;
+
+            const itemContainer = document.createElement("div");
+            itemContainer.className = "search-field-item-container";
+
+            const row = document.createElement("div");
+            row.className = "search-field-row";
+
             const label = document.createElement("label");
             label.className = "search-field-option";
-            
+
             const checkbox = document.createElement("input");
             checkbox.type = "checkbox";
             checkbox.value = field;
             checkbox.checked = true; // default to checked
             checkbox.dataset.mask = mask;
-            checkbox.addEventListener("change", () => {
-                // re-evaluate search if input is active
-            });
 
             label.appendChild(checkbox);
             label.appendChild(document.createTextNode(mask));
-            searchFieldsCheckboxes.appendChild(label);
+            row.appendChild(label);
+
+            if (isNum && stats.min !== Infinity && stats.max !== -Infinity) {
+                const boundsBadge = document.createElement("span");
+                boundsBadge.className = "range-bounds-badge";
+                boundsBadge.title = `Data range: ${stats.min} to ${stats.max}`;
+                boundsBadge.textContent = `${stats.min} – ${stats.max}`;
+                row.appendChild(boundsBadge);
+            }
+
+            itemContainer.appendChild(row);
+
+            if (isNum && stats.min !== Infinity && stats.max !== -Infinity) {
+                const inputsDiv = document.createElement("div");
+                inputsDiv.className = "range-inputs-container";
+                inputsDiv.innerHTML = `
+                    <input type="number" class="range-num-input range-min" placeholder="${stats.min}" step="any" />
+                    <span class="range-sep">–</span>
+                    <input type="number" class="range-num-input range-max" placeholder="${stats.max}" step="any" />
+                    <button type="button" class="range-apply-btn">Apply</button>
+                `;
+
+                const minInp = inputsDiv.querySelector(".range-min");
+                const maxInp = inputsDiv.querySelector(".range-max");
+                const applyBtn = inputsDiv.querySelector(".range-apply-btn");
+
+                const doRangeApply = () => {
+                    const minVal = minInp.value.trim();
+                    const maxVal = maxInp.value.trim();
+                    if (!minVal && !maxVal) return;
+
+                    let rangeQuery = "";
+                    if (minVal && maxVal) {
+                        rangeQuery = `${minVal}..${maxVal}`;
+                    } else if (minVal) {
+                        rangeQuery = `>= ${minVal}`;
+                    } else if (maxVal) {
+                        rangeQuery = `<= ${maxVal}`;
+                    }
+
+                    checkbox.checked = true;
+                    searchInput.value = `${mask}: ${rangeQuery}`;
+                    if (searchResetBtn) searchResetBtn.classList.remove("hidden");
+                    if (searchSuggestions) searchSuggestions.classList.add("hidden");
+                    executeSearch(searchInput.value);
+                };
+
+                applyBtn.addEventListener("click", doRangeApply);
+                minInp.addEventListener("keydown", (e) => { if (e.key === "Enter") doRangeApply(); });
+                maxInp.addEventListener("keydown", (e) => { if (e.key === "Enter") doRangeApply(); });
+
+                itemContainer.appendChild(inputsDiv);
+            }
+
+            searchFieldsCheckboxes.appendChild(itemContainer);
         });
     }
 
@@ -2286,13 +2889,13 @@ document.addEventListener("DOMContentLoaded", () => {
     // Handle typing and suggestions
     if (searchInput) {
         searchInput.addEventListener("input", (e) => {
-            const query = e.target.value.toLowerCase().trim();
+            const rawVal = e.target.value.trim();
             if (searchResetBtn) {
-                if (query) searchResetBtn.classList.remove("hidden");
+                if (rawVal) searchResetBtn.classList.remove("hidden");
                 else searchResetBtn.classList.add("hidden");
             }
             
-            if (!query || !activeSearchLayerName) {
+            if (!rawVal || !activeSearchLayerName) {
                 searchSuggestions.classList.add("hidden");
                 if (activeSearchLayerName) resetLayerSearch(activeSearchLayerName);
                 return;
@@ -2305,7 +2908,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!geoLayer) return;
 
             if (!geoLayer.allFeatureLayers) {
-                geoLayer.allFeatureLayers = geoLayer.getLayers();
+                geoLayer.allFeatureLayers = geoLayer.getLayers ? geoLayer.getLayers() : [];
             }
 
             const fieldMaskMap = {};
@@ -2313,9 +2916,58 @@ document.addEventListener("DOMContentLoaded", () => {
                 fieldMaskMap[item.field] = item.mask;
             });
 
+            const parsed = parseSearchQuery(rawVal);
+            
+            if (parsed.type === "range" || parsed.type === "operator") {
+                const rangeSuggestions = [];
+                selectedFields.forEach(field => {
+                    const mask = fieldMaskMap[field] || field;
+                    if (parsed.targetMask && mask.toLowerCase() !== parsed.targetMask && field.toLowerCase() !== parsed.targetMask) {
+                        return;
+                    }
+                    let count = 0;
+                    geoLayer.allFeatureLayers.forEach(layer => {
+                        const props = layer.feature && layer.feature.properties;
+                        if (!props) return;
+                        const val = props[field];
+                        if (val !== undefined && val !== null && String(val).trim() !== "") {
+                            const num = parseFloat(val);
+                            if (!isNaN(num) && isFinite(num)) {
+                                if (parsed.type === "range") {
+                                    if (num >= parsed.min && num <= parsed.max) count++;
+                                } else if (parsed.type === "operator") {
+                                    if (parsed.operator === ">=" && num >= parsed.value) count++;
+                                    else if (parsed.operator === "<=" && num <= parsed.value) count++;
+                                    else if (parsed.operator === ">" && num > parsed.value) count++;
+                                    else if (parsed.operator === "<" && num < parsed.value) count++;
+                                    else if (parsed.operator === "=" && num === parsed.value) count++;
+                                    else if (parsed.operator === "!=" && num !== parsed.value) count++;
+                                }
+                            }
+                        }
+                    });
+                    if (count > 0) {
+                        rangeSuggestions.push({
+                            isRange: true,
+                            mask: mask,
+                            field: field,
+                            count: count,
+                            query: rawVal,
+                            displayText: `${mask}: ${count} feature${count > 1 ? 's' : ''} in range (${parsed.type === 'range' ? `${parsed.min} to ${parsed.max}` : `${parsed.operator} ${parsed.value}`})`
+                        });
+                    }
+                });
+                
+                renderSuggestions(rangeSuggestions);
+                return;
+            }
+
+            // Standard text suggestions
+            const query = rawVal.toLowerCase();
             const suggestions = new Set();
             geoLayer.allFeatureLayers.forEach(layer => {
-                const props = layer.feature.properties;
+                const props = layer.feature && layer.feature.properties;
+                if (!props) return;
                 selectedFields.forEach(field => {
                     const val = props[field];
                     if (val !== undefined && val !== null) {
@@ -2340,51 +2992,97 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function renderSuggestions(suggestionsList) {
-        if (suggestionsList.length === 0) {
+        if (!suggestionsList || suggestionsList.length === 0) {
             searchSuggestions.classList.add("hidden");
             return;
         }
 
         searchSuggestions.innerHTML = "";
-        suggestionsList.forEach(sugg => {
+        suggestionsList.forEach(item => {
             const div = document.createElement("div");
             div.className = "suggestion-item";
-            
-            const parts = sugg.split(":::");
-            const maskPart = parts[0];
-            const valPart = parts.slice(1).join(":::");
-            
-            div.innerHTML = `<span class="field-name">${maskPart}:</span>${valPart}`;
-            div.addEventListener("click", () => {
-                searchInput.value = valPart; // Fill with the value
-                if (searchResetBtn) searchResetBtn.classList.remove("hidden");
-                searchSuggestions.classList.add("hidden");
-                executeSearch(valPart);
-            });
+
+            if (typeof item === "object" && item.isRange) {
+                div.classList.add("range-suggestion");
+                div.innerHTML = `<span class="field-icon">📊</span>${item.displayText}`;
+                div.addEventListener("click", () => {
+                    searchInput.value = item.query;
+                    if (searchResetBtn) searchResetBtn.classList.remove("hidden");
+                    searchSuggestions.classList.add("hidden");
+                    executeSearch(item.query);
+                });
+            } else {
+                const parts = item.split(":::");
+                const maskPart = parts[0];
+                const valPart = parts.slice(1).join(":::");
+                div.innerHTML = `<span class="field-name">${maskPart}:</span>${valPart}`;
+                div.addEventListener("click", () => {
+                    searchInput.value = valPart;
+                    if (searchResetBtn) searchResetBtn.classList.remove("hidden");
+                    searchSuggestions.classList.add("hidden");
+                    executeSearch(valPart);
+                });
+            }
             searchSuggestions.appendChild(div);
         });
         searchSuggestions.classList.remove("hidden");
     }
 
     function executeSearch(query) {
-        query = query.toLowerCase().trim();
-        if (!activeSearchLayerName || !query) return;
+        if (!query) return;
+        const parsed = parseSearchQuery(query);
+        if (!parsed || !activeSearchLayerName) return;
 
         const geoLayer = loadedLayers[activeSearchLayerName];
         if (!geoLayer || !geoLayer.allFeatureLayers) return;
 
         const selectedFields = getSelectedFields();
-        let matchCount = 0;
+        if (selectedFields.length === 0) return;
 
+        const fieldMaskMap = {};
+        currentSearchFieldsConfig.forEach(item => {
+            fieldMaskMap[item.field] = item.mask;
+        });
+
+        let matchCount = 0;
         geoLayer.clearLayers();
+
         geoLayer.allFeatureLayers.forEach(layer => {
             let isMatch = false;
-            const props = layer.feature.properties;
-            
+            const props = layer.feature && layer.feature.properties;
+            if (!props) return;
+
             for (let i = 0; i < selectedFields.length; i++) {
-                const val = props[selectedFields[i]];
-                if (val !== undefined && val !== null) {
-                    if (String(val).toLowerCase().includes(query)) {
+                const field = selectedFields[i];
+                const mask = fieldMaskMap[field] || field;
+
+                // If a targeted prefix was supplied (e.g. "Construction Year: ..."), only test that field
+                if (parsed.targetMask && mask.toLowerCase() !== parsed.targetMask && field.toLowerCase() !== parsed.targetMask) {
+                    continue;
+                }
+
+                const val = props[field];
+                if (val === undefined || val === null || String(val).trim() === "") continue;
+
+                if (parsed.type === "range" || parsed.type === "operator") {
+                    const num = parseFloat(String(val).trim());
+                    if (!isNaN(num) && isFinite(num)) {
+                        if (parsed.type === "range") {
+                            if (num >= parsed.min && num <= parsed.max) {
+                                isMatch = true;
+                                break;
+                            }
+                        } else if (parsed.type === "operator") {
+                            if (parsed.operator === ">=" && num >= parsed.value) { isMatch = true; break; }
+                            else if (parsed.operator === "<=" && num <= parsed.value) { isMatch = true; break; }
+                            else if (parsed.operator === ">" && num > parsed.value) { isMatch = true; break; }
+                            else if (parsed.operator === "<" && num < parsed.value) { isMatch = true; break; }
+                            else if (parsed.operator === "=" && num === parsed.value) { isMatch = true; break; }
+                            else if (parsed.operator === "!=" && num !== parsed.value) { isMatch = true; break; }
+                        }
+                    }
+                } else if (parsed.type === "text") {
+                    if (String(val).toLowerCase().includes(parsed.text)) {
                         isMatch = true;
                         break;
                     }
@@ -2397,14 +3095,16 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
 
+        showSearchToast(matchCount, query);
+
         if (matchCount === 0) {
-            alert("Search yields no result.");
-            // Restore all
+            // Restore all features on zero matches
             resetLayerSearch(activeSearchLayerName);
         } else {
-            // Optional: zoom to bounds of matched features
             try {
-                map.flyToBounds(geoLayer.getBounds(), { maxZoom: 14, duration: 1.5 });
+                if (geoLayer.getBounds && geoLayer.getBounds().isValid()) {
+                    map.flyToBounds(geoLayer.getBounds(), { maxZoom: 14, duration: 1.2 });
+                }
             } catch(e) {}
         }
     }
