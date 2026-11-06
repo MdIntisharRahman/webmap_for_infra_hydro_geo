@@ -3120,8 +3120,7 @@ body {
 }
 
 .suggestion-item.range-suggestion {
-    background: #f0fdf4;
-    border-left: 3px solid #16a34a;
+    background: #f0fdf49e;
     font-weight: 600;
 }
 

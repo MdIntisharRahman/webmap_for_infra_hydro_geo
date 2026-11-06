@@ -2766,10 +2766,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const toast = document.createElement("div");
         toast.className = "search-result-toast";
         if (count > 0) {
-            toast.innerHTML = `<span>🔍</span> Found <strong>${count}</strong> feature${count > 1 ? 's' : ''} matching "<em>${query}</em>"`;
+            toast.innerHTML = `Found <strong>${count}</strong> feature${count > 1 ? 's' : ''} matching "${query}"`;
         } else {
             toast.style.background = "rgba(185, 28, 28, 0.95)";
-            toast.innerHTML = `<span>⚠️</span> No features found matching "<em>${query}</em>". Restoring layer.`;
+            toast.innerHTML = `No features found matching "<em>${query}</em>". Restoring layer.`;
         }
         document.body.appendChild(toast);
         setTimeout(() => {
@@ -2970,7 +2970,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (typeof item === "object" && item.isRange) {
                 div.classList.add("range-suggestion");
-                div.innerHTML = `<span class="field-icon">📊</span>${item.displayText}`;
+                div.innerHTML = `<span class="field-icon"></span>${item.displayText}`;
                 div.addEventListener("click", () => {
                     searchInput.value = item.query;
                     if (searchResetBtn) searchResetBtn.classList.remove("hidden");
