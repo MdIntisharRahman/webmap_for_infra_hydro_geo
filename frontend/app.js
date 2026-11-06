@@ -2583,26 +2583,35 @@ document.addEventListener("DOMContentLoaded", () => {
         const loadedLayerNames = Object.keys(loadedLayers);
         let hasSearchableLayers = false;
 
-        loadedLayerNames.forEach(layerName => {
+        loadedLayerNames.forEach((layerName, index) => {
             const config = window.allLayerConfigs.find(c => c.name === layerName);
             if (config && config.search_on && config.search_on.trim() !== "") {
                 hasSearchableLayers = true;
-                const label = document.createElement("label");
-                label.className = "search-layer-option";
+                const wrapper = document.createElement("div");
+                wrapper.className = "radio-wrapper-27";
                 
+                const radioId = "search-layer-" + index + "-" + layerName.replace(/[^a-zA-Z0-9_-]/g, "_");
                 const radio = document.createElement("input");
+                radio.id = radioId;
                 radio.type = "radio";
                 radio.name = "searchLayer";
                 radio.value = layerName;
+                if (activeSearchLayerName === layerName) {
+                    radio.checked = true;
+                }
                 radio.addEventListener("change", () => {
                     activeSearchLayerName = layerName;
                     populateSearchFields(config);
                     resetLayerSearch(layerName);
                 });
 
-                label.appendChild(radio);
-                label.appendChild(document.createTextNode(layerName));
-                searchLayerList.appendChild(label);
+                const label = document.createElement("label");
+                label.htmlFor = radioId;
+                label.textContent = layerName;
+
+                wrapper.appendChild(radio);
+                wrapper.appendChild(label);
+                searchLayerList.appendChild(wrapper);
             }
         });
 

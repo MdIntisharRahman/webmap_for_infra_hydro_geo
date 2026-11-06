@@ -2602,7 +2602,78 @@ body {
     color: #374151;
 }
 
-.search-layer-option,
+/* Radio Wrapper 27 - Custom Animated Radiomark for Search Layers */
+.radio-wrapper-27 {
+    display: flex;
+    align-items: center;
+    --bc: 27.8078% .029596 256.847952;
+    margin-bottom: 8px;
+    cursor: pointer;
+}
+
+.radio-wrapper-27 label {
+    padding-left: .6em;
+    font-size: .875rem;
+    line-height: 1.25rem;
+    --tw-text-opacity: 1;
+    color: oklch(var(--bc)/var(--tw-text-opacity));
+    cursor: pointer;
+    user-select: none;
+}
+
+.radio-wrapper-27 input[type="radio"] {
+    margin: 0;
+    padding: 0;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    height: 1.5rem;
+    width: 1.5rem;
+    min-width: 1.5rem;
+    flex-shrink: 0;
+    cursor: pointer;
+    border-radius: 9999px;
+    border-width: 1px;
+    border-style: solid;
+    border-color: oklch(var(--bc) / var(--tw-border-opacity));
+    --tw-border-opacity: .2;
+    --chkbg: var(--accent-blue, #025ec7);
+    --b1: 100% 0 0;
+    background-color: transparent;
+    outline: none;
+}
+
+.radio-wrapper-27 input[type="radio"]:after {
+    display: none !important;
+    content: none !important;
+}
+
+.radio-wrapper-27 input[type="radio"]:hover:not(:checked) {
+    border-color: var(--accent-blue, #025ec7);
+}
+
+.radio-wrapper-27 input[type="radio"]:checked,
+.radio-wrapper-27 input[type="radio"][aria-checked=true] {
+    --tw-bg-opacity: 1;
+    background-color: var(--accent-blue, #025ec7);
+    border-color: var(--accent-blue, #025ec7);
+    background-image: none;
+    animation: radiomark-27 var(--animation-input, .2s) ease-out;
+    box-shadow: 0 0 0 4px oklch(var(--b1) / 1) inset, 0 0 0 4px oklch(var(--b1) / 1) inset;
+}
+
+@keyframes radiomark-27 {
+    0% {
+        box-shadow: 0 0 0 12px oklch(var(--b1) / 1) inset, 0 0 0 12px oklch(var(--b1) / 1) inset;
+    }
+    50% {
+        box-shadow: 0 0 0 3px oklch(var(--b1) / 1) inset, 0 0 0 3px oklch(var(--b1) / 1) inset;
+    }
+    100% {
+        box-shadow: 0 0 0 4px oklch(var(--b1) / 1) inset, 0 0 0 4px oklch(var(--b1) / 1) inset;
+    }
+}
+
 .search-field-option {
     display: flex;
     align-items: center;
@@ -2611,7 +2682,6 @@ body {
     color: #4b5563;
 }
 
-.search-layer-option input,
 .search-field-option input {
     margin-right: 8px;
 }
