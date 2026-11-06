@@ -2818,49 +2818,6 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             itemContainer.appendChild(row);
-
-            if (isNum && stats.min !== Infinity && stats.max !== -Infinity) {
-                const inputsDiv = document.createElement("div");
-                inputsDiv.className = "range-inputs-container";
-                inputsDiv.innerHTML = `
-                    <input type="number" class="range-num-input range-min" placeholder="${stats.min}" step="any" />
-                    <span class="range-sep">–</span>
-                    <input type="number" class="range-num-input range-max" placeholder="${stats.max}" step="any" />
-                    <button type="button" class="range-apply-btn">Apply</button>
-                `;
-
-                const minInp = inputsDiv.querySelector(".range-min");
-                const maxInp = inputsDiv.querySelector(".range-max");
-                const applyBtn = inputsDiv.querySelector(".range-apply-btn");
-
-                const doRangeApply = () => {
-                    const minVal = minInp.value.trim();
-                    const maxVal = maxInp.value.trim();
-                    if (!minVal && !maxVal) return;
-
-                    let rangeQuery = "";
-                    if (minVal && maxVal) {
-                        rangeQuery = `${minVal}..${maxVal}`;
-                    } else if (minVal) {
-                        rangeQuery = `>= ${minVal}`;
-                    } else if (maxVal) {
-                        rangeQuery = `<= ${maxVal}`;
-                    }
-
-                    checkbox.checked = true;
-                    searchInput.value = `${mask}: ${rangeQuery}`;
-                    if (searchResetBtn) searchResetBtn.classList.remove("hidden");
-                    if (searchSuggestions) searchSuggestions.classList.add("hidden");
-                    executeSearch(searchInput.value);
-                };
-
-                applyBtn.addEventListener("click", doRangeApply);
-                minInp.addEventListener("keydown", (e) => { if (e.key === "Enter") doRangeApply(); });
-                maxInp.addEventListener("keydown", (e) => { if (e.key === "Enter") doRangeApply(); });
-
-                itemContainer.appendChild(inputsDiv);
-            }
-
             searchFieldsCheckboxes.appendChild(itemContainer);
         });
     }
