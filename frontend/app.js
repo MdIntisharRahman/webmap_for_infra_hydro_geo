@@ -116,8 +116,8 @@ window.basemapCompositeManager = {
         const overlaySelect = document.getElementById("composite-overlay-select");
         const opacitySlider = document.getElementById("composite-opacity-slider");
         const opacityVal = document.getElementById("composite-opacity-val");
-        const blendSelect = document.getElementById("composite-blend-select");
-        const swipeToggle = document.getElementById("composite-swipe-toggle");
+        // const blendSelect = document.getElementById("composite-blend-select");
+        // const swipeToggle = document.getElementById("composite-swipe-toggle");
         const modeBtns = document.querySelectorAll(".basemap-mode-btn");
 
         if (baseSelect && overlaySelect && this.basemapConfigs.length > 0) {
@@ -158,17 +158,17 @@ window.basemapCompositeManager = {
             });
         }
 
-        if (blendSelect) {
-            blendSelect.addEventListener("change", (e) => {
-                this.setBlendMode(e.target.value);
-            });
-        }
+        // if (blendSelect) {
+        //     blendSelect.addEventListener("change", (e) => {
+        //         this.setBlendMode(e.target.value);
+        //     });
+        // }
 
-        if (swipeToggle) {
-            swipeToggle.addEventListener("change", (e) => {
-                this.setSwipe(e.target.checked);
-            });
-        }
+        // if (swipeToggle) {
+        //     swipeToggle.addEventListener("change", (e) => {
+        //         this.setSwipe(e.target.checked);
+        //     });
+        // }
 
         modeBtns.forEach(btn => {
             btn.addEventListener("click", () => {
@@ -179,16 +179,16 @@ window.basemapCompositeManager = {
         });
 
         // Presets
-        document.querySelectorAll(".composite-preset-badge").forEach(badge => {
-            badge.addEventListener("click", () => {
-                this.applyPreset(badge.dataset.preset);
-            });
-        });
+        // document.querySelectorAll(".composite-preset-badge").forEach(badge => {
+        //     badge.addEventListener("click", () => {
+        //         this.applyPreset(badge.dataset.preset);
+        //     });
+        // });
     },
 
     setMode(newMode) {
         this.mode = newMode;
-        const singleContainer = document.getElementById("single-basemaps-list");
+        const singleContainer = document.getElementById("single-basemaps-card");
         const compositeCard = document.getElementById("basemap-composite-card");
         
         if (newMode === 'composite') {
@@ -224,6 +224,9 @@ window.basemapCompositeManager = {
 
             // Restore active single basemap
             if (window.activeBasemapLayer) {
+                if (typeof window.singleBasemapOpacity === 'number' && typeof window.activeBasemapLayer.setOpacity === 'function') {
+                    window.activeBasemapLayer.setOpacity(window.singleBasemapOpacity);
+                }
                 window.activeBasemapLayer.addTo(map);
                 window.activeBasemapLayer.bringToBack();
             } else {
@@ -1066,52 +1069,69 @@ async function fetchAndRenderLayers() {
                         <button type="button" class="basemap-mode-btn active" data-mode="single">Standard Single</button>
                         <button type="button" class="basemap-mode-btn" data-mode="composite">Composite Mode</button>
                     </div>
-                    <div id="basemap-composite-card" class="basemap-composite-card" style="display: none;">
-                        <div class="basemap-composite-row">
-                            <label><span>Primary Base Layer</span></label>
-                            <select id="composite-base-select" class="composite-select"></select>
+                </div>
+                <div id="basemap-composite-card" class="basemap-composite-card" style="display: none;">
+                    <div class="basemap-composite-row">
+                        <label><span>Primary Base Layer</span></label>
+                        <select id="composite-base-select" class="composite-select"></select>
+                    </div>
+                    <div class="basemap-composite-row">
+                        <label><span>Overlay / Blend Layer</span></label>
+                        <select id="composite-overlay-select" class="composite-select"></select>
+                    </div>
+                    <!-- <div class="basemap-composite-row">
+                        <label><span>Quick Presets</span></label>
+                        <div class="composite-presets-container">
+                            <span class="composite-preset-badge" data-preset="sat_roads">Sat + Roads</span>
+                            <span class="composite-preset-badge" data-preset="topo_roads">Topo + Roads</span>
+                            <span class="composite-preset-badge" data-preset="sat_topo">Sat + Topo Relief</span>
+                            <span class="composite-preset-badge" data-preset="cycle_roads">Cycle + Roads</span>
                         </div>
-                        <div class="basemap-composite-row">
-                            <label><span>Overlay / Blend Layer</span></label>
-                            <select id="composite-overlay-select" class="composite-select"></select>
+                    </div> -->
+                    <div class="basemap-composite-row">
+                        <label>
+                            <span>Overlay Opacity</span>
+                            <span id="composite-opacity-val" class="composite-opacity-badge">80%</span>
+                        </label>
+                        <div class="composite-slider-container">
+                            <input type="range" id="composite-opacity-slider" class="composite-range-slider" min="0" max="100" value="80" />
                         </div>
-                        <div class="basemap-composite-row">
-                            <label><span>Quick Presets</span></label>
-                            <div class="composite-presets-container">
-                                <span class="composite-preset-badge" data-preset="sat_roads">Sat + Roads</span>
-                                <span class="composite-preset-badge" data-preset="topo_roads">Topo + Roads</span>
-                                <span class="composite-preset-badge" data-preset="sat_topo">Sat + Topo Relief</span>
-                                <span class="composite-preset-badge" data-preset="cycle_roads">Cycle + Roads</span>
-                            </div>
+                    </div>
+                    <div class="basemap-composite-row">
+                        <label><span>Blend Mode</span></label>
+                        <select id="composite-blend-select" class="composite-select">
+                            <option value="normal" selected>Normal (Standard Opacity)</option>
+                            <option value="multiply">Multiply (Terrain/Relief Darkening)</option>
+                            <option value="overlay">Overlay (Contrast Blend)</option>
+                            <option value="screen">Screen (Light Highlights)</option>
+                            <option value="luminosity">Luminosity (Monochrome Shading)</option>
+                        </select>
+                    </div>
+                    <!-- <div class="basemap-composite-row">
+                        <label class="swipe-toggle-label">
+                            <input type="checkbox" id="composite-swipe-toggle" />
+                            <span>Interactive Split / Swipe Divider</span>
+                        </label>
+                    </div> -->
+                </div>
+                <div id="single-basemaps-card">
+                    <div id="single-basemaps-list" class="single-basemaps-list"></div>
+                    <div id="single-basemap-opacity-card" class="single-basemap-opacity-card">
+                        <label class="single-basemap-opacity-label">
+                            <span class="opacity-title-group">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <path d="M12 2a10 10 0 0 1 0 20z" fill="currentColor"></path>
+                                </svg>
+                                <span>Basemap Opacity</span>
+                            </span>
+                            <span id="single-basemap-opacity-val" class="composite-opacity-badge">100%</span>
+                        </label>
+                        <div class="composite-slider-container">
+                            <input type="range" id="single-basemap-opacity-slider" class="composite-range-slider" min="0" max="100" value="100" />
                         </div>
-                        <div class="basemap-composite-row">
-                            <label>
-                                <span>Overlay Opacity</span>
-                                <span id="composite-opacity-val" class="composite-opacity-badge">80%</span>
-                            </label>
-                            <div class="composite-slider-container">
-                                <input type="range" id="composite-opacity-slider" class="composite-range-slider" min="0" max="100" value="80" />
-                            </div>
-                        </div>
-                        <div class="basemap-composite-row">
-                            <label><span>CSS Blend Mode</span></label>
-                            <select id="composite-blend-select" class="composite-select">
-                                <option value="normal" selected>Normal (Standard Opacity)</option>
-                                <option value="multiply">Multiply (Terrain/Relief Darkening)</option>
-                                <option value="overlay">Overlay (Contrast Blend)</option>
-                                <option value="screen">Screen (Light Highlights)</option>
-                                <option value="luminosity">Luminosity (Monochrome Shading)</option>
-                            </select>
-                        </div>
-                        <!-- <div class="basemap-composite-row">
-                            <label class="swipe-toggle-label">
-                                <input type="checkbox" id="composite-swipe-toggle" />
-                                <span>Interactive Split / Swipe Divider</span>
-                            </label>
-                        </div> -->
                     </div>
                 </div>
-                <div id="single-basemaps-list"></div>
             `;
             singleBasemapsContainer = tabContentWrappers["Basemaps"].querySelector("#single-basemaps-list");
         }
@@ -1666,6 +1686,9 @@ async function fetchAndRenderLayers() {
 
                         if (geoLayer) {
                             console.log("Adding new basemap to map");
+                            if (typeof window.singleBasemapOpacity === 'number' && typeof geoLayer.setOpacity === 'function') {
+                                geoLayer.setOpacity(window.singleBasemapOpacity);
+                            }
                             geoLayer.addTo(map);
                             geoLayer.bringToBack();
                             item.classList.add('active');
@@ -1687,6 +1710,9 @@ async function fetchAndRenderLayers() {
                     loadLayerData().then(() => {
                         if (isVisuallyActive && geoLayer) {
                             if (!window.activeBasemapLayer) {
+                                if (typeof window.singleBasemapOpacity === 'number' && typeof geoLayer.setOpacity === 'function') {
+                                    geoLayer.setOpacity(window.singleBasemapOpacity);
+                                }
                                 geoLayer.addTo(map);
                                 geoLayer.bringToBack();
                                 window.activeBasemapLayer = geoLayer;
@@ -1745,6 +1771,21 @@ async function fetchAndRenderLayers() {
         if (window.basemapCompositeManager) {
             const basemapLayers = layers.filter(l => l.type && l.type.toLowerCase() === 'basemap');
             window.basemapCompositeManager.init(basemapLayers);
+        }
+
+        // Initialize single basemap opacity slider
+        const singleOpacitySlider = document.getElementById("single-basemap-opacity-slider");
+        const singleOpacityVal = document.getElementById("single-basemap-opacity-val");
+        if (singleOpacitySlider && singleOpacityVal) {
+            window.singleBasemapOpacity = parseFloat(singleOpacitySlider.value) / 100;
+            singleOpacitySlider.addEventListener("input", (e) => {
+                const val = parseInt(e.target.value, 10);
+                singleOpacityVal.textContent = `${val}%`;
+                window.singleBasemapOpacity = val / 100;
+                if (window.activeBasemapLayer && typeof window.activeBasemapLayer.setOpacity === 'function') {
+                    window.activeBasemapLayer.setOpacity(window.singleBasemapOpacity);
+                }
+            });
         }
     } catch (error) {
         console.error("Error fetching layers data:", error);
