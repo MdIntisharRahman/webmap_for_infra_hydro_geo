@@ -263,12 +263,24 @@ async def get_layer_data(table_name: str, db: AsyncSession = Depends(get_db)):
     try:
         result = await db.execute(query)
         geojson = result.scalar()
-        if not geojson or not geojson.get("features"):
-            return {"type": "FeatureCollection", "features": []}
-        return geojson
+        if geojson and geojson.get("features") and len(geojson.get("features")) > 0:
+            return geojson
     except Exception as e:
-        print(f"Error fetching layer {table_name}: {e}")
-        raise HTTPException(status_code=500, detail="Error fetching data")
+        print(f"Notice: Database query for layer '{table_name}' failed ({e}). Falling back to GeoJSON file...")
+
+    # Fallback: Load GeoJSON file directly from Maps directory
+    if layer and layer.get("filename"):
+        maps_dir = os.path.join(os.path.dirname(__file__), "..", "Maps")
+        geojson_path = os.path.join(maps_dir, layer["filename"])
+        if os.path.exists(geojson_path) and layer["filename"].lower().endswith(".geojson"):
+            try:
+                with open(geojson_path, "r", encoding="utf-8") as f:
+                    file_geojson = json.load(f)
+                    return file_geojson
+            except Exception as fe:
+                print(f"Error reading fallback GeoJSON file '{geojson_path}': {fe}")
+
+    return {"type": "FeatureCollection", "features": []}
 
 
 async def estimate_level(db: AsyncSession, table_name: str, lat: float, lng: float, field: str):

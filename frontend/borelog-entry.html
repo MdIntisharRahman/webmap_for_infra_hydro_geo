@@ -764,7 +764,7 @@
                     </div>
                     <div style="display: flex; gap: 9px; flex-wrap: nowrap; justify-content: space-around;">
                         <button type="button" class="btn btn-outline"
-                            onclick="window.location.href = (window.location.port === '8383' ? 'http://localhost:8484' : '') + '/maps/borelogs/samples/sample_files.zip'">Samples</button>
+                            onclick="window.location.href = ((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port !== '8484' ? 'http://' + (window.location.hostname || 'localhost') + ':8484' : '') + '/maps/borelogs/samples/sample_files.zip'">Samples</button>
                         <!-- <button type="button" class="btn btn-outline" onclick="window.location.href = (window.location.port === '8383' ? 'http://localhost:8484' : '') + '/resources/sample/sample_files.zip'">Samples</button> -->
 
                         <input type="file" id="upload-json" accept=".json" style="display: none;">

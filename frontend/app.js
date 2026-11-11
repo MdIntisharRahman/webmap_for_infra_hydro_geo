@@ -8,8 +8,19 @@
 // MAP INITIALIZATION
 // ============================================================================
 
-const API_BASE_URL =
-    window.location.port === "8383" ? "http://localhost:8484/api" : "/api";
+const isLocalEnvironment = (
+    window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1" ||
+    window.location.protocol === "file:"
+);
+
+const API_BASE_URL = (isLocalEnvironment && window.location.port !== "8484")
+    ? `http://${window.location.hostname || "localhost"}:8484/api`
+    : "/api";
+
+const STATIC_BASE_URL = (isLocalEnvironment && window.location.port !== "8484")
+    ? `http://${window.location.hostname || "localhost"}:8484`
+    : "";
 
 window.rasterMetadata = {};
 
@@ -31,10 +42,6 @@ map.getPane('baseTilePanePrimary').style.zIndex = '200';
 map.createPane('baseTilePaneSecondary');
 map.getPane('baseTilePaneSecondary').style.zIndex = '201';
 
-// Dedicated pane for search highlights & crimson halos (above vector layers, below popups)
-map.createPane('searchHighlightPane');
-map.getPane('searchHighlightPane').style.zIndex = '620';
-window.searchHighlightGroup = L.layerGroup([], { pane: 'searchHighlightPane' }).addTo(map);
 
 // ============================================================================
 // BASEMAP COMPOSITE MANAGER
@@ -678,7 +685,7 @@ const renderTooltipProps = (props, displayKeys, layerInfo) => {
                                     loc += '/';
                                 }
 
-                                const basePath = (window.location.port === "8383" ? "http://localhost:8484" : "");
+                                const basePath = STATIC_BASE_URL;
                                 if (loc.startsWith("/")) {
                                     fileUrl = `${basePath}/maps${loc}${val}`;
                                 } else {
@@ -690,7 +697,7 @@ const renderTooltipProps = (props, displayKeys, layerInfo) => {
                             if (typeof val === 'string' && (val.startsWith("http://") || val.startsWith("https://"))) {
                                 fileUrl = val;
                             } else {
-                                const basePath = (window.location.port === "8383" ? "http://localhost:8484" : "");
+                                const basePath = STATIC_BASE_URL;
                                 fileUrl = `${basePath}/maps/${val}`;
                             }
                         }
@@ -1381,8 +1388,29 @@ async function fetchAndRenderLayers() {
                             colorUI.innerHTML = `<div style="width: 1em; height: 1em; border-radius: 50%; background: #9aa5b1; flex-shrink:0;"></div>`;
                         }
                     } else {
-                        const layerDataRes = await fetch(`${API_BASE_URL}/layers/${layerInfo.table}`);
-                        const data = await layerDataRes.json();
+                        let data = null;
+                        try {
+                            const layerDataRes = await fetch(`${API_BASE_URL}/layers/${layerInfo.table}`);
+                            if (layerDataRes.ok) {
+                                data = await layerDataRes.json();
+                            }
+                        } catch (fetchErr) {
+                            console.warn(`Direct API fetch failed for layer ${layerInfo.table}:`, fetchErr);
+                        }
+
+                        // Resilient Fallback: If API returned no features or errored, fetch GeoJSON from /maps/ directly
+                        if ((!data || !data.features || data.features.length === 0 || data.detail) && layerInfo.filename && layerInfo.filename.toLowerCase().endsWith('.geojson')) {
+                            try {
+                                const fallbackRes = await fetch(`${STATIC_BASE_URL}/maps/${layerInfo.filename}`);
+                                if (fallbackRes.ok) {
+                                    data = await fallbackRes.json();
+                                }
+                            } catch (fbErr) {
+                                console.warn(`Fallback fetch failed for ${layerInfo.filename}:`, fbErr);
+                            }
+                        }
+
+                        if (!data) data = { type: "FeatureCollection", features: [] };
 
                         let performClassification = true;
                         let explicitClassifyWith = null;
@@ -2329,7 +2357,7 @@ window.renderAdminDashboard = async () => {
                     </td>
                     <td style="padding: 16px 24px; text-align: right;">
                         <div style="display: inline-flex; gap: 8px;">
-                            <button onclick="window.open((window.location.port === '8383' ? 'http://localhost:8484' : '') + '/maps/borelogs/staged/${f.f_file}', '_blank')" style="padding: 8px 16px; background: #f8fafc; color: #0f172a; border: 1px solid #cbd5e1; border-radius: 0px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.backgroundColor='#e2e8f0'" onmouseout="this.style.backgroundColor='#f8fafc'">JSON</button>
+                            <button onclick="window.open(STATIC_BASE_URL + '/maps/borelogs/staged/${f.f_file}', '_blank')" style="padding: 8px 16px; background: #f8fafc; color: #0f172a; border: 1px solid #cbd5e1; border-radius: 0px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.backgroundColor='#e2e8f0'" onmouseout="this.style.backgroundColor='#f8fafc'">JSON</button>
                             <button onclick="window.open('borelog-entry.html?view_staged=${f.f_file}', '_blank')" style="padding: 8px 16px; background: #2563eb; color: white; border: none; border-radius: 0px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.1);" onmouseover="this.style.backgroundColor='#1d4ed8'" onmouseout="this.style.backgroundColor='#2563eb'">View</button>
                         </div>
                     </td>
@@ -2879,104 +2907,115 @@ document.addEventListener("DOMContentLoaded", () => {
         return Array.from(checkboxes).map(cb => cb.value);
     }
 
-    function clearSearchHighlights() {
-        if (window.searchHighlightGroup) {
-            window.searchHighlightGroup.clearLayers();
+    let currentHighlightedLayers = [];
+
+    function clearSearchHighlights(targetGeoLayer) {
+        if (currentHighlightedLayers.length > 0) {
+            currentHighlightedLayers.forEach(layer => {
+                if (layer._searchOriginalStyle) {
+                    layer.setStyle(layer._searchOriginalStyle);
+                    delete layer._searchOriginalStyle;
+                }
+                const el = layer.getElement ? layer.getElement() : null;
+                if (el) {
+                    el.classList.remove('poi-halo-pulse');
+                    el.classList.remove('poi-path-halo-pulse');
+                }
+            });
+            currentHighlightedLayers = [];
         }
-        document.querySelectorAll('.leaflet-pane.spotlight-dimmed').forEach(p => {
-            p.classList.remove('spotlight-dimmed');
-        });
     }
 
-    function applySearchHighlights(matchedLayers, activeLayerName) {
-        clearSearchHighlights();
+    function applySearchHighlights(matchedLayers, geoLayer) {
+        clearSearchHighlights(geoLayer);
         if (!matchedLayers || matchedLayers.length === 0) return;
 
-        // 1. Stage Dimming: dim all other active vector layer panes to spotlight the matches
-        Object.keys(loadedLayers).forEach(name => {
-            if (name !== activeLayerName) {
-                const otherLayer = loadedLayers[name];
-                const otherPane = otherLayer && otherLayer.options && otherLayer.options.pane;
-                if (otherPane) {
-                    const paneEl = map.getPane(otherPane);
-                    if (paneEl) paneEl.classList.add('spotlight-dimmed');
-                }
+        currentHighlightedLayers = matchedLayers;
+
+        matchedLayers.forEach(layer => {
+            // Save original styles once
+            if (!layer._searchOriginalStyle && layer.options) {
+                layer._searchOriginalStyle = {
+                    color: layer.options.color,
+                    weight: layer.options.weight,
+                    fillColor: layer.options.fillColor,
+                    fillOpacity: layer.options.fillOpacity,
+                    opacity: layer.options.opacity,
+                    radius: layer.options.radius
+                };
             }
-        });
 
-        // 2. Add crimson halo beacons and glowing outlines
-        const maxBeaconCount = 80; // safety ceiling to keep browser performance 60fps
-        const layersToHighlight = matchedLayers.slice(0, maxBeaconCount);
+            const isPoint = Boolean(layer.getLatLng && !layer.getBounds);
+            const className = isPoint ? 'poi-halo-pulse' : 'poi-path-halo-pulse';
 
-        layersToHighlight.forEach(layer => {
-            let centerLatLng = null;
-
-            if (layer.getLatLng) {
-                // Point feature (e.g. CircleMarker)
-                centerLatLng = layer.getLatLng();
+            if (isPoint) {
+                // Point feature (CircleMarker): elevate stroke to crimson and twice standard width
+                const origWeight = (layer.options && typeof layer.options.weight === 'number') ? layer.options.weight : 0.5;
+                const haloWeight = Math.max(origWeight * 2, 2.0);
+                layer.setStyle({
+                    color: '#dc143c',
+                    weight: haloWeight
+                });
             } else if (layer.getBounds && layer.getBounds().isValid()) {
-                // Line or Polygon feature
-                centerLatLng = layer.getBounds().getCenter();
-
-                // Add glowing crimson stroke along the geometry
-                try {
-                    if (layer instanceof L.Polygon) {
-                        const polyGlow = L.polygon(layer.getLatLngs(), {
-                            color: '#dc143c',
-                            weight: 3.5,
-                            opacity: 0.95,
-                            fillColor: '#dc143c',
-                            fillOpacity: 0.15,
-                            className: 'crimson-path-glow',
-                            pane: 'searchHighlightPane',
-                            interactive: false
-                        });
-                        window.searchHighlightGroup.addLayer(polyGlow);
-                    } else if (layer instanceof L.Polyline) {
-                        const lineGlow = L.polyline(layer.getLatLngs(), {
-                            color: '#dc143c',
-                            weight: 4.5,
-                            opacity: 0.95,
-                            className: 'crimson-path-glow',
-                            pane: 'searchHighlightPane',
-                            interactive: false
-                        });
-                        window.searchHighlightGroup.addLayer(lineGlow);
-                    }
-                } catch (err) {
-                    console.warn("Could not create path glow for feature:", err);
-                }
+                // Line or Polygon feature: elevate stroke to twice feature stroke
+                const origWeight = (layer.options && typeof layer.options.weight === 'number') ? layer.options.weight : 1.5;
+                const haloWeight = Math.max(origWeight * 2, 2.5);
+                layer.setStyle({
+                    color: '#dc143c',
+                    weight: haloWeight,
+                    opacity: 0.95
+                });
             }
 
-            if (centerLatLng) {
-                const haloIcon = L.divIcon({
-                    className: 'crimson-halo-beacon',
-                    html: `
-                        <div class="crimson-halo-core"></div>
-                        <div class="crimson-halo-ring ring-1"></div>
-                        <div class="crimson-halo-ring ring-2"></div>
-                    `,
-                    iconSize: [20, 20],
-                    iconAnchor: [10, 10]
-                });
+            // Target the POI element itself directly (0px offset)
+            const attachHalo = (targetEl) => {
+                if (targetEl) targetEl.classList.add(className);
+            };
 
-                const beaconMarker = L.marker(centerLatLng, {
-                    icon: haloIcon,
-                    pane: 'searchHighlightPane',
-                    interactive: false
+            const el = layer.getElement ? layer.getElement() : null;
+            if (el) {
+                attachHalo(el);
+            } else {
+                requestAnimationFrame(() => {
+                    const deferredEl = layer.getElement ? layer.getElement() : null;
+                    attachHalo(deferredEl);
                 });
-                window.searchHighlightGroup.addLayer(beaconMarker);
             }
         });
     }
 
+    // Keep POI halo classes synced across zoom events
+    map.on('zoomend', () => {
+        if (currentHighlightedLayers && currentHighlightedLayers.length > 0) {
+            currentHighlightedLayers.forEach(layer => {
+                const isPoint = Boolean(layer.getLatLng && !layer.getBounds);
+                const className = isPoint ? 'poi-halo-pulse' : 'poi-path-halo-pulse';
+                const el = layer.getElement ? layer.getElement() : null;
+                if (el && !el.classList.contains(className)) {
+                    el.classList.add(className);
+                }
+            });
+        }
+    });
+
     function resetLayerSearch(layerName) {
-        clearSearchHighlights();
         const geoLayer = loadedLayers[layerName];
+        clearSearchHighlights(geoLayer);
         if (!geoLayer) return;
         if (geoLayer.allFeatureLayers) {
             geoLayer.clearLayers();
-            geoLayer.allFeatureLayers.forEach(l => geoLayer.addLayer(l));
+            geoLayer.allFeatureLayers.forEach(l => {
+                if (l._searchOriginalStyle) {
+                    l.setStyle(l._searchOriginalStyle);
+                    delete l._searchOriginalStyle;
+                }
+                const el = l.getElement ? l.getElement() : null;
+                if (el) {
+                    el.classList.remove('poi-halo-pulse');
+                    el.classList.remove('poi-path-halo-pulse');
+                }
+                geoLayer.addLayer(l);
+            });
         }
         searchInput.value = "";
         const resetBtn = document.getElementById("search-reset-btn");
@@ -3155,8 +3194,8 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         let matchCount = 0;
+        clearSearchHighlights(geoLayer);
         geoLayer.clearLayers();
-        clearSearchHighlights();
 
         const matchedFeatureLayers = [];
 
@@ -3215,7 +3254,7 @@ document.addEventListener("DOMContentLoaded", () => {
             // Restore all features on zero matches
             resetLayerSearch(activeSearchLayerName);
         } else {
-            applySearchHighlights(matchedFeatureLayers, activeSearchLayerName);
+            applySearchHighlights(matchedFeatureLayers, geoLayer);
             try {
                 if (geoLayer.getBounds && geoLayer.getBounds().isValid()) {
                     map.flyToBounds(geoLayer.getBounds(), { maxZoom: 14, duration: 1.2 });

@@ -690,7 +690,8 @@ document.getElementById('borelogForm').addEventListener('submit', async (e) => {
 
     try {
         const payload = gatherBorelogData();
-        const API_BASE_URL = window.location.port === "8383" ? "http://localhost:8484/api" : "/api";
+        const isLocal = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") && window.location.port !== "8484";
+        const API_BASE_URL = isLocal ? `http://${window.location.hostname || "localhost"}:8484/api` : "/api";
         const response = await fetch(`${API_BASE_URL}/borelog/stage`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -799,7 +800,8 @@ window.addEventListener('DOMContentLoaded', async () => {
     const viewStaged = urlParams.get('view_staged');
     if (viewStaged) {
         try {
-            const API_BASE_URL_FOR_MAPS = window.location.port === "8383" ? "http://localhost:8484" : "";
+            const isLocal = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") && window.location.port !== "8484";
+            const API_BASE_URL_FOR_MAPS = isLocal ? `http://${window.location.hostname || "localhost"}:8484` : "";
             const response = await fetch(`${API_BASE_URL_FOR_MAPS}/maps/borelogs/staged/${viewStaged}`);
             if (response.ok) {
                 const data = await response.json();
