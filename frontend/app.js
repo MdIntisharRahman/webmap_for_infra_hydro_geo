@@ -31,6 +31,11 @@ map.getPane('baseTilePanePrimary').style.zIndex = '200';
 map.createPane('baseTilePaneSecondary');
 map.getPane('baseTilePaneSecondary').style.zIndex = '201';
 
+// Dedicated pane for search highlights & crimson halos (above vector layers, below popups)
+map.createPane('searchHighlightPane');
+map.getPane('searchHighlightPane').style.zIndex = '620';
+window.searchHighlightGroup = L.layerGroup([], { pane: 'searchHighlightPane' }).addTo(map);
+
 // ============================================================================
 // BASEMAP COMPOSITE MANAGER
 // ============================================================================
@@ -1743,6 +1748,9 @@ async function fetchAndRenderLayers() {
                         colorUI.innerHTML = `<div style="width: 1em; height: 1em; border-radius: 50%; background: #cbd5e1; flex-shrink:0;"></div>`;
                         subLegendUI.innerHTML = '';
                         delete loadedLayers[layerInfo.name];
+                        if (typeof clearSearchHighlights === 'function' && typeof activeSearchLayerName !== 'undefined' && activeSearchLayerName === layerInfo.name) {
+                            clearSearchHighlights();
+                        }
                     }
                 });
 
@@ -1755,6 +1763,9 @@ async function fetchAndRenderLayers() {
                     } else {
                         item.classList.remove("active");
                         if (geoLayer) map.removeLayer(geoLayer);
+                        if (typeof clearSearchHighlights === 'function' && typeof activeSearchLayerName !== 'undefined' && activeSearchLayerName === layerInfo.name) {
+                            clearSearchHighlights();
+                        }
                     }
                 });
 
@@ -2868,7 +2879,99 @@ document.addEventListener("DOMContentLoaded", () => {
         return Array.from(checkboxes).map(cb => cb.value);
     }
 
+    function clearSearchHighlights() {
+        if (window.searchHighlightGroup) {
+            window.searchHighlightGroup.clearLayers();
+        }
+        document.querySelectorAll('.leaflet-pane.spotlight-dimmed').forEach(p => {
+            p.classList.remove('spotlight-dimmed');
+        });
+    }
+
+    function applySearchHighlights(matchedLayers, activeLayerName) {
+        clearSearchHighlights();
+        if (!matchedLayers || matchedLayers.length === 0) return;
+
+        // 1. Stage Dimming: dim all other active vector layer panes to spotlight the matches
+        Object.keys(loadedLayers).forEach(name => {
+            if (name !== activeLayerName) {
+                const otherLayer = loadedLayers[name];
+                const otherPane = otherLayer && otherLayer.options && otherLayer.options.pane;
+                if (otherPane) {
+                    const paneEl = map.getPane(otherPane);
+                    if (paneEl) paneEl.classList.add('spotlight-dimmed');
+                }
+            }
+        });
+
+        // 2. Add crimson halo beacons and glowing outlines
+        const maxBeaconCount = 80; // safety ceiling to keep browser performance 60fps
+        const layersToHighlight = matchedLayers.slice(0, maxBeaconCount);
+
+        layersToHighlight.forEach(layer => {
+            let centerLatLng = null;
+
+            if (layer.getLatLng) {
+                // Point feature (e.g. CircleMarker)
+                centerLatLng = layer.getLatLng();
+            } else if (layer.getBounds && layer.getBounds().isValid()) {
+                // Line or Polygon feature
+                centerLatLng = layer.getBounds().getCenter();
+
+                // Add glowing crimson stroke along the geometry
+                try {
+                    if (layer instanceof L.Polygon) {
+                        const polyGlow = L.polygon(layer.getLatLngs(), {
+                            color: '#dc143c',
+                            weight: 3.5,
+                            opacity: 0.95,
+                            fillColor: '#dc143c',
+                            fillOpacity: 0.15,
+                            className: 'crimson-path-glow',
+                            pane: 'searchHighlightPane',
+                            interactive: false
+                        });
+                        window.searchHighlightGroup.addLayer(polyGlow);
+                    } else if (layer instanceof L.Polyline) {
+                        const lineGlow = L.polyline(layer.getLatLngs(), {
+                            color: '#dc143c',
+                            weight: 4.5,
+                            opacity: 0.95,
+                            className: 'crimson-path-glow',
+                            pane: 'searchHighlightPane',
+                            interactive: false
+                        });
+                        window.searchHighlightGroup.addLayer(lineGlow);
+                    }
+                } catch (err) {
+                    console.warn("Could not create path glow for feature:", err);
+                }
+            }
+
+            if (centerLatLng) {
+                const haloIcon = L.divIcon({
+                    className: 'crimson-halo-beacon',
+                    html: `
+                        <div class="crimson-halo-core"></div>
+                        <div class="crimson-halo-ring ring-1"></div>
+                        <div class="crimson-halo-ring ring-2"></div>
+                    `,
+                    iconSize: [20, 20],
+                    iconAnchor: [10, 10]
+                });
+
+                const beaconMarker = L.marker(centerLatLng, {
+                    icon: haloIcon,
+                    pane: 'searchHighlightPane',
+                    interactive: false
+                });
+                window.searchHighlightGroup.addLayer(beaconMarker);
+            }
+        });
+    }
+
     function resetLayerSearch(layerName) {
+        clearSearchHighlights();
         const geoLayer = loadedLayers[layerName];
         if (!geoLayer) return;
         if (geoLayer.allFeatureLayers) {
@@ -3053,6 +3156,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         let matchCount = 0;
         geoLayer.clearLayers();
+        clearSearchHighlights();
+
+        const matchedFeatureLayers = [];
 
         geoLayer.allFeatureLayers.forEach(layer => {
             let isMatch = false;
@@ -3098,6 +3204,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (isMatch) {
                 geoLayer.addLayer(layer);
+                matchedFeatureLayers.push(layer);
                 matchCount++;
             }
         });
@@ -3108,6 +3215,7 @@ document.addEventListener("DOMContentLoaded", () => {
             // Restore all features on zero matches
             resetLayerSearch(activeSearchLayerName);
         } else {
+            applySearchHighlights(matchedFeatureLayers, activeSearchLayerName);
             try {
                 if (geoLayer.getBounds && geoLayer.getBounds().isValid()) {
                     map.flyToBounds(geoLayer.getBounds(), { maxZoom: 14, duration: 1.2 });

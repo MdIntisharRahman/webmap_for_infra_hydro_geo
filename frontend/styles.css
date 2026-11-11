@@ -3186,3 +3186,96 @@ body {
     from { opacity: 0; transform: translateY(-6px); }
     to { opacity: 1; transform: translateY(0); }
 }
+
+/* ============================================================================
+   SEARCH FEATURE ISOLATION: CRIMSON EMANATING HALO & STAGE DIMMING
+   ============================================================================ */
+
+/* Stage Dimming for Background Layers */
+.leaflet-pane {
+    transition: opacity 0.4s ease;
+}
+
+.leaflet-pane.spotlight-dimmed {
+    opacity: 0.28 !important;
+}
+
+/* Crimson Beacon & Emanating Halo */
+.crimson-halo-beacon {
+    position: relative;
+    pointer-events: none;
+    border: none !important;
+    background: transparent !important;
+}
+
+.crimson-halo-core {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 10px;
+    height: 10px;
+    margin-top: -5px;
+    margin-left: -5px;
+    border-radius: 50%;
+    background: #dc143c;
+    border: 2px solid #ffffff;
+    box-shadow: 0 0 8px rgba(220, 20, 60, 0.9), 0 0 16px rgba(255, 30, 80, 0.6);
+    z-index: 3;
+}
+
+.crimson-halo-ring {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 10px;
+    height: 10px;
+    margin-top: -5px;
+    margin-left: -5px;
+    border-radius: 50%;
+    border: 2px solid #dc143c;
+    background: radial-gradient(circle, rgba(220, 20, 60, 0.4) 0%, rgba(220, 20, 60, 0.08) 55%, transparent 100%);
+    box-sizing: border-box;
+    pointer-events: none;
+    z-index: 2;
+    transform-origin: center center;
+    animation: crimson-halo-pulse 3s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+
+.crimson-halo-ring.ring-2 {
+    animation-delay: 1.5s;
+}
+
+@keyframes crimson-halo-pulse {
+    0% {
+        transform: scale(1);
+        opacity: 0.95;
+    }
+    40% {
+        opacity: 0.7;
+    }
+    75% {
+        opacity: 0.2;
+    }
+    100% {
+        transform: scale(8);
+        opacity: 0;
+    }
+}
+
+/* Luminous Crimson Outline for Lines and Polygons */
+.crimson-path-glow {
+    animation: crimson-path-pulse 3s ease-in-out infinite;
+    filter: drop-shadow(0 0 6px rgba(220, 20, 60, 0.9)) drop-shadow(0 0 12px rgba(220, 20, 60, 0.5));
+    pointer-events: none;
+}
+
+@keyframes crimson-path-pulse {
+    0%, 100% {
+        stroke-opacity: 0.95;
+        stroke-width: 4px;
+    }
+    50% {
+        stroke-opacity: 0.5;
+        stroke-width: 7px;
+    }
+}
