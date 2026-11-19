@@ -465,7 +465,7 @@ const getFeatureStyle = (feature, defaultColor, layerTransparency = null) => {
         if (!fc) {
             const acqType = (feature.properties.acquisition_type || feature.properties.structure_type || "").toLowerCase();
             if (acqType.includes("bridge")) fc = "#112047";
-            else if (acqType.includes("culvert")) fc = "#3699c2";
+            else if (acqType.includes("culvert")) fc = "#1c508c";
         }
         if (fc) {
             if (!fc.startsWith('#') && !fc.startsWith('rgb')) fc = '#' + fc;

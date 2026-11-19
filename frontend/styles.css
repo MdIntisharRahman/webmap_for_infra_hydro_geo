@@ -3302,7 +3302,7 @@ body {
 .auth-pill-bdd {
     background: #1c508c;
     color: #ffffff;
-    border-color: #3699c2;
+    border-color: #143d6b;
 }
 
 .auth-logout-btn {
@@ -3329,7 +3329,7 @@ body {
 
 .tab[data-target*="demands"]::after {
     content: "•";
-    color: #3699c2;
+    color: #1c508c;
     font-size: 14px;
     position: absolute;
     right: 8px;
