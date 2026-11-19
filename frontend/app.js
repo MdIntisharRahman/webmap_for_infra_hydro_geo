@@ -1888,12 +1888,7 @@ window.updateWebmasterHeaderStatus = async function() {
     if (!container) return;
     const authHash = window.adminCredentials || sessionStorage.getItem('adminCredentials');
     if (!authHash) {
-        container.innerHTML = `
-            <button onclick="openApprovalLogin()" class="auth-login-header-btn" title="Login as Webmaster or Bridge Design Division">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                Webmaster Login
-            </button>
-        `;
+        container.innerHTML = "";
         return;
     }
 
@@ -1915,18 +1910,10 @@ window.updateWebmasterHeaderStatus = async function() {
         } else {
             sessionStorage.removeItem('adminCredentials');
             window.adminCredentials = null;
-            container.innerHTML = `
-                <button onclick="openApprovalLogin()" class="auth-login-header-btn">
-                    Webmaster Login
-                </button>
-            `;
+            container.innerHTML = "";
         }
     } catch (e) {
-        container.innerHTML = `
-            <button onclick="openApprovalLogin()" class="auth-login-header-btn">
-                Webmaster Login
-            </button>
-        `;
+        container.innerHTML = "";
     }
 };
 
@@ -1950,6 +1937,41 @@ window.handleWebmasterLogout = function() {
     fetchAndRenderLayers();
     updateWebmasterHeaderStatus();
 };
+
+window.setupSneakyLogoLogin = function() {
+    const logoEl = document.getElementById("rhd-header-logo") || document.querySelector(".logo");
+    if (!logoEl) return;
+
+    logoEl.style.userSelect = "none";
+    logoEl.style.webkitUserSelect = "none";
+    logoEl.style.cursor = "default";
+
+    let lastTapTime = 0;
+
+    logoEl.ondblclick = function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (typeof window.openApprovalLogin === "function") {
+            window.openApprovalLogin();
+        }
+    };
+
+    logoEl.ontouchend = function(e) {
+        const now = Date.now();
+        if (now - lastTapTime < 350 && now - lastTapTime > 40) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (typeof window.openApprovalLogin === "function") {
+                window.openApprovalLogin();
+            }
+            lastTapTime = 0;
+        } else {
+            lastTapTime = now;
+        }
+    };
+};
+
+setupSneakyLogoLogin();
 
 fetchAndRenderLayers();
 
@@ -2338,86 +2360,21 @@ window.openBorelogVisualizer = async (f_file, options = {}) => {
     }
 };
 
-window.adminCredentials = null;
-
-window.updateWebmasterHeaderStatus = async function() {
-    const container = document.getElementById("auth-header-action");
-    if (!container) return;
-    const authHash = window.adminCredentials || sessionStorage.getItem('adminCredentials');
-    if (!authHash) {
-        container.innerHTML = `
-            <button onclick="openApprovalLogin()" class="auth-login-header-btn" title="Login as Webmaster or Bridge Design Division">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                Webmaster Login
-            </button>
-        `;
-        return;
-    }
-
-    try {
-        const res = await fetch(`${API_BASE_URL}/demands/auth`, { headers: { 'Authorization': 'Basic ' + authHash } });
-        if (res.ok) {
-            const data = await res.json();
-            const role = data.role || "WEBMASTER";
-            const bdd = data.bdd_division;
-            const label = role === "WEBMASTER" ? "Webmaster (All Divisions)" : `Bridge Design Div ${bdd}`;
-            const pillClass = role === "WEBMASTER" ? "auth-pill-webmaster" : "auth-pill-bdd";
-            container.innerHTML = `
-                <span class="auth-pill ${pillClass}">
-                    <span style="width: 7px; height: 7px; border-radius: 50%; background: #4ade80;"></span>
-                    ${label}
-                </span>
-                <button onclick="handleWebmasterLogout()" class="auth-logout-btn" title="Log out of authenticated session">Logout</button>
-            `;
-        } else {
-            sessionStorage.removeItem('adminCredentials');
-            window.adminCredentials = null;
-            container.innerHTML = `
-                <button onclick="openApprovalLogin()" class="auth-login-header-btn">
-                    Webmaster Login
-                </button>
-            `;
-        }
-    } catch (e) {
-        container.innerHTML = `
-            <button onclick="openApprovalLogin()" class="auth-login-header-btn">
-                Webmaster Login
-            </button>
-        `;
-    }
-};
-
-window.handleWebmasterLogout = function() {
-    sessionStorage.removeItem('adminCredentials');
-    window.adminCredentials = null;
-    
-    // Remove any active demand layers from the map
-    if (window.loadedLayers) {
-        Object.keys(window.loadedLayers).forEach(name => {
-            if (name.includes("Design Division")) {
-                const lyr = window.loadedLayers[name];
-                if (lyr && map.hasLayer(lyr)) {
-                    map.removeLayer(lyr);
-                }
-                delete window.loadedLayers[name];
-            }
-        });
-    }
-
-    fetchAndRenderLayers();
-    updateWebmasterHeaderStatus();
-};
-
 window.openApprovalLogin = async () => {
     const storedHash = sessionStorage.getItem('adminCredentials');
     if (storedHash) {
         try {
-            const res = await fetch(`${API_BASE_URL}/borelog/auth`, { headers: { 'Authorization': 'Basic ' + storedHash } });
+            const res = await fetch(`${API_BASE_URL}/demands/auth`, { headers: { 'Authorization': 'Basic ' + storedHash } });
             if (res.ok) {
+                const authData = await res.json();
                 window.adminCredentials = storedHash;
                 updateWebmasterHeaderStatus();
-                document.getElementById('borelog-modal').classList.remove('hidden');
-                renderAdminDashboard();
+                if (authData.role === "WEBMASTER") {
+                    document.getElementById('borelog-modal').classList.remove('hidden');
+                    renderAdminDashboard();
+                } else {
+                    fetchAndRenderLayers();
+                }
                 return;
             } else {
                 sessionStorage.removeItem('adminCredentials');
@@ -2435,26 +2392,41 @@ window.openApprovalLogin = async () => {
 
     const rootNode = document.getElementById('borelog-react-root');
     rootNode.innerHTML = `
-        <div style="max-width: 380px; margin: 60px auto; font-family: 'Outfit', sans-serif; background: #ffffff; padding: 40px; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.05); border: 1px solid #eaeaea;">
-            <h2 style="margin: 0; color: #111; font-size: 28px; font-weight: 700;">Design & Webmaster Login</h2>
-            <p style="margin: 5px 0 25px 0; color: #555; font-size: 14px; font-family: 'SmartGothic', sans-serif;">Access Demands tab and Bridge Engineering systems</p>
+        <div style="max-width: 380px; margin: 60px auto; font-family: 'Outfit', sans-serif; background: #ffffff; padding: 40px; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.05); border: 1px solid #eaeaea; text-align: center;">
+            <img src="resources/images/RHD_Logo.png" alt="RHD Logo" style="width: 52px; height: 52px; object-fit: contain; margin: 0 auto 14px auto; display: block;" />
+            <h2 style="margin: 0; color: #111; font-size: 26px; font-weight: 700; letter-spacing: -0.3px;">Design & Webmaster Login</h2>
+            <p style="margin: 6px 0 25px 0; color: #555; font-size: 13.5px; font-family: 'SmartGothic', sans-serif;">Access Demands tab and Bridge Engineering systems</p>
             
-            <div style="margin-bottom: 16px;">
+            <div style="margin-bottom: 16px; text-align: left;">
                 <input type="text" id="admin-user" placeholder="Username (e.g. webmaster, bdd_1, bdd_2, bdd_3)" style="width: 100%; box-sizing: border-box; padding: 14px; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 14px; font-family: 'SmartGothic', sans-serif; outline: none; transition: border 0.2s;" onfocus="this.style.borderColor='#112047'" onblur="this.style.borderColor='#e2e8f0'">
             </div>
-            <div style="margin-bottom: 24px;">
+            <div style="margin-bottom: 24px; text-align: left;">
                 <input type="password" id="admin-pass" placeholder="Password" style="width: 100%; box-sizing: border-box; padding: 14px; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 14px; font-family: 'SmartGothic', sans-serif; outline: none; transition: border 0.2s;" onfocus="this.style.borderColor='#112047'" onblur="this.style.borderColor='#e2e8f0'">
             </div>
             
             <button id="admin-login-btn" style="width: 100%; padding: 14px; background: #112047; color: #ffffff; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; font-family: 'Outfit', sans-serif; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#1c508c'" onmouseout="this.style.background='#112047'">Sign In</button>
             
-            <p id="admin-error" style="color: #ef4444; margin-top: 15px; text-align: center; font-family: 'SmartGothic', sans-serif; font-size: 14px;"></p>
+            <p id="admin-error" style="color: #ef4444; margin-top: 15px; text-align: center; font-family: 'SmartGothic', sans-serif; font-size: 14px; min-height: 20px;"></p>
         </div>
     `;
 
-    document.getElementById('admin-login-btn').onclick = async () => {
-        const u = document.getElementById('admin-user').value.trim();
-        const p = document.getElementById('admin-pass').value.trim();
+    const userInp = document.getElementById('admin-user');
+    const passInp = document.getElementById('admin-pass');
+    const loginBtn = document.getElementById('admin-login-btn');
+
+    setTimeout(() => {
+        if (userInp) userInp.focus();
+    }, 120);
+
+    const doLogin = async () => {
+        const u = userInp ? userInp.value.trim() : "";
+        const p = passInp ? passInp.value.trim() : "";
+        if (!u || !p) {
+            document.getElementById('admin-error').innerText = "Please enter both username and password.";
+            return;
+        }
+        loginBtn.innerText = "Verifying...";
+        loginBtn.disabled = true;
         const hash = btoa(u + ":" + p);
         try {
             const res = await fetch(`${API_BASE_URL}/demands/auth`, { headers: { 'Authorization': 'Basic ' + hash } });
@@ -2471,11 +2443,25 @@ window.openApprovalLogin = async () => {
                 }
             } else {
                 document.getElementById('admin-error').innerText = "Invalid credentials.";
+                loginBtn.innerText = "Sign In";
+                loginBtn.disabled = false;
             }
         } catch (e) {
             document.getElementById('admin-error').innerText = "Network error.";
+            loginBtn.innerText = "Sign In";
+            loginBtn.disabled = false;
         }
     };
+
+    if (loginBtn) loginBtn.onclick = doLogin;
+
+    const handleKeyEnter = (e) => {
+        if (e.key === 'Enter') {
+            doLogin();
+        }
+    };
+    if (userInp) userInp.addEventListener('keydown', handleKeyEnter);
+    if (passInp) passInp.addEventListener('keydown', handleKeyEnter);
 };
 
 window.renderAdminDashboard = async () => {
@@ -2799,6 +2785,9 @@ window.handleApproveFromMap = async (f_file, event) => {
 // ============================================================================
 
 document.addEventListener("DOMContentLoaded", () => {
+    if (typeof window.setupSneakyLogoLogin === "function") {
+        window.setupSneakyLogoLogin();
+    }
     const searchFloatingBtn = document.getElementById("search-floating-btn");
     const searchModal = document.getElementById("search-modal");
     const searchDrawerToggle = document.getElementById("search-drawer-toggle");

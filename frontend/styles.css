@@ -127,13 +127,10 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    /* color: #fff; */
-    /* font-family: var(--font-display); */
-    /* font-weight: 800; */
-    /* font-size: var(--text-xl); */
-    /* border-radius: 0px; */
     letter-spacing: 1px;
-
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
 }
 
 .logo img {
@@ -590,7 +587,7 @@ body {
 .layer-item:hover {
     border-color: #93c5fd;
     box-shadow: 0 8px 20px rgba(2, 132, 199, 0.1);
-    transform: scale(1.02);
+    transform: scale(1.01);
 }
 
 .layer-item.active {
@@ -2957,8 +2954,8 @@ body {
     font-size: 11px;
     font-weight: 600;
     color: #1e293b;
-    background: #ffffff;
-    border: 1px solid #cbd5e1;
+    background: transparent;
+    border: 1px solid #50575f80;
     border-radius: 4px;
     outline: none;
     cursor: pointer;
