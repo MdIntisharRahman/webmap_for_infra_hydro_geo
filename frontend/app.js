@@ -462,6 +462,11 @@ const getFeatureStyle = (feature, defaultColor, layerTransparency = null) => {
     // Check if data-driven styling is available
     if (feature.properties) {
         let fc = feature.properties.color || feature.properties.f_class_color;
+        if (!fc) {
+            const acqType = (feature.properties.acquisition_type || feature.properties.structure_type || "").toLowerCase();
+            if (acqType.includes("bridge")) fc = "#112047";
+            else if (acqType.includes("culvert")) fc = "#3699c2";
+        }
         if (fc) {
             if (!fc.startsWith('#') && !fc.startsWith('rgb')) fc = '#' + fc;
             color = fc;
