@@ -3247,3 +3247,92 @@ body {
         filter: drop-shadow(0 0 6px rgba(220, 20, 60, 0.9)) drop-shadow(0 0 12px rgba(255, 30, 80, 0.5));
     }
 }
+
+/* ==========================================================================
+   Demands Tab & Authentication Status Bar Styles
+   ========================================================================== */
+.auth-header-action {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+}
+
+.auth-login-header-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #112047;
+    color: #ffffff;
+    border: 1px solid #1c508c;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: var(--font-body-special, sans-serif);
+    transition: all 0.2s ease;
+}
+
+.auth-login-header-btn:hover {
+    background: #1c508c;
+    transform: translateY(-1px);
+}
+
+.auth-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #e7f0f5;
+    color: #112047;
+    border: 1px solid #95d4e5;
+    border-radius: 8px;
+    padding: 5px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    font-family: var(--font-body-special, sans-serif);
+}
+
+.auth-pill-webmaster {
+    background: #112047;
+    color: #ffffff;
+    border-color: #1c508c;
+}
+
+.auth-pill-bdd {
+    background: #1c508c;
+    color: #ffffff;
+    border-color: #3699c2;
+}
+
+.auth-logout-btn {
+    background: transparent;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.auth-logout-btn:hover {
+    background: #fee2e2;
+    border-color: #f87171;
+}
+
+/* Tab indicator for Demands */
+.tab[data-target*="demands"] {
+    position: relative;
+}
+
+.tab[data-target*="demands"]::after {
+    content: "•";
+    color: #3699c2;
+    font-size: 14px;
+    position: absolute;
+    right: 8px;
+    top: calc(50% - 9px);
+}
+

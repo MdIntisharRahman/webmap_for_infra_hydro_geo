@@ -7,11 +7,13 @@ from datetime import datetime
 import json
 
 import re
+import base64
+import urllib.request
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator
+from typing import AsyncGenerator, Optional, Dict, Any, List
 import rasterio
 
-from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi import Depends, FastAPI, HTTPException, Request, Header
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
@@ -110,10 +112,76 @@ def slugify(text_val: str) -> str:
     return text_val.strip("_")
 
 
+# RHD ADDS Server Interoperability
+ADDS_BASE_URL = os.getenv("ADDS_BASE_URL", "https://acqform.rhdbridge.com").rstrip("/")
+
+def load_auth_accounts() -> Dict[str, Dict[str, Any]]:
+    """Loads authenticated accounts for Webmaster and Bridge Design Divisions 1, 2, and 3."""
+    accounts = {
+        "webmaster": {"password": "webmaster_password_now", "role": "WEBMASTER", "bdd_division": None},
+        "bdd_1": {"password": "bdd1_rhd_bridge_2026", "role": "BDD_1", "bdd_division": 1},
+        "bdd_2": {"password": "bdd2_rhd_bridge_2026", "role": "BDD_2", "bdd_division": 2},
+        "bdd_3": {"password": "bdd3_rhd_bridge_2026", "role": "BDD_3", "bdd_division": 3},
+    }
+    
+    # Read from os.environ
+    if os.getenv("WEBMASTER_USERNAME"):
+        u = os.getenv("WEBMASTER_USERNAME")
+        p = os.getenv("WEBMASTER_PASSWORD", "")
+        accounts[u] = {"password": p, "role": "WEBMASTER", "bdd_division": None}
+    if os.getenv("BDD1_USERNAME"):
+        accounts[os.getenv("BDD1_USERNAME")] = {"password": os.getenv("BDD1_PASSWORD", ""), "role": "BDD_1", "bdd_division": 1}
+    if os.getenv("BDD2_USERNAME"):
+        accounts[os.getenv("BDD2_USERNAME")] = {"password": os.getenv("BDD2_PASSWORD", ""), "role": "BDD_2", "bdd_division": 2}
+    if os.getenv("BDD3_USERNAME"):
+        accounts[os.getenv("BDD3_USERNAME")] = {"password": os.getenv("BDD3_PASSWORD", ""), "role": "BDD_3", "bdd_division": 3}
+        
+    # Read from .env file directly for resilience
+    env_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".env"))
+    if os.path.exists(env_path):
+        try:
+            with open(env_path, "r", encoding="utf-8") as ef:
+                kv = {}
+                for line in ef:
+                    line = line.strip()
+                    if not line or line.startswith("#"): continue
+                    if "=" in line:
+                        k, v = line.split("=", 1)
+                        kv[k.strip().upper()] = v.strip().strip("'").strip('"')
+                
+                if "WEBMASTER_USERNAME" in kv and "WEBMASTER_PASSWORD" in kv:
+                    accounts[kv["WEBMASTER_USERNAME"]] = {"password": kv["WEBMASTER_PASSWORD"], "role": "WEBMASTER", "bdd_division": None}
+                if "BDD1_USERNAME" in kv and "BDD1_PASSWORD" in kv:
+                    accounts[kv["BDD1_USERNAME"]] = {"password": kv["BDD1_PASSWORD"], "role": "BDD_1", "bdd_division": 1}
+                if "BDD2_USERNAME" in kv and "BDD2_PASSWORD" in kv:
+                    accounts[kv["BDD2_USERNAME"]] = {"password": kv["BDD2_PASSWORD"], "role": "BDD_2", "bdd_division": 2}
+                if "BDD3_USERNAME" in kv and "BDD3_PASSWORD" in kv:
+                    accounts[kv["BDD3_USERNAME"]] = {"password": kv["BDD3_PASSWORD"], "role": "BDD_3", "bdd_division": 3}
+        except Exception:
+            pass
+            
+    return accounts
+
+def get_auth_user_from_header(auth_header: Optional[str]) -> Optional[Dict[str, Any]]:
+    """Decodes Basic Auth header and returns matching user account dict, or None."""
+    if not auth_header or not auth_header.startswith("Basic "):
+        return None
+    try:
+        encoded = auth_header.split(" ", 1)[1].strip()
+        decoded = base64.b64decode(encoded).decode("utf-8")
+        username, password = decoded.split(":", 1)
+        accounts = load_auth_accounts()
+        user_info = accounts.get(username)
+        if user_info and user_info["password"] == password:
+            return {"username": username, **user_info}
+    except Exception:
+        pass
+    return None
+
 CACHED_LAYERS = None
 
 @app.get("/api/layers")
-async def get_layers():
+async def get_layers(authorization: Optional[str] = Header(None)):
     global CACHED_LAYERS
     # if CACHED_LAYERS is not None:
     #     return CACHED_LAYERS
@@ -221,8 +289,27 @@ async def get_layers():
                     "classify_with": classify_with,
                     "search_on": search_on
                 })
-    CACHED_LAYERS = layers
-    return layers
+    base_layers = list(layers)
+    CACHED_LAYERS = base_layers
+
+    # Check if caller is authenticated as Webmaster or Bridge Design Division 1/2/3
+    user = get_auth_user_from_header(authorization)
+    demand_layers = []
+    if user:
+        try:
+            adds_url = f"{ADDS_BASE_URL}/api/exchange/webmap/layers"
+            req = urllib.request.Request(adds_url, headers={"User-Agent": "RHD-Webmap-Portal"})
+            with urllib.request.urlopen(req, timeout=6) as resp:
+                if resp.status == 200:
+                    raw_dl = json.loads(resp.read().decode("utf-8"))
+                    if user["role"] == "WEBMASTER":
+                        demand_layers = raw_dl
+                    elif user.get("bdd_division") in (1, 2, 3):
+                        demand_layers = [l for l in raw_dl if l.get("bdd_division") == user["bdd_division"]]
+        except Exception as e:
+            print(f"Notice: Failed to fetch demand layers from ADDS ({ADDS_BASE_URL}): {e}")
+
+    return base_layers + demand_layers
 
 @app.get("/api/about_us")
 async def get_about_us():
@@ -232,10 +319,40 @@ async def get_about_us():
             return {"content": f.read()}
     return {"content": "About us content not found."}
 
+@app.get("/api/demands/auth")
+async def verify_demands_auth(authorization: Optional[str] = Header(None)):
+    user = get_auth_user_from_header(authorization)
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    return {
+        "status": "AUTHENTICATED",
+        "username": user["username"],
+        "role": user["role"],
+        "bdd_division": user.get("bdd_division")
+    }
+
 @app.get("/api/layers/{table_name}")
-async def get_layer_data(table_name: str, db: AsyncSession = Depends(get_db)):
+async def get_layer_data(table_name: str, authorization: Optional[str] = Header(None), db: AsyncSession = Depends(get_db)):
     if not re.match(r"^[a-z0-9_]+$", table_name):
         raise HTTPException(status_code=400, detail="Invalid table name")
+
+    if table_name.startswith("demand_bdd_"):
+        user = get_auth_user_from_header(authorization)
+        if not user:
+            raise HTTPException(status_code=401, detail="Authentication required for Demands layers")
+        m = re.match(r"^demand_bdd_([123])_", table_name)
+        if m and user["role"] != "WEBMASTER" and user.get("bdd_division") != int(m.group(1)):
+            raise HTTPException(status_code=403, detail="Unauthorized for this Bridge Design Division")
+        
+        adds_url = f"{ADDS_BASE_URL}/api/exchange/webmap/geojson/{table_name}"
+        try:
+            req = urllib.request.Request(adds_url, headers={"User-Agent": "RHD-Webmap-Portal"})
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                if resp.status == 200:
+                    return json.loads(resp.read().decode("utf-8"))
+        except Exception as e:
+            print(f"Error proxying demand layer {table_name} from ADDS: {e}")
+            return {"type": "FeatureCollection", "features": []}
 
     layers = await get_layers()
     layer = next((l for l in layers if l["table"] == table_name), None)
@@ -469,29 +586,9 @@ import shutil
 security = HTTPBasic()
 
 def check_admin(credentials: HTTPBasicCredentials = Depends(security)):
-    env_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".env"))
-    expected_user = os.getenv("WEBMASTER_USERNAME")
-    expected_pass = os.getenv("WEBMASTER_PASSWORD")
-    
-    try:
-        if os.path.exists(env_path):
-            with open(env_path, "r", encoding="utf-8") as ef:
-                for line in ef:
-                    line = line.strip()
-                    if not line or line.startswith("#"): continue
-                    if "=" in line:
-                        k, v = line.split("=", 1)
-                        k = k.strip().upper()
-                        v = v.strip().strip("'").strip('"')
-                        if k == "WEBMASTER_USERNAME": expected_user = v
-                        elif k == "WEBMASTER_PASSWORD": expected_pass = v
-    except Exception:
-        pass
-        
-    if not expected_user or not expected_pass:
-        raise HTTPException(status_code=401, detail="Invalid credentials (not configured)")
-        
-    if credentials.username != expected_user or credentials.password != expected_pass:
+    accounts = load_auth_accounts()
+    user_info = accounts.get(credentials.username)
+    if not user_info or user_info["password"] != credentials.password:
         raise HTTPException(status_code=401, detail="Invalid credentials")
     return credentials.username
 

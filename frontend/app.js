@@ -526,6 +526,17 @@ const getFeatureStyle = (feature, defaultColor, layerTransparency = null) => {
 const getHighlightStyle = (feature, color) => {
     const isPolygon = feature.geometry.type.includes("Polygon");
     const isPoint = feature.geometry.type.includes("Point");
+    const isDemand = (feature.properties && feature.properties.acquisition_type) || (feature.properties && feature.properties.stage);
+    if (isDemand) {
+        return {
+            weight: 3.5,
+            color: "#95d4e5", // Arctic Ice Halo Accent from palette
+            fillColor: feature.properties.color || color,
+            fillOpacity: 1,
+            opacity: 1,
+            radius: 10
+        };
+    }
     return {
         weight: isPolygon ? 1.5 : isPoint ? 2 : 2.5,
         color: "#4a5568",
@@ -543,10 +554,16 @@ window.openImodal = function (targetID, val, options={isAwaitingBorelog:false, i
     if (targetID === 'borelog-modal' && typeof window.openBorelogVisualizer === 'function') {
         window.openBorelogVisualizer(val, options);
     } else {
-        const modal = document.getElementById(targetID);
+        const modal = document.getElementById(targetID) || document.getElementById('iframe-modal');
         if (modal) {
             const iframe = modal.querySelector('iframe');
-            if (iframe) iframe.src = val;
+            if (iframe) {
+                let finalUrl = val;
+                if (val && typeof val === 'string' && val.startsWith("/api/exchange")) {
+                    finalUrl = "https://acqform.rhdbridge.com" + val;
+                }
+                iframe.src = finalUrl;
+            }
             modal.classList.remove('hidden');
         }
     }
@@ -927,9 +944,17 @@ async function fetchAndRenderLayers() {
             console.warn("No raster metadata:", e);
         }
 
-        const response = await fetch(`${API_BASE_URL}/layers`);
+        const authHash = window.adminCredentials || sessionStorage.getItem('adminCredentials');
+        const reqHeaders = authHash ? { 'Authorization': 'Basic ' + authHash } : {};
+
+        const response = await fetch(`${API_BASE_URL}/layers`, { headers: reqHeaders });
         const layers = await response.json();
         window.allLayerConfigs = layers;
+
+        // Update header authentication status chip
+        if (typeof window.updateWebmasterHeaderStatus === 'function') {
+            window.updateWebmasterHeaderStatus();
+        }
 
         // Build Tabs
         let uniqueTabs = [
@@ -1390,7 +1415,9 @@ async function fetchAndRenderLayers() {
                     } else {
                         let data = null;
                         try {
-                            const layerDataRes = await fetch(`${API_BASE_URL}/layers/${layerInfo.table}`);
+                            const curAuth = window.adminCredentials || sessionStorage.getItem('adminCredentials');
+                            const fetchHdr = curAuth ? { 'Authorization': 'Basic ' + curAuth } : {};
+                            const layerDataRes = await fetch(`${API_BASE_URL}/layers/${layerInfo.table}`, { headers: fetchHdr });
                             if (layerDataRes.ok) {
                                 data = await layerDataRes.json();
                             }
@@ -1561,6 +1588,18 @@ async function fetchAndRenderLayers() {
                         geoLayer = L.geoJSON(data, {
                             pane: paneName,
                             pointToLayer: (feature, latlng) => {
+                                const isDemandLayer = (layerInfo.tab === "Demands") || (feature.properties && (feature.properties.acquisition_type || feature.properties.stage));
+                                if (isDemandLayer) {
+                                    const ptColor = (feature.properties && (feature.properties.color || feature.properties.f_class_color)) || color;
+                                    return L.circleMarker(latlng, {
+                                        radius: 8,
+                                        fillColor: ptColor,
+                                        color: "#ffffff",
+                                        weight: 2,
+                                        opacity: 1,
+                                        fillOpacity: 0.94
+                                    });
+                                }
                                 return L.circleMarker(latlng, getFeatureStyle(feature, color, layerInfo.transparency));
                             },
                             filter: function (feature) {
@@ -1836,6 +1875,76 @@ async function fetchAndRenderLayers() {
         }
     }
 }
+
+window.adminCredentials = null;
+
+window.updateWebmasterHeaderStatus = async function() {
+    const container = document.getElementById("auth-header-action");
+    if (!container) return;
+    const authHash = window.adminCredentials || sessionStorage.getItem('adminCredentials');
+    if (!authHash) {
+        container.innerHTML = `
+            <button onclick="openApprovalLogin()" class="auth-login-header-btn" title="Login as Webmaster or Bridge Design Division">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                Webmaster Login
+            </button>
+        `;
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API_BASE_URL}/demands/auth`, { headers: { 'Authorization': 'Basic ' + authHash } });
+        if (res.ok) {
+            const data = await res.json();
+            const role = data.role || "WEBMASTER";
+            const bdd = data.bdd_division;
+            const label = role === "WEBMASTER" ? "Webmaster (All Divisions)" : `Bridge Design Div ${bdd}`;
+            const pillClass = role === "WEBMASTER" ? "auth-pill-webmaster" : "auth-pill-bdd";
+            container.innerHTML = `
+                <span class="auth-pill ${pillClass}">
+                    <span style="width: 7px; height: 7px; border-radius: 50%; background: #4ade80;"></span>
+                    ${label}
+                </span>
+                <button onclick="handleWebmasterLogout()" class="auth-logout-btn" title="Log out of authenticated session">Logout</button>
+            `;
+        } else {
+            sessionStorage.removeItem('adminCredentials');
+            window.adminCredentials = null;
+            container.innerHTML = `
+                <button onclick="openApprovalLogin()" class="auth-login-header-btn">
+                    Webmaster Login
+                </button>
+            `;
+        }
+    } catch (e) {
+        container.innerHTML = `
+            <button onclick="openApprovalLogin()" class="auth-login-header-btn">
+                Webmaster Login
+            </button>
+        `;
+    }
+};
+
+window.handleWebmasterLogout = function() {
+    sessionStorage.removeItem('adminCredentials');
+    window.adminCredentials = null;
+    
+    // Remove any active demand layers from the map
+    if (window.loadedLayers) {
+        Object.keys(window.loadedLayers).forEach(name => {
+            if (name.includes("Design Division")) {
+                const lyr = window.loadedLayers[name];
+                if (lyr && map.hasLayer(lyr)) {
+                    map.removeLayer(lyr);
+                }
+                delete window.loadedLayers[name];
+            }
+        });
+    }
+
+    fetchAndRenderLayers();
+    updateWebmasterHeaderStatus();
+};
 
 fetchAndRenderLayers();
 
@@ -2226,6 +2335,74 @@ window.openBorelogVisualizer = async (f_file, options = {}) => {
 
 window.adminCredentials = null;
 
+window.updateWebmasterHeaderStatus = async function() {
+    const container = document.getElementById("auth-header-action");
+    if (!container) return;
+    const authHash = window.adminCredentials || sessionStorage.getItem('adminCredentials');
+    if (!authHash) {
+        container.innerHTML = `
+            <button onclick="openApprovalLogin()" class="auth-login-header-btn" title="Login as Webmaster or Bridge Design Division">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                Webmaster Login
+            </button>
+        `;
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API_BASE_URL}/demands/auth`, { headers: { 'Authorization': 'Basic ' + authHash } });
+        if (res.ok) {
+            const data = await res.json();
+            const role = data.role || "WEBMASTER";
+            const bdd = data.bdd_division;
+            const label = role === "WEBMASTER" ? "Webmaster (All Divisions)" : `Bridge Design Div ${bdd}`;
+            const pillClass = role === "WEBMASTER" ? "auth-pill-webmaster" : "auth-pill-bdd";
+            container.innerHTML = `
+                <span class="auth-pill ${pillClass}">
+                    <span style="width: 7px; height: 7px; border-radius: 50%; background: #4ade80;"></span>
+                    ${label}
+                </span>
+                <button onclick="handleWebmasterLogout()" class="auth-logout-btn" title="Log out of authenticated session">Logout</button>
+            `;
+        } else {
+            sessionStorage.removeItem('adminCredentials');
+            window.adminCredentials = null;
+            container.innerHTML = `
+                <button onclick="openApprovalLogin()" class="auth-login-header-btn">
+                    Webmaster Login
+                </button>
+            `;
+        }
+    } catch (e) {
+        container.innerHTML = `
+            <button onclick="openApprovalLogin()" class="auth-login-header-btn">
+                Webmaster Login
+            </button>
+        `;
+    }
+};
+
+window.handleWebmasterLogout = function() {
+    sessionStorage.removeItem('adminCredentials');
+    window.adminCredentials = null;
+    
+    // Remove any active demand layers from the map
+    if (window.loadedLayers) {
+        Object.keys(window.loadedLayers).forEach(name => {
+            if (name.includes("Design Division")) {
+                const lyr = window.loadedLayers[name];
+                if (lyr && map.hasLayer(lyr)) {
+                    map.removeLayer(lyr);
+                }
+                delete window.loadedLayers[name];
+            }
+        });
+    }
+
+    fetchAndRenderLayers();
+    updateWebmasterHeaderStatus();
+};
+
 window.openApprovalLogin = async () => {
     const storedHash = sessionStorage.getItem('adminCredentials');
     if (storedHash) {
@@ -2233,6 +2410,7 @@ window.openApprovalLogin = async () => {
             const res = await fetch(`${API_BASE_URL}/borelog/auth`, { headers: { 'Authorization': 'Basic ' + storedHash } });
             if (res.ok) {
                 window.adminCredentials = storedHash;
+                updateWebmasterHeaderStatus();
                 document.getElementById('borelog-modal').classList.remove('hidden');
                 renderAdminDashboard();
                 return;
@@ -2253,32 +2431,39 @@ window.openApprovalLogin = async () => {
     const rootNode = document.getElementById('borelog-react-root');
     rootNode.innerHTML = `
         <div style="max-width: 380px; margin: 60px auto; font-family: 'Outfit', sans-serif; background: #ffffff; padding: 40px; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.05); border: 1px solid #eaeaea;">
-            <h2 style="margin: 0; color: #111; font-size: 32px; font-weight: 700;">Webmaster Login</h2>
-            <p style="margin: 5px 0 35px 0; color: #555; font-size: 16px; font-family: 'SmartGothic', sans-serif;">to access the approval system</p>
+            <h2 style="margin: 0; color: #111; font-size: 28px; font-weight: 700;">Design & Webmaster Login</h2>
+            <p style="margin: 5px 0 25px 0; color: #555; font-size: 14px; font-family: 'SmartGothic', sans-serif;">Access Demands tab and Bridge Engineering systems</p>
             
-            <div style="margin-bottom: 20px;">
-                <input type="text" id="admin-user" placeholder="Username" style="width: 100%; box-sizing: border-box; padding: 16px; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 15px; font-family: 'SmartGothic', sans-serif; outline: none; transition: border 0.2s;" onfocus="this.style.borderColor='#001ecc'" onblur="this.style.borderColor='#e2e8f0'">
+            <div style="margin-bottom: 16px;">
+                <input type="text" id="admin-user" placeholder="Username (e.g. webmaster, bdd_1, bdd_2, bdd_3)" style="width: 100%; box-sizing: border-box; padding: 14px; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 14px; font-family: 'SmartGothic', sans-serif; outline: none; transition: border 0.2s;" onfocus="this.style.borderColor='#112047'" onblur="this.style.borderColor='#e2e8f0'">
             </div>
-            <div style="margin-bottom: 30px;">
-                <input type="password" id="admin-pass" placeholder="Password" style="width: 100%; box-sizing: border-box; padding: 16px; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 15px; font-family: 'SmartGothic', sans-serif; outline: none; transition: border 0.2s;" onfocus="this.style.borderColor='#001ecc'" onblur="this.style.borderColor='#e2e8f0'">
+            <div style="margin-bottom: 24px;">
+                <input type="password" id="admin-pass" placeholder="Password" style="width: 100%; box-sizing: border-box; padding: 14px; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 14px; font-family: 'SmartGothic', sans-serif; outline: none; transition: border 0.2s;" onfocus="this.style.borderColor='#112047'" onblur="this.style.borderColor='#e2e8f0'">
             </div>
             
-            <button id="admin-login-btn" style="width: 100%; padding: 16px; background: #001ecc; color: #ffffff; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; font-family: 'Outfit', sans-serif; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#0019a8'" onmouseout="this.style.background='#001ecc'">Continue</button>
+            <button id="admin-login-btn" style="width: 100%; padding: 14px; background: #112047; color: #ffffff; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; font-family: 'Outfit', sans-serif; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#1c508c'" onmouseout="this.style.background='#112047'">Sign In</button>
             
             <p id="admin-error" style="color: #ef4444; margin-top: 15px; text-align: center; font-family: 'SmartGothic', sans-serif; font-size: 14px;"></p>
         </div>
     `;
 
     document.getElementById('admin-login-btn').onclick = async () => {
-        const u = document.getElementById('admin-user').value;
-        const p = document.getElementById('admin-pass').value;
+        const u = document.getElementById('admin-user').value.trim();
+        const p = document.getElementById('admin-pass').value.trim();
         const hash = btoa(u + ":" + p);
         try {
-            const res = await fetch(`${API_BASE_URL}/borelog/auth`, { headers: { 'Authorization': 'Basic ' + hash } });
+            const res = await fetch(`${API_BASE_URL}/demands/auth`, { headers: { 'Authorization': 'Basic ' + hash } });
             if (res.ok) {
+                const authData = await res.json();
                 window.adminCredentials = hash;
                 sessionStorage.setItem('adminCredentials', hash);
-                renderAdminDashboard();
+                fetchAndRenderLayers();
+                updateWebmasterHeaderStatus();
+                if (authData.role === "WEBMASTER") {
+                    renderAdminDashboard();
+                } else {
+                    document.getElementById('borelog-modal').classList.add('hidden');
+                }
             } else {
                 document.getElementById('admin-error').innerText = "Invalid credentials.";
             }
