@@ -2007,11 +2007,11 @@ window.updateWebmasterHeaderStatus = async function() {
             const data = await res.json();
             const role = data.role || "WEBMASTER";
             const bdd = data.bdd_division;
-            const label = role === "WEBMASTER" ? "Webmaster (All Divisions)" : `Bridge Design Div ${bdd}`;
+            const label = role === "WEBMASTER" ? "Webmaster" : `BDD-${bdd}`;
             const pillClass = role === "WEBMASTER" ? "auth-pill-webmaster" : "auth-pill-bdd";
             container.innerHTML = `
                 <span class="auth-pill ${pillClass}">
-                    <span style="width: 7px; height: 7px; border-radius: 50%; background: #4ade80;"></span>
+                    <!-- <span style="width: 7px; height: 7px; border-radius: 50%; background: #070ad0;"></span> -->
                     ${label}
                 </span>
                 <button onclick="handleWebmasterLogout()" class="auth-logout-btn" title="Log out of authenticated session">Logout</button>
