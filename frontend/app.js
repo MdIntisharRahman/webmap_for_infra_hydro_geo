@@ -442,6 +442,69 @@ if (rightPinBtn && rightPanelContainer) {
     });
 }
 
+window.parseSearchOn = function(searchOnStr) {
+    if (!searchOnStr || !searchOnStr.trim()) return [];
+    const results = [];
+    const bracketRegex = /\[\s*([^,\]]+?)\s*(?:,\s*([^\]]+?)\s*)?\]/g;
+    let match;
+    let hasBrackets = false;
+    while ((match = bracketRegex.exec(searchOnStr)) !== null) {
+        hasBrackets = true;
+        const fieldName = match[1].trim();
+        const maskName = match[2] ? match[2].trim() : fieldName;
+        if (fieldName) {
+            results.push({ field: fieldName, mask: maskName });
+        }
+    }
+    if (!hasBrackets) {
+        searchOnStr.split(",").forEach(item => {
+            const trimmed = item.trim();
+            if (trimmed) {
+                results.push({ field: trimmed, mask: trimmed });
+            }
+        });
+    }
+    return results;
+};
+
+window.openRightLegendPanel = function(layerInfo, classEntries) {
+    const rightPanelTitle = document.getElementById("right-panel-title");
+    const rightPanelContent = document.getElementById("right-panel-content");
+    const rightPanelContainer = document.getElementById("right-panel-container");
+    if (rightPanelTitle) rightPanelTitle.textContent = layerInfo.name;
+    if (rightPanelContent) {
+        rightPanelContent.innerHTML = "";
+        const isMapFromLegends = !!layerInfo.map_from_legends;
+        for (const [cName, cData] of classEntries) {
+            const itemEl = document.createElement("div");
+            itemEl.className = `right-legend-item ${isMapFromLegends ? "clickable-legend-search" : ""}`;
+            if (isMapFromLegends) {
+                itemEl.title = `Click to filter/search ${layerInfo.name} for "${cName}"`;
+            }
+            itemEl.innerHTML = `
+                <div class="right-legend-color" style="background: ${cData};"></div>
+                <span class="right-legend-name" style="flex: 1; word-break: break-word;">${cName}</span>
+                ${isMapFromLegends ? `
+                    <span class="legend-search-hint" style="font-size: 10px; font-weight: 600; color: #1c508c; display: flex; align-items: center; gap: 4px; padding: 2px 6px; border-radius: 4px; background: rgba(28, 80, 140, 0.08);">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        Filter
+                    </span>
+                ` : ""}
+            `;
+            if (isMapFromLegends) {
+                itemEl.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    if (typeof window.executeLegendSearch === "function") {
+                        window.executeLegendSearch(layerInfo.name, cName, itemEl);
+                    }
+                });
+            }
+            rightPanelContent.appendChild(itemEl);
+        }
+    }
+    if (rightPanelContainer) rightPanelContainer.classList.add("pinned");
+};
+
 // ============================================================================
 // PANEL HOVER STATE (PREVENT MAP INTERACTION BLEED)
 // ============================================================================
@@ -1390,19 +1453,16 @@ async function fetchAndRenderLayers() {
                                 if (moreBtn) {
                                     moreBtn.addEventListener("click", (e) => {
                                         e.stopPropagation();
-                                        const rightPanelTitle = document.getElementById("right-panel-title");
-                                        const rightPanelContent = document.getElementById("right-panel-content");
-                                        const rightPanelContainer = document.getElementById("right-panel-container");
-                                        if (rightPanelTitle) rightPanelTitle.textContent = layerInfo.name;
-                                        if (rightPanelContent) {
-                                            rightPanelContent.innerHTML = "";
-                                            for (const [cName, cData] of classEntries) {
-                                                rightPanelContent.innerHTML += `<div class="right-legend-item"><div class="right-legend-color" style="background: ${cData};"></div><span>${cName}</span></div>`;
-                                            }
-                                        }
-                                        if (rightPanelContainer) rightPanelContainer.classList.add("pinned");
+                                        window.openRightLegendPanel(layerInfo, classEntries);
                                     });
                                 }
+                            };
+
+                            subLegendUI.style.cursor = "pointer";
+                            subLegendUI.title = "Click to open legend side panel";
+                            subLegendUI.onclick = (e) => {
+                                e.stopPropagation();
+                                window.openRightLegendPanel(layerInfo, classEntries);
                             };
 
                             setTimeout(renderLegends, 50);
@@ -1453,23 +1513,60 @@ async function fetchAndRenderLayers() {
                             } else if (val !== '') {
                                 explicitClassifyWith = val;
                             }
+                        } else if (layerInfo.map_from_legends && layerInfo.search_on) {
+                            const sFields = window.parseSearchOn(layerInfo.search_on);
+                            if (sFields.length > 0) {
+                                explicitClassifyWith = sFields[0].field;
+                            }
                         }
 
-                        const colorGroups = new Map();
-                        if (performClassification && data.features) {
-                            for (const feat of data.features) {
-                                if (feat.properties) {
-                                    let clr = feat.properties.color || feat.properties.f_class_color || feat.properties.stroke_color || null;
-
-                                    if (explicitClassifyWith) {
-                                        let name = feat.properties[explicitClassifyWith];
-                                        if (name !== undefined && name !== null) {
-                                            clr = clr || '#9aa5b1';
-                                            if (clr && !clr.startsWith('#') && !clr.startsWith('rgb')) clr = '#' + clr;
-                                            if (!colorGroups.has(clr)) colorGroups.set(clr, new Set());
-                                            colorGroups.get(clr).add(String(name));
+                        let classEntries = [];
+                        if (performClassification && data.features && data.features.length > 0) {
+                            if (explicitClassifyWith) {
+                                const catMap = new Map();
+                                for (const feat of data.features) {
+                                    if (feat.properties) {
+                                        let val = feat.properties[explicitClassifyWith];
+                                        if (val === undefined || val === null || String(val).trim() === '') {
+                                            if (explicitClassifyWith === 'division' && feat.properties.field_division) {
+                                                val = feat.properties.field_division;
+                                            } else if (explicitClassifyWith === 'field_division' && feat.properties.division) {
+                                                val = feat.properties.division;
+                                            }
                                         }
-                                    } else {
+                                        if (val !== undefined && val !== null && String(val).trim() !== '') {
+                                            const catName = String(val).trim();
+                                            let clr = feat.properties.color || feat.properties.f_class_color || feat.properties.structure_color || null;
+                                            if (!catMap.has(catName)) {
+                                                catMap.set(catName, clr);
+                                            } else if (!catMap.get(catName) && clr) {
+                                                catMap.set(catName, clr);
+                                            }
+                                        }
+                                    }
+                                }
+
+                                const sortedCats = Array.from(catMap.keys()).sort((a, b) => {
+                                    const numA = parseFloat(a); const numB = parseFloat(b);
+                                    if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+                                    return a.localeCompare(b);
+                                });
+
+                                const uniqueExplicitColors = new Set(Array.from(catMap.values()).filter(Boolean));
+                                sortedCats.forEach((catName, idx) => {
+                                    let catColor = catMap.get(catName);
+                                    if (!catColor || uniqueExplicitColors.size <= 1) {
+                                        catColor = engineeringColors[idx % engineeringColors.length];
+                                    } else if (!catColor.startsWith('#') && !catColor.startsWith('rgb')) {
+                                        catColor = '#' + catColor;
+                                    }
+                                    classEntries.push([catName, catColor]);
+                                });
+                            } else {
+                                const colorGroups = new Map();
+                                for (const feat of data.features) {
+                                    if (feat.properties) {
+                                        let clr = feat.properties.color || feat.properties.f_class_color || feat.properties.stroke_color || null;
                                         if (clr || feat.properties.f_class_name) {
                                             clr = clr || '#9aa5b1';
                                             if (clr && !clr.startsWith('#') && !clr.startsWith('rgb')) clr = '#' + clr;
@@ -1489,21 +1586,20 @@ async function fetchAndRenderLayers() {
                                         }
                                     }
                                 }
+                                for (const [clr, namesSet] of colorGroups.entries()) {
+                                    let arr = Array.from(namesSet);
+                                    arr.sort((a, b) => {
+                                        let numA = parseFloat(a); let numB = parseFloat(b);
+                                        if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+                                        return a.localeCompare(b);
+                                    });
+                                    classEntries.push([arr.join(', '), clr]);
+                                }
                             }
                         }
-                        const classMap = new Map();
-                        for (const [clr, namesSet] of colorGroups.entries()) {
-                            let arr = Array.from(namesSet);
-                            arr.sort((a, b) => {
-                                let numA = parseFloat(a); let numB = parseFloat(b);
-                                if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
-                                return a.localeCompare(b);
-                            });
-                            classMap.set(arr.join(', '), clr);
-                        }
-                        const hasClasses = classMap.size > 0;
+
+                        const hasClasses = classEntries.length > 0;
                         if (hasClasses) {
-                            const classEntries = Array.from(classMap.entries());
                             let gradientParts = [];
                             let pct = 100 / classEntries.length;
                             for (let i = 0; i < classEntries.length; i++) {
@@ -1537,7 +1633,7 @@ async function fetchAndRenderLayers() {
 
                                 const remaining = classEntries.length - rendered;
                                 if (remaining > 0) {
-                                    subHTML += `<div class="legend-more-btn" title="See all classes" style="flex-shrink: 0; width: 24px; height: 18px; border-radius: 10px; background: #e2e8f0; color: var(--text-dim); font-size: 10px; font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer;">+${remaining}</div>`;
+                                    subHTML += `<div class="legend-more-btn" title="See all classes in side panel" style="flex-shrink: 0; width: 24px; height: 18px; border-radius: 10px; background: #e2e8f0; color: var(--text-dim); font-size: 10px; font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer;">+${remaining}</div>`;
                                 }
                                 subLegendUI.innerHTML = subHTML;
 
@@ -1545,19 +1641,16 @@ async function fetchAndRenderLayers() {
                                 if (moreBtn) {
                                     moreBtn.addEventListener("click", (e) => {
                                         e.stopPropagation();
-                                        const rightPanelTitle = document.getElementById("right-panel-title");
-                                        const rightPanelContent = document.getElementById("right-panel-content");
-                                        const rightPanelContainer = document.getElementById("right-panel-container");
-                                        if (rightPanelTitle) rightPanelTitle.textContent = layerInfo.name;
-                                        if (rightPanelContent) {
-                                            rightPanelContent.innerHTML = "";
-                                            for (const [cName, cData] of classEntries) {
-                                                rightPanelContent.innerHTML += `<div class="right-legend-item"><div class="right-legend-color" style="background: ${cData};"></div><span>${cName}</span></div>`;
-                                            }
-                                        }
-                                        if (rightPanelContainer) rightPanelContainer.classList.add("pinned");
+                                        window.openRightLegendPanel(layerInfo, classEntries);
                                     });
                                 }
+                            };
+
+                            subLegendUI.style.cursor = "pointer";
+                            subLegendUI.title = "Click to open full legend panel";
+                            subLegendUI.onclick = (e) => {
+                                e.stopPropagation();
+                                window.openRightLegendPanel(layerInfo, classEntries);
                             };
 
                             // Initial render (might have 0 clientWidth if display is none, so setTimeout)
@@ -1738,6 +1831,9 @@ async function fetchAndRenderLayers() {
                         });
                     }
                     loadedLayers[layerInfo.name] = geoLayer;
+                    if (geoLayer && typeof geoLayer.getLayers === 'function') {
+                        geoLayer.allFeatureLayers = geoLayer.getLayers();
+                    }
                 } catch (e) {
                     console.error("Error loading layer:", e);
                 }
@@ -1745,6 +1841,23 @@ async function fetchAndRenderLayers() {
             };
 
             if (isBasemap) {
+                const applyBasemapTransparency = () => {
+                    let targetOpacityPct = 100;
+                    if (layerInfo.transparency !== null && layerInfo.transparency !== undefined && !isNaN(parseFloat(layerInfo.transparency))) {
+                        targetOpacityPct = Math.max(0, Math.min(100, Math.round(100 - parseFloat(layerInfo.transparency))));
+                    }
+                    const singleOpacitySlider = document.getElementById("single-basemap-opacity-slider");
+                    const singleOpacityVal = document.getElementById("single-basemap-opacity-val");
+                    if (singleOpacitySlider && singleOpacityVal) {
+                        singleOpacitySlider.value = targetOpacityPct;
+                        singleOpacityVal.textContent = `${targetOpacityPct}%`;
+                        window.singleBasemapOpacity = targetOpacityPct / 100;
+                    }
+                    if (geoLayer && typeof geoLayer.setOpacity === 'function') {
+                        geoLayer.setOpacity(window.singleBasemapOpacity);
+                    }
+                };
+
                 loadCb.addEventListener('change', async (e) => {
                     console.log("Basemap radio changed for:", layerInfo.name, "checked:", loadCb.checked);
                     if (loadCb.checked) {
@@ -1763,9 +1876,7 @@ async function fetchAndRenderLayers() {
 
                         if (geoLayer) {
                             console.log("Adding new basemap to map");
-                            if (typeof window.singleBasemapOpacity === 'number' && typeof geoLayer.setOpacity === 'function') {
-                                geoLayer.setOpacity(window.singleBasemapOpacity);
-                            }
+                            applyBasemapTransparency();
                             geoLayer.addTo(map);
                             geoLayer.bringToBack();
                             item.classList.add('active');
@@ -1787,9 +1898,7 @@ async function fetchAndRenderLayers() {
                     loadLayerData().then(() => {
                         if (isVisuallyActive && geoLayer) {
                             if (!window.activeBasemapLayer) {
-                                if (typeof window.singleBasemapOpacity === 'number' && typeof geoLayer.setOpacity === 'function') {
-                                    geoLayer.setOpacity(window.singleBasemapOpacity);
-                                }
+                                applyBasemapTransparency();
                                 geoLayer.addTo(map);
                                 geoLayer.bringToBack();
                                 window.activeBasemapLayer = geoLayer;
@@ -3041,6 +3150,19 @@ document.addEventListener("DOMContentLoaded", () => {
         searchFieldsCheckboxes.innerHTML = "";
         searchFieldsList.classList.remove("hidden");
         currentSearchFieldsConfig = parseSearchOn(config.search_on);
+
+        // Ensure classify_with field is included in search config if defined and not already present
+        if (config.classify_with && config.classify_with.toLowerCase() !== 'no' && !currentSearchFieldsConfig.some(f => f.field === config.classify_with)) {
+            currentSearchFieldsConfig.unshift({ field: config.classify_with, mask: config.classify_with });
+        }
+        if (config.tab === "Demands" || config.datatype === "Demands") {
+            if (!currentSearchFieldsConfig.some(f => f.field === "field_division")) {
+                currentSearchFieldsConfig.unshift({ field: "field_division", mask: "Division" });
+            }
+            if (!currentSearchFieldsConfig.some(f => f.field === "division")) {
+                currentSearchFieldsConfig.unshift({ field: "division", mask: "Division" });
+            }
+        }
         
         const geoLayer = loadedLayers[activeSearchLayerName];
         const fieldStats = inspectFieldStats(geoLayer, currentSearchFieldsConfig);
@@ -3178,6 +3300,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     function resetLayerSearch(layerName) {
+        document.querySelectorAll(".active-legend-filter").forEach(el => el.classList.remove("active-legend-filter"));
         const geoLayer = loadedLayers[layerName];
         clearSearchHighlights(geoLayer);
         if (!geoLayer) return;
@@ -3362,7 +3485,11 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!parsed || !activeSearchLayerName) return;
 
         const geoLayer = loadedLayers[activeSearchLayerName];
-        if (!geoLayer || !geoLayer.allFeatureLayers) return;
+        if (!geoLayer) return;
+        if (!geoLayer.allFeatureLayers && typeof geoLayer.getLayers === 'function') {
+            geoLayer.allFeatureLayers = geoLayer.getLayers();
+        }
+        if (!geoLayer.allFeatureLayers) return;
 
         const selectedFields = getSelectedFields();
         if (selectedFields.length === 0) return;
@@ -3441,4 +3568,53 @@ document.addEventListener("DOMContentLoaded", () => {
             } catch(e) {}
         }
     }
+
+    window.resetLayerSearch = resetLayerSearch;
+
+    window.executeLegendSearch = function(layerName, categoryText, itemEl) {
+        const geoLayer = loadedLayers[layerName];
+        if (!geoLayer) {
+            console.warn(`Layer "${layerName}" is not currently loaded on the map.`);
+            return;
+        }
+
+        if (!geoLayer.allFeatureLayers && typeof geoLayer.getLayers === 'function') {
+            geoLayer.allFeatureLayers = geoLayer.getLayers();
+        }
+
+        // Toggle behavior: If clicking the currently active legend filter, deactivate and reset
+        if (itemEl && itemEl.classList.contains("active-legend-filter")) {
+            itemEl.classList.remove("active-legend-filter");
+            resetLayerSearch(layerName);
+            if (searchInput) searchInput.value = "";
+            if (searchResetBtn) searchResetBtn.classList.add("hidden");
+            return;
+        }
+
+        // Deactivate any previous active legend filter across panels
+        document.querySelectorAll(".active-legend-filter").forEach(el => el.classList.remove("active-legend-filter"));
+        if (itemEl) itemEl.classList.add("active-legend-filter");
+
+        // Set active search layer
+        activeSearchLayerName = layerName;
+
+        // Ensure the search modal layer list has this layer selected
+        const config = (window.allLayerConfigs || []).find(c => c.name === layerName);
+        populateSearchLayers();
+        const radio = searchLayerList ? searchLayerList.querySelector(`input[name="searchLayer"][value="${CSS.escape(layerName)}"]`) : null;
+        if (radio) radio.checked = true;
+
+        if (config) {
+            populateSearchFields(config);
+        }
+
+        if (searchInput) {
+            searchInput.value = categoryText;
+        }
+        if (searchResetBtn) {
+            searchResetBtn.classList.remove("hidden");
+        }
+
+        executeSearch(categoryText);
+    };
 });

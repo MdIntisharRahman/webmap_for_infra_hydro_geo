@@ -230,6 +230,7 @@ async def get_layers(authorization: Optional[str] = Header(None)):
                 zoom_level = parts[11].strip() if len(parts) >= 12 else ""
                 classify_with = parts[12].strip() if len(parts) >= 13 else ""
                 search_on = parts[13].strip() if len(parts) >= 14 else ""
+                map_from_legends = (parts[14].strip().lower() in ["yes", "y", "true", "1"]) if len(parts) >= 15 else False
                 
                 filename = parts[0]
                 rendered_filename = None
@@ -288,7 +289,8 @@ async def get_layers(authorization: Optional[str] = Header(None)):
                     "credit_page": credit_page,
                     "zoom_level": zoom_level,
                     "classify_with": classify_with,
-                    "search_on": search_on
+                    "search_on": search_on,
+                    "map_from_legends": map_from_legends
                 })
     base_layers = list(layers)
     CACHED_LAYERS = base_layers
