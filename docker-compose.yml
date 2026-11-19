@@ -31,7 +31,8 @@ services:
       BDD2_PASSWORD: ${BDD2_PASSWORD:-bdd2_rhd_bridge_2026}
       BDD3_USERNAME: ${BDD3_USERNAME:-bdd_3}
       BDD3_PASSWORD: ${BDD3_PASSWORD:-bdd3_rhd_bridge_2026}
-      ADDS_BASE_URL: ${ADDS_BASE_URL:-https://acqform.rhdbridge.com}
+      DESC_BASE_URL: ${DESC_BASE_URL:-${ADDS_BASE_URL:-https://acqform.rhdbridge.com}}
+      ADDS_BASE_URL: ${DESC_BASE_URL:-${ADDS_BASE_URL:-https://acqform.rhdbridge.com}}
     volumes:
       - ./Maps:/app/Maps
     depends_on:

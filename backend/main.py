@@ -112,8 +112,9 @@ def slugify(text_val: str) -> str:
     return text_val.strip("_")
 
 
-# RHD ADDS Server Interoperability
-ADDS_BASE_URL = os.getenv("ADDS_BASE_URL", "https://acqform.rhdbridge.com").rstrip("/")
+# RHD DESC (Data Exchange System for Coordination) Server Interoperability
+DESC_BASE_URL = os.getenv("DESC_BASE_URL", os.getenv("ADDS_BASE_URL", "https://acqform.rhdbridge.com")).rstrip("/")
+ADDS_BASE_URL = DESC_BASE_URL
 
 def load_auth_accounts() -> Dict[str, Dict[str, Any]]:
     """Loads authenticated accounts for Webmaster and Bridge Design Divisions 1, 2, and 3."""
@@ -307,7 +308,7 @@ async def get_layers(authorization: Optional[str] = Header(None)):
                     elif user.get("bdd_division") in (1, 2, 3):
                         demand_layers = [l for l in raw_dl if l.get("bdd_division") == user["bdd_division"]]
         except Exception as e:
-            print(f"Notice: Failed to fetch demand layers from ADDS ({ADDS_BASE_URL}): {e}")
+            print(f"Notice: Failed to fetch demand layers from RHD DESC ({DESC_BASE_URL}): {e}")
 
     return base_layers + demand_layers
 
@@ -351,7 +352,7 @@ async def get_layer_data(table_name: str, authorization: Optional[str] = Header(
                 if resp.status == 200:
                     return json.loads(resp.read().decode("utf-8"))
         except Exception as e:
-            print(f"Error proxying demand layer {table_name} from ADDS: {e}")
+            print(f"Error proxying demand layer {table_name} from RHD DESC: {e}")
             return {"type": "FeatureCollection", "features": []}
 
     layers = await get_layers()
