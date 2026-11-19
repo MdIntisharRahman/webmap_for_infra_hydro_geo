@@ -1,300 +1,204 @@
-# Infrastructure and Geo Webmap Application
+# Infrastructure, Hydrographic & Geotechnical Webmap Portal
 
-A geospatial visualization platform for rendering infrastructure, hydrograhic, geographic and seismographic data layers. The platform features a **POINT DATA ESTIMATOR** tool to calculating elevation, water level, point location geographic, seismic and hydrographic estimations based on the available map data. This project is built using a modern, scalable architecture featuring a Python/FastAPI backend, a PostGIS geospatial database, and a highly responsive, glassmorphism-styled Vanilla JavaScript frontend.
+[![Roads and Highways Department](https://img.shields.io/badge/RHD-Government%20of%20Bangladesh-112047?style=flat-square)](https://rhd.gov.bd)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688?style=flat-square&logo=fastapi)](https://fastapi.tiangolo.com)
+[![Leaflet.js](https://img.shields.io/badge/Leaflet.js-1.9.4-199900?style=flat-square&logo=leaflet)](https://leafletjs.com)
+[![PostGIS](https://img.shields.io/badge/PostGIS-15--3.4-336791?style=flat-square&logo=postgresql)](https://postgis.net)
+[![Nginx](https://img.shields.io/badge/Nginx-Alpine-009639?style=flat-square&logo=nginx)](https://nginx.org)
+[![RHD DESC](https://img.shields.io/badge/RHD%20DESC-Interoperability%20Enabled-1c508c?style=flat-square)](https://acqform.rhdbridge.com)
 
----
+A high-performance geospatial visualization and engineering coordination platform designed for the **Roads and Highways Department (RHD)**, Ministry of Road Transport and Bridges, Government of the People's Republic of Bangladesh.
 
-## System Architecture
-
-The application is composed of three tightly integrated components:
-
-1. **Frontend (Client)**: A purely static Single Page Application (HTML, CSS, JS) powered by Leaflet.js, engineered for complete offline autonomy and mobile-responsive perfection.
-2. **Backend (API)**: A Python FastAPI server that handles routing, calculates water level estimations using Inverse Distance Weighting (IDW), and constructs GeoJSON payloads.
-3. **Database (Geospatial Store)**: A PostgreSQL database extended with PostGIS to natively process, index, and serialize geospatial vectors.
-
----
-
-## Key Components & Workflow
-
-### 1. Data Ingestion Pipeline
-The application uses a unique configuration-as-documentation approach.
-* **The Source of Truth**: The file `Maps/map_list.md` acts as the manifest for the entire application. It contains a markdown table mapping raw GeoJSON/Raster filenames to human-readable layer names, alongside extended configurations like `Show First`, `Transparency`, and `Credit Page`.
-* **`import_local_maps.py`**: This script reads the markdown manifest, iterates through the `Maps/` folder, and uses `geopandas` and `geoalchemy2` to parse the GeoJSON files. It dynamically creates tables in PostGIS (slugifying the layer names), validates the geometry, and sets up geospatial indices. Large Raster files (`.tif`) are intelligently skipped by this script, as they are served directly to the frontend bypassing the database.
-
-### 2. The Backend API (`backend/main.py`)
-Built with **FastAPI** and **SQLAlchemy (Async)**, the backend acts as a highly optimized bridge between PostGIS and the Frontend.
-* **Dynamic Layer Discovery (`/api/layers`)**: Reads the markdown manifest and tells the frontend exactly which map layers are available to render and which should be toggled on automatically.
-* **Native GeoJSON Serialization (`/api/layers/{table_name}`)**: Instead of fetching rows and converting them to JSON in Python, the backend offloads the heavy lifting to PostGIS. It uses `ST_AsGeoJSON` and `jsonb_build_object` to construct massive `FeatureCollection` payloads entirely within the database engine, resulting in extremely fast response times.
-* **Point Data Estimator (`/api/estimate_water_levels`)**: Given a latitude and longitude, the API queries the `shwl` and `slwl` tables. It performs a **true geodesic K-Nearest Neighbor (KNN) search** (`geom::geography <-> ...`) to find the 5 closest contour lines and calculates an estimated water level using robust **Inverse Distance Weighting (IDW)**. Concurrently, it queries all available polygon and line feature layers using `ST_DWithin` to instantly identify what infrastructure or geological layers sit directly beneath or within 100m of the target point.
-
-### 3. The Frontend (`frontend/app.js` & `styles.css`)
-* **Leaflet.js & GeoRaster**: Handles the heavy rendering of vector layers over a CARTO Voyager basemap, as well as massive raster grids (`.tif`) streamed directly over HTTP without burdening the database.
-* **Fully Responsive Glassmorphism UI**: Designed as a sleek "Glass Command Center", the UI relies heavily on hardware-accelerated CSS transforms (`translate3d`) for buttery smooth 60FPS panning. It is 100% mobile-responsive, automatically collapsing the side panels into intuitive, touch-accessible **Bottom Sheets** on smaller screens, keeping the map canvas clear.
-* **Coordinate Parsing & Target Acquisition**: A robust regex-based parser that allows users to input coordinates manually (Decimal, DMS, Symbols), or visually acquire them by activating a dynamic **Target crosshair tool** to click directly on the map, generating a highly detailed Point Data Estimator popup.
-* **Data-Driven Theming & Tooltips**: The frontend is completely decoupled from hardcoded logic. Styling, legends, and interactive tooltips are driven entirely by specific properties embedded within the GeoJSON features themselves:
-    * **`keys`**: A string containing bracketed pairs that maps a database property field to a human-readable label: `[field_name, Display Label]`. If a field value is a URL (e.g., a Google Drive link for borelog data), it is automatically formatted as an interactive, clickable hyperlink (`See More ↗` or `Open Link ↗`) that opens in a new tab.
-    * **`f_class_name`**: Defines the classification grouping for the feature (e.g., `National Highway`). The UI auto-generates a multi-color pie chart legend icon and a secondary sliding legend panel.
-    * **`f_class_color`**: The hex color used to render the feature. If this property is absent, the layer is assigned a default color from a predefined palette (`engineeringColors` array in `app.js`) based on its load order.
-    * **`f_class_weight`**: A percentage multiplier for line thickness. If set to `0`, the feature is completely hidden from the map visually.
-    * **Point Sizes**: Point features are automatically rendered as Circle Markers to reduce map clutter and remove shadows. By default, they have a radius of 2.5px (expanding to 3.5px on hover). To alter this size, you can edit the `radius` values returned by the `getFeatureStyle` and `getHighlightStyle` functions inside `frontend/app.js`.
-    * **`f_class_transparency`**: Sets the transparency level of the feature as a percentage.
-* **Advanced Global Transparency & "Ghost Layers"**: The markdown manifest dictates an overarching `Transparency` value. Positive values aggressively override any feature-level `f_class_transparency` and dictate raster opacity. Negative values create **"Ghost Layers"** — layers that are physically hidden from the map canvas and omitted from the side panel UI, yet remain silently active in the background to feed rich data directly into the Point Data Estimator without cluttering the screen.
-* **Iframe Credit Modals**: Layers can trigger elegantly animated, glassmorphic iframe modals to dynamically load external HTML attribution/credit pages (defined via the `Credit Page` column in the manifest).
+The platform visualizes national road networks, hydrographic contours, geological formations, seismographic hazard zones, and geotechnical boreholes. It features an analytical **Point Data Estimator** (calculating elevation, water level, and geotechnical metrics using Inverse Distance Weighting), dynamic **RHD DESC Demands Coordination**, **'Map from Legends' Search Integration**, and a multi-mode **Basemap Compositing Suite**.
 
 ---
 
-## Configuration (.env)
+## 🏗️ System Architecture
 
-The project utilizes a unified environment variable system to manage database credentials seamlessly across local and production environments.
+The application comprises three tightly integrated containers deployed via Docker Compose:
 
-* **Local Development**: `uv` automatically loads the `.env` file. The backend connects to the database via `POSTGRES_HOST=localhost`.
-* **Production (Docker & PaaS)**: `docker-compose.yml` consumes the exact same `.env` file to configure the PostGIS container, while intelligently overriding `POSTGRES_HOST` to `db` for internal container networking. Alternatively, if hosted on a PaaS like Render, the app prioritizes a single injected `DATABASE_URL` string over individual credential fields.
-
----
-
-## Dependencies
-
-### Backend (Python)
-Managed via `uv` (see `pyproject.toml`):
-* **FastAPI / Uvicorn**: High-performance asynchronous web framework and server.
-* **SQLAlchemy & Asyncpg**: Asynchronous ORM and database driver for PostgreSQL.
-* **GeoPandas & GeoAlchemy2**: For parsing spatial data files and translating them into PostGIS geometries.
-* **psycopg2-binary**: Synchronous fallback/adapter utilized by pandas/geopandas for data insertion.
-
-### Frontend
-* **Leaflet.js** (Self-Hosted): Core mapping library.
-* **Offline Autonomy**: All frontend assets (Leaflet CSS/JS, Google Fonts, SVGs) are fully localized inside `frontend/resources/`, strictly decoupling the map from external CDNs that could fail or change policies.
-* **Vanilla JavaScript & CSS**: No heavy frontend frameworks (React/Vue/Angular) are required, ensuring lightning-fast load times.
-
-### Infrastructure (Docker)
-* **postgis/postgis:15-3.4**: Official PostGIS image.
-* **nginx:alpine**: Replaces Python's `http.server` in production to serve the frontend and reverse-proxy the API requests, sidestepping CORS issues.
+1. **Frontend (Client)**: A purely static Single Page Application (HTML, CSS, Vanilla JS) powered by Leaflet.js, engineered for offline autonomy, zero external CDN dependencies, and hardware-accelerated 60 FPS glassmorphic rendering.
+2. **Backend (API)**: A Python FastAPI asynchronous server (`backend/main.py`) that handles dynamic layer discovery, Inverse Distance Weighting (IDW) water-level estimations, PostGIS SQL queries, and secure proxying to the **RHD DESC** structural exchange server.
+3. **Database (Geospatial Store)**: PostgreSQL with PostGIS extension (`postgis/postgis:15-3.4`) natively storing vector features, spatial indices, and running server-side `ST_AsGeoJSON` serialization.
 
 ---
 
-## Porting & First-Time Setup (New Devices)
+## 🌟 Key Features & Functional Modules
 
-If you copy this project to a completely new computer, you **do not** need to manually install dozens of Python packages one by one. The project uses `uv` (a blazingly fast Python package manager) and a `pyproject.toml` file to automatically manage dependencies.
+### 1. RHD DESC Demands Coordination Subsystem
+Integrated directly with the [RHD DESC Platform](https://acqform.rhdbridge.com) (`/api/exchange/webmap/...`), providing visual geospatial tracking for bridge and culvert acquisition demands:
+- **Demands Tab**: Dynamically activated upon verified authentication.
+- **9 Specialized Spatial Layers**: Three discrete stages across all three central Bridge Design Divisions:
+  - `Demand (Design Division-1 / 2 / 3)`: Deep Navy (`#112047`) — Unaccepted field acquisition dossiers awaiting structural intake.
+  - `Processing (Design Division-1 / 2 / 3)`: Denim Blue (`#1c508c`) — Accepted demands actively undergoing hydraulic computation, drafting, and vetting.
+  - `Delivered (Design Division-1 / 2 / 3)`: Steel Blue (`#3699c2`) — Fully endorsed and approved design packages dispatched back to the field.
+- **Embedded Dossier Preview (`demand-preview-modal`)**: Clicking any demand feature opens an interactive glassmorphic modal embedding a live dossier with real-time status badges, attachments summary, and a direct button to open the official record in RHD DESC.
 
-**To set up the project on a new local machine:**
-Run `./first_run.sh` to setup the environment variables, update the maps—basically it runs everything you need to prepare the environment, including creating a database for the job. When the shell script is executed, a featured interactive setup wizard (`setup_db.py`) will manage PostgreSQL database creation and environment variable initialization effortlessly. 
+### 2. Sneaky Webmaster & Bridge Design Division Authentication
+- **Sneaky Trigger**: The Webmaster login button is hidden from public view. Double-clicking the official RHD logo in the header opens a credential prompt.
+- **Role-Based Access Control (RBAC)**:
+  - `Webmaster`: Super-admin privilege; unconstrained visibility across all 9 demand layers for all 3 Bridge Design Divisions simultaneously.
+  - `BDD_1`: Bridge Design Division 1 officer; scoped exclusively to Division 1 Demand, Processing, and Delivered layers.
+  - `BDD_2`: Bridge Design Division 2 officer; scoped exclusively to Division 2 Demand, Processing, and Delivered layers.
+  - `BDD_3`: Bridge Design Division 3 officer; scoped exclusively to Division 3 Demand, Processing, and Delivered layers.
+- **Header Status Pill**: Displays active role credentials (`Webmaster`, `BDD-1`, `BDD-2`, `BDD-3`) with a one-click session logout button.
 
-## Deployment & Development
+### 3. 'Map from Legends' & Field Division Categorization
+- **Intelligent Division Classification**: Vector classification engine groups features by discrete category values (`classify_with` or inferred from `search_on`) rather than color alone. For instance, demand layers display distinct legend entries for *Barishal*, *Dhaka*, *Gazipur*, *Cumilla*, etc.
+- **Interactive Legend Side Panel**: When a layer has `map_from_legends: true` in the manifest:
+  - Side panel legend items display an interactive "Filter" badge and hover animation.
+  - **Click-to-Search**: Clicking any category (e.g. *Barishal* or *Box Culvert*) executes `executeLegendSearch`:
+    1. Synchronizes the search drawer (selects the layer radio and populates search input).
+    2. Filters map features to only display matching records.
+    3. Triggers crimson POI halo pulse highlight animation.
+    4. Automatically animates `map.flyToBounds(...)` to zoom to the filtered features.
+    5. Displays toast notification (`Found X features matching "..."`).
+    6. Highlights the clicked legend item with `.active-legend-filter`.
+  - **Toggle Off**: Clicking the active legend item a second time clears the filter and restores all features on the layer.
 
-* **Local Development**: Run `./start.sh` to spin up a local Uvicorn backend on port `8484` and a Python HTTP server on `8383`. To add a new layer, insert a row in the `Maps/map_list.md` file so that the script knows which GeoJSON files are to be loaded and relates names to their corresponding GeoJSON files. Run `./update_Maps.sh` whenever you add new GeoJSON files. 
-* **Production Deployment**: For execution in the web servers, a complete `docker-compose.yml` is provided. Read **`web-deployment-instructions.md`** for secure production setup instructions.
+### 4. Basemap Transparency & Opacity Slider Synchronization
+- **Automatic Calculated Opacity**: In the single basemap scheme, selecting any basemap automatically inspects its configured `transparency` value from `Maps/map_list.md`:
+  $$\text{Opacity \%} = 100 - \text{Transparency}$$
+  - **OSM Standard** (transparency 37) $\longrightarrow$ slider automatically slides to **`63%`** and applies `0.63` tile opacity.
+  - **Satellite Imagery** (transparency 53) $\longrightarrow$ slider automatically slides to **`47%`** and applies `0.47` tile opacity.
+  - **Google Roads** (transparency 53) $\longrightarrow$ slider automatically slides to **`47%`** and applies `0.47` tile opacity.
+  - Basemaps without transparency specified default to **`100%`**.
+- Manual dragging of the slider remains fully reactive.
 
-### Docker Configuration Notes (Nginx & Volumes)
-When deploying via `docker-compose.yml`, the environment utilizes Nginx to serve the frontend and proxy requests to the FastAPI backend. Two critical configurations are implemented to support dynamic map updates:
-1. **Volume Mapping**: The `Maps/` folder is explicitly mounted as a volume (`- ./Maps:/app/Maps`) into the backend container. This allows you to hot-swap `.geojson`, `.png`, and `-color_map.txt` files on your host machine without needing to rebuild the entire Docker image.
-2. **Nginx Proxying**: Nginx is configured in `nginx.conf` to explicitly proxy both `/api/` (for data) and `/maps/` (for static raster `.png` fetching) directly to the backend container. Without the `/maps/` proxy, Nginx would attempt to serve the raster images from its own isolated filesystem and return `404 Not Found`.
+### 5. Basemap Compositing Engine (Dual Layer & Swipe)
+- **Composite Mode**: Seamlessly blend a Base tile layer (e.g. Satellite Imagery) with an Overlay tile layer (e.g. ESRI Transportation or CycleOSM).
+- **CSS Blend Modes**: Supports `normal`, `multiply`, `overlay`, and `screen`.
+- **One-Click Presets**:
+  - `Sat + Roads` (Satellite Imagery + ESRI Transportation at 100% opacity)
+  - `Topo + Roads` (ESRI Topographic + ESRI Transportation at 90% opacity)
+  - `Sat + Topo` (Satellite Imagery + ESRI Topographic with Multiply blend at 65% opacity)
+  - `Cycle + Roads` (Satellite Imagery + CycleOSM with Overlay blend at 75% opacity)
+- **Interactive Draggable Swipe Divider**: Activates an on-canvas divider (`#basemap-swipe-divider`) that splits the map vertically, enabling side-by-side comparison between imagery and road cartography.
 
-## Data-Driven Tooltip Logic
+### 6. Advanced Numeric Range & Operator Search Engine
+Client-side fuzzy and structured search capable of parsing thousands of GeoJSON features instantly:
+- **Targeted Field Prefixes**: e.g., `spans: >= 5`, `Construction Year: 2000..2010`.
+- **Comparison Operators**: `>=`, `<=`, `>`, `<`, `=`, `!=`.
+- **Range Queries**: Supports `..`, `-`, or `to` (e.g. `10..20`, `2000 - 2010`, `5 to 15`).
+- **POI Halo Pulse**: Matched points or line geometries receive crimson halo highlights synchronized across zoom levels.
 
-The web map handles GeoJSON feature properties dynamically, using a `keys` array (e.g. `[[field_id, Label], ...]`) defined in the layer data.
+### 7. Point Data Estimator Tool
+- **Geodesic K-Nearest Neighbor (KNN)**: Given any clicked GPS coordinate or manual input, samples contour lines and runs Inverse Distance Weighting (IDW) to calculate Static High Water Level (SHWL) and Static Low Water Level (SLWL).
+- **Subsurface & Seismic Profiling**: Concurrently samples Peak Ground Acceleration (PGA) grids, spectral acceleration, and geological bedrock formations.
+- **Crosshair Target Acquisition Tool**: One-click visual crosshair (`#target-btn`) for interactive point estimation anywhere in Bangladesh.
 
-### Advanced Formatted Links & Modals
-The `keys` array now supports advanced formatting syntax to seamlessly generate dynamic hyperlinks, file downloads, or trigger fully interactive in-app modals (like the Borelog Visualizer).
-
-**Syntax:** `[AttributeName(=>{type:..., format:..., location:...}, MaskString, Target, TargetID=>), Label]`
-
-#### Resolution Decision Matrix:
-1. **If `[type: file]`**:
-   - **Location check**:
-     - *Online*: If `location` starts with `http://` or `https://`, file is resolved via the web URL.
-     - *Local*: If local (e.g. `` `./Maps/borelogs/staged/` `` or `` `./prosoil-borelogs/` ``), file is normalized and served from `/maps/<location>/<filename>`.
-   - **Datapoint type check**:
-     - **If `borelogs` datatype**:
-       - `[format: JSON]`: Opens in **Borelog Visualizer** (`IModal`).
-       - `[format: pdf]`: Opens in a new tab (`newtab`).
-       - `[format: other types]`: Initiates file download.
-     - **If other datatypes**:
-       - `[newtab]`: Opens in a new tab.
-       - `[default]` / omitted: Initiates file download.
-2. **If `[type: link]`, `[type: weblink]`, or `[format: weblink]`**:
-   - `[newtab]`: Opens in a new tab (`target="_blank"`).
-   - `[default]` / omitted: Opens directly in the current window.
-
-**Example 1: External Links**
-`[description(=>{type:link, format:weblink},See Borelog,newtab=>), Link]`
-* Creates an interactive hyperlink in the tooltip opening in a new tab.
-
-**Example 2: In-App Modals (e.g. Borelog Visualizer)**
-`[f_file(=>{type:file, format:JSON, location: `./Maps/borelogs/staged/`}, See Borelog, imodal, borelog-modal=>), Details]`
-* Automatically routes the `f_file` JSON into the interactive Borelog Visualizer modal with approval actions if staged.
-
-**Example 3: PDF Borelogs**
-`[f_file(=>{type:file, format:pdf, location: `./prosoil-borelogs/`}, See Borelog, newtab=>), Link]`
-* Opens the locally stored PDF in a new browser tab.
-
-**Header Priority Logic:**
-When rendering the interactive popup/tooltip for a feature, the application uses the following hierarchy to determine what appears as the bold **Header Title**:
-
-1. **Explicit First-Key Naming**: If the very first pair in your `keys` field explicitly references a naming property (like `name`, `title`, `road_name`, or `river_name`), the application immediately uses its value as the header and removes it from the bulleted list below.
-2. **Implicit Name Fallback (The Override)**: If the first pair in the `keys` field is something else (e.g., `[xcoord, Easting]`), the application checks if the feature properties inherently contain a naming field (`Name`, `name`, `road_name`, `river_name`, or `locality`). If found, it intelligently assigns this as the header title, while keeping your explicit `keys` array fully intact in the bulleted list below. 
-3. **Strict First-Key Fallback**: If neither of the above applies (no explicit name first, and no implicit name fields exist), it defaults to aggressively ripping the first pair out of your `keys` array and using its value as the header.
-
-## Adding New Maps (The Manifest File)
-
-The entire webmap is driven by a central configuration file located at `Maps/map_list.md`. To add a new map layer, you simply add a new row to the Markdown table in this file, and the application will dynamically parse it, ingest it, and render it.
-
-### Column Definitions
-
-| Column | Description |
-| :--- | :--- |
-| **File Name** | The exact name of the file located in the `Maps/` directory (e.g., `data.geojson`, `elevation.tif`). Must include the extension. For `Basemap` types, this is the XYZ tile URL (e.g., `https://{s}.tile.osm.org/{z}/{x}/{y}.png`). |
-| **Name of the Layer** | The human-readable name that will appear in the webmap's side panel and legends. |
-| **Tab** | The category/tab under which this layer will be grouped in the side panel (e.g., `Hydro`, `Infrastructure`, `Geo`). Must be `Basemap` for basemap layers. |
-| **Show First** | (`Yes` or `No`). If `Yes`, the layer is automatically toggled ON and visible when the webmap first loads. |
-| **Type** | (`Vector`, `Raster`, or `Basemap`). Use `Vector` for GeoJSON points/polygons. Use `Raster` for `.tif` grids. Use `Basemap` for background tile servers. |
-| **Transparency** | (Optional). A percentage value (e.g., `50`). If set to a negative value (e.g., `-100`), it creates a **"Ghost Layer"** (hidden from the map UI but queried by the data estimator). |
-| **Derive** | (Optional). Used by the Point Data Estimator. Formatted as `[field_name, Display Label]`. You can specify multiple separated by commas. |
-| **Units** | (Optional). The physical unit corresponding to the derived value (e.g., `m`, `g`). |
-| **Estimate** | (`Yes` or `No`). If `Yes`, queried whenever a user clicks the map to estimate values. |
-| **Credit Page** | (Optional). The HTML file in `frontend/credits/` (e.g., `Prosoil.html`). **For Basemaps ONLY**, you can write a direct HTML hyperlink string like `<a href="https://openstreetmap.org">OSM</a>`. |
-| **Zoom Level** | (Optional). **For Basemaps ONLY**. Defines the maximum zoom limit for the tile server (e.g., `19`). |
-
-### Examples
-
-**Example 1: The Basics**
-*You want to add a simple GeoJSON containing regional boundaries. You want it grouped under "Geo", disabled by default, with no special data estimations.*
-`| regional_bounds.geojson | Regional Boundaries | Geo | No | Vector | | | | No | | |`
--  You only provide the essential file details, name, category, and type. The rest is left blank or `No`.
-
-**Example 2: Adding a Raster Map with Estimations**
-*You want to add a GeoTIFF temperature map. You want it semi-transparent (40%), and you want the Point Data Estimator to derive the temperature in Celsius.*
-`| temperature_grid.tif | Annual Temp | Geo | No | Raster | 40 | [ , Temperature] | C | Yes | Temp-Credit.html | |`
-- You specify `Raster` type, set a `Transparency` of 40, and configure the `Derive` column to map the raster pixel value to the label "Temperature" with a unit of "C". You also link a credit page.
-
-**Example 3: Complex Vector with Multiple Derivations**
-*You have a highly detailed GeoJSON of underground water aquifers. You want the map to automatically show it on load, but you want to extract TWO distinct values (Depth and Salinity) when the user clicks the map, applying different units.*
-`| aquifers_deep.geojson | Deep Aquifers | Hydro | Yes | Vector | | [depth, Depth], [salinity, Salinity Level] | m, ppt | Yes | Hydro-Credit.html | |`
-- You utilize advanced `Derive` syntax. The backend will perform IDW estimation on both fields concurrently.
-
-**Example 4: Adding an Online Basemap**
-*You want to add the CyclOSM background map, ensure its radio button is grouped in the Basemap tab, and provide proper attribution link.*
-`| https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png | CycleOSM | Basemap | Yes | Basemap | | | | | https://www.openstreetmap.org/copyright [OSM] | 19 |`
-- The `File Name` acts as a direct internet URL (passing `{x}, {y}, {z}` variables directly to Leaflet). The `Credit Page` dynamically parses `url [Text]` into a clickable hyperlink anchored natively to the map canvas, and `Zoom Level` safely caps zooming at 19.
+### 8. Geotechnical Borelog Subsystem
+- **Strata Visualization**: Custom Vanilla JS DOM engine rendering in-situ soil strata, groundwater table, and SPT $N$-value profiles.
+- **Physical GeoJSON Synchronization**: Automatic real-time persistence to `Maps/awaiting_borelogs.geojson` and `Maps/appended_borelogs.geojson`.
 
 ---
 
-### Architecture & Type Exclusivity (How Data Scopes Work)
+## 🗺️ Adding Layers (`Maps/map_list.md` Manifest)
 
-To ensure high performance and predictable UI behavior, the platform enforces strict **Type Exclusivity** across the full stack (Frontend Map Engine, Backend Python API, and Database Loader). Properties belonging to one `Type` logically cannot bleed into another.
+The entire portal is dynamically driven by `Maps/map_list.md`. The table defines 15 distinct columns:
 
-#### 1. Basemap Architecture (`Type = Basemap`)
-Basemaps represent the fundamental bottom-layer visualization of the earth. Because they are fetched continuously from external XYZ tile servers (like OpenStreetMap or ESRI) as the user pans and zooms, their pipeline skips the database entirely.
-- **Mutually Exclusive UI**: Basemaps are rendered as radio buttons. The frontend engine strictly ensures only **one** basemap can be loaded and visually active at any time.
-- **File Name Routing**: The `File Name` column is treated as a raw HTTP URL template, bypassing local file checks.
-- **Attribution Scope (`Credit Page`)**: Basemaps do **not** generate "Cr" buttons or modal popups. Instead, their `Credit Page` column expects a raw HTML string (e.g., `<a href="...">OSM</a>`), which the engine natively injects into the bottom-left Leaflet copyright banner when the map is active.
-- **Isolated Config (`Zoom Level`)**: The `Zoom Level` column is an exclusive property of Basemaps, configuring the external tile server cap to prevent requesting broken images.
-- **Data Exclusion**: Because Basemaps are pre-rendered images, the Backend Point Data Estimator securely skips them. They are ignored by SQL distance queries and IDW calculations.
+| Column # | Header | Description |
+|:---:|:---|:---|
+| 1 | **File Name** | Physical file in `Maps/` (`.geojson`, `.tif`) or tile URL for `Basemap`. |
+| 2 | **Name of the Layer** | Human-readable title displayed in side panels, legends, and search. |
+| 3 | **Tab** | Grouping category (`Hydro`, `Infrastructure`, `Geologic`, `Seismic`, `Geotechnical`, `Basemaps`). |
+| 4 | **Show First** | `Yes` or `No`. Auto-toggled on when map loads. |
+| 5 | **Type** | `Vector`, `Raster`, or `Basemap`. |
+| 6 | **Datatype** | Optional specialized handler tag (e.g. `Borelogs`, `Demands`, `Bounds`). |
+| 7 | **Transparency** | Base transparency percentage (0–100). Negative values create "Ghost Layers". |
+| 8 | **Derive** | Field mapping for Point Data Estimator (e.g. `[contour, SHWL]`). |
+| 9 | **Units** | Physical engineering unit (e.g. `m`, `m/s`, `g`). |
+| 10 | **Estimate** | `Yes` or `No`. Whether sampled by the Point Data Estimator. |
+| 11 | **Credit Page** | Attribution HTML page in `frontend/credits/` or inline hyperlink string for Basemaps. |
+| 12 | **Zoom Level** | Maximum tile server zoom limit for Basemaps (e.g. `19`). |
+| 13 | **Classify With** | Property name used to split features into discrete legend entries (e.g. `field_division`, `bridge_type`). Set `No` to disable. |
+| 14 | **Search On** | Comma-separated bracketed search fields with masks (e.g. `[bridge_type, Bridge Type], [spans, Spans]`). |
+| 15 | **Map from Legends** | `Yes` or `No`. If `Yes`, clicking legend chips in the side panel executes on-map feature filtering and zoom. |
 
-#### 2. Vector & Raster Architecture (`Type = Vector` or `Raster`)
-Vectors (GeoJSONs) and Rasters (GeoTIFFs) represent your analytical overlays. They are ingested deeply into the system, queryable by the database, and stackable in the UI.
-- **Stackable UI**: Rendered as independent checkboxes. Users can overlay infinite combinations of vectors and rasters simultaneously on top of the active Basemap.
-- **File Name Routing**: The `File Name` expects a physical file residing in the `Maps/` folder, which triggers ingestion by `update_maps.sh` / `import_local_maps.py`.
-- **Raster Display Engine (The PNG Bypass)**: Because rendering massive raw floating-point `.tif` rasters directly in the browser is notoriously slow and causes visual seams, the webmap bypasses the raw `.tif` for visualization. Instead, it looks for a counterpart `.png` image with the exact same base name in the `Maps/` directory. The system automatically reads the true geographic bounds of the dataset using `rasterio` and stretches this lightweight 4-band RGBA PNG seamlessly over the map canvas via Leaflet's `L.imageOverlay`.
-- **Projection Requirements (CRITICAL)**: 
-  - **Vector Layers (GeoJSON)** MUST remain in `EPSG:4326 (WGS 84)`. Leaflet projects their coordinates dynamically in the browser.
-  - **Raster Layers (.tif / .png)** MUST be exported in `EPSG:3857 (Web Mercator)`. Because Leaflet performs a linear image stretch, dropping a flat EPSG:4326 raster image onto a non-linear Web Mercator map causes severe vertical shifting. Exporting the Raster in EPSG:3857 in QGIS bakes the stretch into the pixels for perfect millimeter-accurate alignment. The backend script will automatically handle the complex mathematical conversions needed to properly pin the image corners.
-- **Attribution Scope (`Credit Page`)**: Vectors and Rasters look for an `.html` file path in the `frontend/credits/` directory (e.g., `Prosoil.html`). They generate a clickable "Cr" button in the layer list that pops open a modal iframe window to display complex formatting, logos, and licenses. 
-- **Estimator Integration**: Vectors and Rasters exclusively utilize the `Derive`, `Units`, and `Estimate` columns. When a user clicks the map, the backend runs `ST_DWithin` queries against PostGIS for Vectors. For Rasters, the backend bypasses the PNG and directly samples the raw floating-point `.tif` grid using `rasterio.sample` to extract perfectly accurate analytical data, independent of how the map looks.
+---
 
-### Legends & Symbology (Dynamic UI Generation)
+## ⚙️ Environment Configuration (`.env`)
 
-The platform features a highly advanced, zero-configuration dynamic legend engine. You do not need to manually write HTML/CSS to build legends for your map layers. The frontend automatically parses the underlying data and generates a highly-polished, responsive `sub-legend-ui` with interactive gradient pie-charts, swatches, and overflow menus (`+X` button).
+```bash
+# --- Database credentials -----------------------------------------------------
+POSTGRES_HOST=db
+POSTGRES_PORT=5432
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=your_secure_password
+POSTGRES_DB=webmap
+DATABASE_URL=postgresql://postgres:your_secure_password@db:5432/webmap
 
-#### 1. Vector Legends (Automatic Extraction)
-For Vector layers, the frontend automatically scans the features for class naming attributes (like `f_class_name`) and styling attributes (like `color` or `f_class_color`). When a specific class name is missing, the intelligent fallback engine dynamically scans each feature's properties to extract meaningful quantitative values (e.g., pulling `50.6` from a `speed_mps` column). To ensure the legend strictly matches the visual symbology, the engine **groups directly by color**, automatically combining all names or values that share the exact same color into a single, comprehensive category label in the legend.
+# --- Production Ports & Re-import ---------------------------------------------
+HTTP_PORT=8002
+FORCE_REIMPORT=0
 
-#### 2. Raster Legends (QGIS Color Map Integration)
-Because raw `.tif` rasters do not contain vector properties, you can explicitly define a raster's legend by dropping a simple text file into the `Maps/` directory.
-- The file must be named identically to the raster file, but suffixed with `-color_map.txt` (e.g., `elevation-color_map.txt`).
-- The syntax exactly matches **QGIS's standard Color Map Export format**.
-- The backend parses this text file on the fly and pipes the RGBA swatches directly into the frontend legend renderer.
+# --- Authentication (Webmaster & BDD Officers) --------------------------------
+WEBMASTER_USERNAME=webmaster_username_now
+WEBMASTER_PASSWORD=webmaster_password_now
 
-#### Examples of Legend Generation
+BDD1_USERNAME=bdd_1
+BDD1_PASSWORD=bdd1_rhd_bridge_2026
 
-**Example 1: A Standard Vector Classification**
-*You have a vector layer of Roads. In the database, the features contain an `f_class_name` attribute and a `color` attribute.*
-- **Data:** `{"f_class_name": "Highway", "color": "#FF0000"}`
-- **Engine Response:** Automatically builds a red `#FF0000` swatch labeled "Highway" beneath the layer name. If there are 5 classes, the circle icon transforms into a 5-color conic gradient pie chart.
+BDD2_USERNAME=bdd_2
+BDD2_PASSWORD=bdd2_rhd_bridge_2026
 
-**Example 2: A Raster QGIS Color Map (`-color_map.txt`)**
-*You have an elevation `.tif` raster. You export a QGIS color map and save it as `elevation-color_map.txt` in the `Maps/` directory.*
-```text
-# QGIS Generated Color Map Export File
-INTERPOLATION:DISCRETE
-0,4,14,216,255,-5 - 0 m
-5,32,80,255,255,0 - 5 m
-10,65,150,255,255,5 - 10 m
+BDD3_USERNAME=bdd_3
+BDD3_PASSWORD=bdd3_rhd_bridge_2026
+
+# --- RHD DESC Interoperability ------------------------------------------------
+DESC_BASE_URL=https://acqform.rhdbridge.com
+ADDS_BASE_URL=https://acqform.rhdbridge.com
 ```
-- **Engine Response:** The backend ignores the `#` and `INTERPOLATION` lines. It extracts the RGBA values (`4,14,216,255`) and the label (`-5 - 0 m`) for each row, constructing a perfect replica of your QGIS legend directly in the web UI.
 
-**Example 3: Handling Legend Overflow (`+X` Button)**
-*Your landcover raster has 25 different classifications defined in its `-color_map.txt`. It's impossible to fit 25 swatches in the narrow side panel.*
-- **Engine Response:** The frontend actively calculates the physical pixel width of the user's screen. It renders as many swatches as can comfortably fit (e.g., 3 swatches). It then truncates the rest and generates a highly visible `+22` button. Clicking this button dynamically opens the Right-Side Panel, populating a scrollable, full-length list of all 25 legend items.
+---
 
+## 🚀 Quickstart & Local Development
 
-### UI & Responsive Design (Impeccable Standards)
+Dependencies are managed using `uv` (a blazingly fast Python package manager):
 
-The webmap was completely refactored to align with enterprise-grade responsive design standards, ensuring pixel-perfect scaling from 4K Widescreen monitors down to minimal mobile phones.
+```bash
+# 1. Clone repository
+git clone https://github.com/MdIntisharRahman/webmap_for_infra_hydro_geo.git
+cd webmap_for_infra_hydro_geo
 
-#### 1. Fluid Typography & `em`-Based Scaling
-Hardcoded pixel values cause layouts to break across devices. The entire layer control UI (including the custom iOS-style animated checkboxes and legend pie-circles) was rewritten using relative `em` units. 
-The master `.layer-item` container dynamically injects the `font-size` based on the user's device:
-- **Mobile (`pointer: coarse`)**: Bumps font size to `15px` for legibility.
-- **Widescreen (`min-width: 1600px`)**: Uses a fluid `clamp(14px, 0.8vw, 16px)` calculation.
-Because the checkboxes are bound to `1em`, they perfectly and automatically scale in absolute harmony with the text across all devices.
+# 2. First-time setup (database initialization & map ingestion)
+./first_run.sh
 
-#### 2. Accessible Touch Targets
-Standard 12px checkboxes are an accessibility violation on touch devices. The iOS checkboxes were heavily modified using negative margins and oversized padding (`margin: -10px; padding: 10px;`). This creates a massive, invisible `32px` touch area that easily captures thumb-taps on phones, without disturbing or pushing the visible CSS layout.
+# 3. Launch local development servers
+./start.sh
+```
 
-#### 3. Fully Offline Local Fonts
-To guarantee the UI never breaks, blocks, or flashes unstyled text in offline environments (or slow field-networks), all typography (Inter and Outfit) was converted to ultra-compressed `.woff2` files via Transfonter and stored directly in `frontend/resources/fonts/`. The `font-display: swap` directive guarantees the browser will render instantly.
+- Local Webmap UI: `http://localhost:8383`
+- Local FastAPI Backend: `http://localhost:8484`
 
-### Borelog Management System & Approvals
+---
 
-The webmap features a fully integrated pipeline for submitting, reviewing, and rendering geotechnical borelogs, backed by robust file synchronization.
+## 🌐 Production Deployment (VPS / Docker)
 
-#### 1. GeoJSON Persistent Synchronization
-Cloud providers (like Render) often wipe databases or drift out of sync. To combat this, the backend dynamically synchronizes all borelog states to physical files.
-- When a borelog is staged, approved, or rejected, the FastAPI backend surgically rewrites \Maps/awaiting_borelogs.geojson\ and \Maps/appended_borelogs.geojson\ in real-time.
-- This creates an immutable, git-ready physical file backup, guaranteeing that local deployment resets do not erase admin-approved data.
+The live production system runs on VPS `62.171.150.194`:
 
-#### 2. Visualizer Standardization (DOM-Based)
-The application utilizes a custom Vanilla JS DOM engine (\BorelogVisualizer.js\) rather than heavy charting libraries to render soil strata perfectly.
-- **Sticky Context Headers:** As users scroll deep into a 30-meter borelog, the top metadata block (Borelog ID, Project, Water Table) and the column headers flawlessly stick to the top of the modal, ensuring continuous context.
-- **Unified Flex Constraints:** The tooltip map visualizer and the entry form preview visualizer strictly share the \#borelog-visualizer-container\ ID, constrained perfectly via CSS (\height: 81vh\) to prevent window overflow and enforce native horizontal/vertical scrolling.
+```bash
+# Pull latest code
+cd /opt/webmap
+git pull origin main
 
-#### 3. Image-Driven Modal Close System
-To eliminate bulky inline SVGs and messy styling, all modal windows rely on a single empty \<button>\ tag equipped with the \.iframe-modal-close\ class. This CSS class natively handles loading a clean \.svg\ background image and swaps instantly to a hover counterpart with a sleek scaling pop effect, keeping the DOM extremely lightweight.
+# Rebuild backend image if Python code changed
+docker compose up -d --build backend
 
-#### 4. Map Management Terminal & Streaming
-Admins can dynamically trigger Python backend map-rendering scripts (\import_local_maps.py\) directly from the frontend.
-- Instead of silently timing out, the FastAPI backend (\/api/maps/update\) actively captures the \stdout\ of the massive Python subprocess.
-- The web UI features a sleek, dark-themed streaming terminal that renders the backend script output in real-time chunk by chunk, securely locking the UI until execution finishes.
+# Or simply restart existing containers
+docker compose restart backend frontend
 
-#### 5. Animated Toast Feedback Engine
-User interactions are accompanied by highly polished toast notifications. Utilizing deep drop-shadows, spring-like slide-up transformations, and dynamic CSS modifier classes (\.toast-success\ vs \.toast-error\), it creates a crisp, responsive, native-app feel for form submissions and staging updates.
+# Zero-downtime Nginx reload (for frontend/ HTML/CSS/JS edits)
+docker exec webmap-frontend-1 nginx -s reload
+```
 
+Live Production URL: **`https://webmap.rhdbridge.com`**
 
+---
 
+## 🏛️ Institutional Ownership
 
-
-### Advanced Search & Attribute Filtering
-
-The platform integrates a powerful, dynamic client-side search engine capable of parsing thousands of GeoJSON features instantly without backend round-trips.
-
-#### 1. Dynamic Layer & Field Indexing
-Users can click the floating search button to open a sleek, smoothly animated dropdown drawer. The UI automatically populates the searchable scope by dynamically reading all active vector layers. Users can select a specific map layer and granularly check/uncheck which exact attribute fields they want to search against.
-
-#### 2. Fuzzy Autocomplete & Highlighting
-As the user types into the search bar, the engine instantly queries the selected vector layer's underlying GeoJSON properties. It renders a clean, dropdown suggestion box beneath the input. Each suggestion intelligently displays the matching text alongside the specific field name in a subtle gray badge, ensuring context is never lost. 
-
-#### 3. Spatial Zoom Integration
-When a user clicks on a search suggestion, the webmap seamlessly intercepts the selection, extracts the precise geographical coordinates of that specific feature (whether it's a Point, LineString, or Polygon), and triggers a Leaflet `flyToBounds()` or `flyTo()` animation. This brings the map directly to the feature while instantly opening its popup tooltip for immediate inspection.
-
-#### 4. Responsive & Unobtrusive UI
-To maintain impeccable UX standards across all devices, the search tools are heavily optimized for mobile. On narrow screens (`max-width: 768px`), the search input intelligently expands its viewport width (`65vw`) to remain usable, while the floating toggle buttons and dropdown modals are surgically pushed down via CSS `env(safe-area-inset-top)` calculations to perfectly clear the sticky mobile banner without overlapping.
+**Government of the People's Republic of Bangladesh**  
+Roads and Highways Department (RHD)  
+Bridge Management Wing / Bridge Design Circle  
+Sarak Bhaban, Tejgaon, Dhaka-1208
