@@ -3297,16 +3297,17 @@ body {
 }
 
 .auth-pill-bdd {
-    background: #1c508c;
-    color: #ffffff;
+    background: transparent;
+    color: #143d6b;
     border-color: #143d6b;
 }
 
 .auth-logout-btn {
     background: transparent;
+    width: 100%;
     color: #dc2626;
-    border: 1px solid #fecaca;
-    border-radius: 6px;
+    border: 1px solid #dc2626;
+    border-radius: 3px;
     padding: 4px 8px;
     font-size: 10px;
     font-weight: 600;
